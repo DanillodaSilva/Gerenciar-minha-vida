@@ -75,6 +75,30 @@
     return { total, feitas, pct: total ? Math.round(feitas / total * 100) : 0 };
   }
 
+  function semanaDe(hoje) {
+    const seg = somaDias(hoje, 1 - diaSemana(hoje));
+    return Array.from({ length: 7 }, (_, i) => somaDias(seg, i));
+  }
+  function idsDeItens(dados) { const s = new Set(); dados.secoes.forEach(x => x.itens.forEach(i => s.add(i.id))); return s; }
+  function concluidasNoDia(dados, dia, ids = idsDeItens(dados)) {
+    return (dados.feitos[dia] || []).filter(id => ids.has(id)).length + (dados.tarefas || []).filter(t => dataLocal(t.completedAt) === dia).length;
+  }
+  function barrasSemana(dados, hoje) {
+    const ids = idsDeItens(dados);
+    return semanaDe(hoje).map(dia => ({ dia, valor: concluidasNoDia(dados, dia, ids), hoje: dia === hoje }));
+  }
+  function taxaSemana(dados, hoje) {
+    let feitas = 0, total = 0;
+    semanaDe(hoje).filter(d => d <= hoje).forEach(d => { const r = resumoDia(dados, d); feitas += r.feitas; total += r.total; });
+    return { feitas, total, pct: total ? Math.round(feitas / total * 100) : null };
+  }
+  function totalConcluidas(dados) {
+    const ids = idsDeItens(dados);
+    return Object.values(dados.feitos).reduce((a, l) => a + l.filter(id => ids.has(id)).length, 0) + (dados.tarefas || []).filter(t => t.completedAt).length;
+  }
+  const textoSequencia = n => (n === 0 ? 'Comece hoje sua sequência' : 'Sequência: ' + n + (n === 1 ? ' dia' : ' dias'));
+  const textoTaxa = pct => 'Esta semana: ' + (pct === null ? '—' : pct + '%');
+
   const cabecalhoProximo = iso => { const d = parseDia(iso); return DIAS_LONGOS[(d.getDay() + 6) % 7] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()].slice(0, 3) + '.'; };
   function gruposProximos(tarefas, hoje) {
     const pend = tarefas.filter(t => !t.completedAt);
@@ -167,7 +191,8 @@
   }
 
   const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
-    dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas };
+    dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
+    DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

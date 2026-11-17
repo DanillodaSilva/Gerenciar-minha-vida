@@ -252,3 +252,47 @@ describe('tarefas avulsas', () => {
     assert.equal(R.dataLocal('2026-11-18T02:30:00.000Z'), '2026-11-17');
   });
 });
+
+describe('progresso da semana', () => {
+  const QUI = '2026-11-19';
+  const tf = (id, dueDate, completedAt = null) => ({ id, title: id, notes: null, dueDate, dueTime: null, priority: 'medium', categoryId: null, completedAt, createdAt: '2026-11-01T12:00:00.000Z', updatedAt: '2026-11-01T12:00:00.000Z' });
+  const noDia = d => d + 'T15:00:00.000Z';
+  const dados = tarefas => ({ secoes: [], feitos: {}, tarefas });
+  test('semana vai de segunda a domingo', () => {
+    assert.deepEqual(R.semanaDe(QUI), ['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21', '2026-11-22']);
+    assert.equal(R.semanaDe('2026-11-22')[0], '2026-11-16');
+  });
+  test('10 tarefas de 16 a 19, 8 concluídas a tempo → 80%', () => {
+    const ts = [];
+    ['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19'].forEach((d, i) => { for (let k = 0; k < (i < 2 ? 3 : 2); k++) ts.push(tf(d + k, d)); });
+    for (let i = 0; i < 8; i++) ts[i].completedAt = noDia(ts[i].dueDate);
+    assert.equal(ts.length, 10);
+    assert.equal(R.taxaSemana(dados(ts), QUI).pct, 80);
+  });
+  test('3 de 3 → 100%; 2 de 3 → 67%; 1 de 8 → 13% (12,5 arredonda para cima); 0 tarefas → —', () => {
+    const tres = n => Array.from({ length: 3 }, (_, i) => tf('t' + i, '2026-11-17', i < n ? noDia('2026-11-17') : null));
+    assert.equal(R.taxaSemana(dados(tres(3)), QUI).pct, 100);
+    assert.equal(R.taxaSemana(dados(tres(2)), QUI).pct, 67);
+    const oito = Array.from({ length: 8 }, (_, i) => tf('o' + i, '2026-11-18', i === 0 ? noDia('2026-11-18') : null));
+    assert.equal(R.taxaSemana(dados(oito), QUI).pct, 13);
+    assert.equal(R.taxaSemana(dados([]), QUI).pct, null);
+    assert.equal(R.textoTaxa(null), 'Esta semana: —');
+    assert.equal(R.textoTaxa(82), 'Esta semana: 82%');
+  });
+  test('concluída depois do prazo não conta na taxa; tarefas depois de hoje ficam de fora', () => {
+    const ts = [tf('a', '2026-11-16', noDia('2026-11-18')), tf('b', '2026-11-20')];
+    assert.deepEqual(R.taxaSemana(dados(ts), QUI), { feitas: 0, total: 1, pct: 0 });
+  });
+  test('barras: conclusões por dia (data local), com hoje destacado', () => {
+    const d = { ...base([item('r')], { '2026-11-16': ['r', 'apagado'], '2026-11-19': ['r'] }), tarefas: [tf('a', '2026-11-10', noDia('2026-11-19')), tf('b', null, noDia('2026-11-17'))] };
+    const b = R.barrasSemana(d, QUI);
+    assert.deepEqual(b.map(x => x.valor), [1, 1, 0, 2, 0, 0, 0]);
+    assert.deepEqual(b.map(x => x.hoje), [false, false, false, true, false, false, false]);
+    assert.equal(R.totalConcluidas(d), 4);
+  });
+  test('texto da sequência', () => {
+    assert.equal(R.textoSequencia(0), 'Comece hoje sua sequência');
+    assert.equal(R.textoSequencia(1), 'Sequência: 1 dia');
+    assert.equal(R.textoSequencia(4), 'Sequência: 4 dias');
+  });
+});

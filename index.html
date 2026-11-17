@@ -331,6 +331,24 @@
   .chips.filtros .chip{flex:none}
   .seg.campo-seg{margin:0}
   .dica{color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .cartoes{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-3)}
+  .cartao-num{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);padding:var(--space-4);min-width:0;
+    display:flex;flex-direction:column;gap:var(--space-2)}
+  .cartao-num.destaque{background:var(--primary-container);border:0}
+  .cartao-num svg{color:var(--text-primary)}
+  .cartao-num b{font-size:var(--fs-number);line-height:var(--lh-number);font-weight:var(--w-semibold)}
+  .cartao-num span{font-size:var(--fs-label);line-height:var(--lh-label);color:var(--text-secondary);overflow-wrap:anywhere}
+  .cartao-num.destaque span{color:var(--on-container)}
+  .chart .b.hoje{background:var(--primary)}
+  .chart.semana .b{background:color-mix(in srgb, var(--primary) 72%, var(--surface))}
+  .chart.semana .b.zero{background:var(--border-strong)}
+  .chart.semana .b.hoje{background:var(--primary)}
+  .chart.semana .b span{color:var(--text-primary);font-weight:var(--w-medium)}
+  .chart .lbl.hoje{color:var(--text-primary);font-weight:var(--w-semibold)}
+  .total-card{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap}
+  .total-card b{font-size:var(--fs-number);line-height:var(--lh-number);font-weight:var(--w-semibold)}
+  .stats.dois{grid-template-columns:1fr 1fr}
+  h2.titulo-bloco{font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--text-secondary);margin:var(--space-5) 0 var(--space-3)}
   .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--fab-h) + var(--space-5) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
@@ -396,7 +414,7 @@ const ICONES = {
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
-const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['constancia','grafico','Constância'], ['ajustes','ajustes','Ajustes']];
+const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['constancia','grafico','Progresso'], ['ajustes','ajustes','Ajustes']];
 function montarNav(){
   document.querySelector('nav.tabs').innerHTML = ABAS.map(([id, icone, rotulo]) =>
     `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone)}</span>${rotulo}</button>`).join('');
@@ -650,7 +668,7 @@ function render(){
   if(tela === 'rotina')     app.innerHTML = telaHoje();
   if(tela === 'proximos')   app.innerHTML = telaProximos();
   if(tela === 'secao')      app.innerHTML = telaSecao();
-  if(tela === 'constancia') app.innerHTML = telaConstancia();
+  if(tela === 'constancia') app.innerHTML = telaProgresso();
   if(tela === 'ajustes')    app.innerHTML = telaAjustes();
 }
 
@@ -862,10 +880,22 @@ function telaSecao(){
   `;
 }
 
-function telaConstancia(){
-  if(!dados.secoes.some(s => s.itens.length))
-    return `<header class="top"><h1>Constância</h1></header>
-            <p class="empty">Adicione itens na sua rotina e vá marcando o que fizer. O gráfico aparece aqui.</p>`;
+function telaProgresso(){
+  const vis = visao();
+  const total = Regras.totalConcluidas(vis);
+  if(!total) return `<header class="top"><h1>Progresso</h1></header>
+    <div class="vazio">${ic('grafico','lg')}<p>Conclua sua primeira tarefa para ver seu progresso.</p></div>`;
+
+  const seq = Regras.sequencia(vis, hoje());
+  const taxa = Regras.taxaSemana(vis, hoje());
+  const semana = Regras.barrasSemana(vis, hoje());
+  const maxSemana = Math.max(1, ...semana.map(b => b.valor));
+  const letras = ['S','T','Q','Q','S','S','D'];
+  const barrasSemana = semana.map((b, i) => `
+    <div class="col" role="img" aria-label="${Regras.DIAS_LONGOS[i]}, ${b.valor} ${b.valor === 1 ? 'tarefa concluída' : 'tarefas concluídas'}">
+      <div class="b ${b.valor ? '' : 'zero'} ${b.hoje ? 'hoje' : ''}" style="height:${b.valor / maxSemana * 100}%"><span aria-hidden="true">${b.valor}</span></div>
+      <div class="lbl ${b.hoje ? 'hoje' : ''}" aria-hidden="true">${letras[i]}</div>
+    </div>`).join('');
 
   const dias = [];
   for(let i = periodo - 1; i >= 0; i--) dias.push(somaDias(hoje(), -i));
@@ -874,23 +904,19 @@ function telaConstancia(){
   const tot = comTarefa.reduce((a,r) => a + r.total, 0);
   const fei = comTarefa.reduce((a,r) => a + r.feitas, 0);
   const media = tot ? Math.round(fei / tot * 100) : 0;
-
-  const seq = Regras.sequencia(visao(), hoje());
   const melhor = comTarefa.length ? Math.max(...comTarefa.map(r => r.pct)) : 0;
-
   const passo = periodo > 14 ? 5 : 1;
   const barras = resumos.map((r, idx) => `
-    <div class="col">
-      <div class="b ${r.pct ? '' : 'zero'}" style="height:${Math.max(r.pct, 2)}%">
-        ${periodo <= 14 && r.total ? `<span>${r.pct}%</span>` : ''}
+    <div class="col" role="img" aria-label="${Regras.dataCurta(r.d)}, ${r.total ? r.pct + '%' : 'sem tarefas'}">
+      <div class="b ${r.pct ? '' : 'zero'}" style="height:${r.pct}%">
+        ${periodo <= 14 && r.total ? `<span aria-hidden="true">${r.pct}%</span>` : ''}
       </div>
-      <div class="lbl">${(idx % passo === 0 || idx === resumos.length - 1) ? curto(r.d) : '&nbsp;'}</div>
+      <div class="lbl" aria-hidden="true">${(idx % passo === 0 || idx === resumos.length - 1) ? curto(r.d) : '&nbsp;'}</div>
     </div>`).join('');
-
   const porSecao = dados.secoes.map(s => {
-    let t = 0, f = 0;
-    dias.forEach(d => { const r = resumoDia(d, s); t += r.total; f += r.feitas; });
-    const p = t ? Math.round(f / t * 100) : 0;
+    let t = 0, fe = 0;
+    dias.forEach(d => { const r = resumoDia(d, s); t += r.total; fe += r.feitas; });
+    const p = t ? Math.round(fe / t * 100) : 0;
     return `<div class="secstat" style="--c:${corDe(s)}">
       <div class="top"><span>${esc(s.emoji)} ${esc(s.nome)}</span><b>${p}%</b></div>
       <div class="bar"><i style="width:${p}%"></i></div>
@@ -898,9 +924,20 @@ function telaConstancia(){
   }).join('');
 
   return `
-    <header class="top"><h1>Constância</h1></header>
-    <div class="seg">
-      ${[7,30,90].map(p => `<button class="${p===periodo?'on':''}" onclick="periodo=${p};render()">${p} dias</button>`).join('')}
+    <header class="top"><h1>Progresso</h1></header>
+    <div class="cartoes">
+      <div class="cartao-num destaque">${ic('fogo')}<b>${seq}</b><span>${Regras.textoSequencia(seq)}</span></div>
+      <div class="cartao-num">${ic('grafico')}<b>${taxa.pct === null ? '—' : taxa.pct + '%'}</b><span>${Regras.textoTaxa(taxa.pct)}</span></div>
+    </div>
+    <div class="card">
+      <h3>Concluídas por dia nesta semana</h3>
+      <div class="chart semana">${barrasSemana}</div>
+    </div>
+    <div class="card total-card"><span>Concluídas no total:</span><b>${total}</b></div>
+
+    <h2 class="titulo-bloco">Histórico</h2>
+    <div class="seg" role="radiogroup" aria-label="Período">
+      ${[7,30,90].map(p => `<button role="radio" aria-checked="${p===periodo}" class="${p===periodo?'on':''}" onclick="periodo=${p};render()">${p} dias</button>`).join('')}
     </div>
     <div class="summary">
       <small>Nos últimos ${periodo} dias você cumpriu</small>
@@ -908,9 +945,8 @@ function telaConstancia(){
       <small>${fei} de ${tot} tarefas</small>
       <div class="bar"><i style="width:${media}%"></i></div>
     </div>
-    <div class="stats">
+    <div class="stats dois">
       <div class="stat"><b>${resumoDia(hoje()).pct}%</b><small>hoje</small></div>
-      <div class="stat"><b>${seq}</b><small>dias seguidos ≥50%</small></div>
       <div class="stat"><b>${melhor}%</b><small>melhor dia</small></div>
     </div>
     <div class="card">
