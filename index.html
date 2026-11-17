@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>Rotina</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  :root{
+    --bg:#0f1115; --card:#181b22; --card2:#20242d; --line:#2a2f3a;
+    --txt:#eef0f4; --muted:#8a91a0; --accent:#7c5cff; --ok:#2ecc71; --danger:#ff5c6c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
+  body{padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  input,select{font:inherit;color:var(--txt);background:var(--card2);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;width:100%;outline:none}
+  input:focus,select:focus{border-color:var(--accent)}
+  .wrap{max-width:560px;margin:0 auto;padding:16px}
+  header.top{display:flex;align-items:center;gap:10px;margin:6px 0 16px}
+  header.top h1{font-size:24px;margin:0;flex:1}
+  .icon-btn{width:40px;height:40px;border-radius:12px;background:var(--card);display:grid;place-items:center;font-size:20px}
+  .day{display:flex;align-items:center;justify-content:space-between;background:var(--card);
+    border-radius:14px;padding:6px;margin-bottom:14px}
+  .day button{width:40px;height:36px;border-radius:10px;font-size:20px}
+  .day button:disabled{opacity:.25}
+  .day span{font-weight:600}
+  .summary{background:linear-gradient(135deg,#2a1f5c,#181b22);border-radius:18px;padding:16px;margin-bottom:16px}
+  .summary .big{font-size:34px;font-weight:700}
+  .summary small{color:var(--muted)}
+  .bar{height:8px;background:#ffffff14;border-radius:99px;overflow:hidden;margin-top:10px}
+  .bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sec{background:var(--card);border-radius:18px;padding:14px;text-align:left;min-height:118px;
+    display:flex;flex-direction:column;gap:6px;border-top:4px solid var(--c)}
+  .sec .emo{font-size:26px}
+  .sec .nm{font-weight:650}
+  .sec small{color:var(--muted)}
+  .sec .bar i{background:var(--c)}
+  .add-sec{border:2px dashed var(--line);border-top:2px dashed var(--line);background:none;
+    color:var(--muted);align-items:center;justify-content:center;font-weight:600}
+  .empty{color:var(--muted);text-align:center;padding:30px 10px}
+  .item{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;
+    padding:12px;margin-bottom:10px}
+  .check{width:30px;height:30px;flex:none;border-radius:9px;border:2px solid var(--line);
+    display:grid;place-items:center;font-size:17px;color:transparent;transition:.15s}
+  .item.done .check{background:var(--c);border-color:var(--c);color:#fff}
+  .item .info{flex:1;min-width:0}
+  .item .info b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item.done .info b{text-decoration:line-through;color:var(--muted)}
+  .item .info small{color:var(--muted)}
+  .item .more{width:34px;height:34px;border-radius:10px;color:var(--muted);font-size:20px}
+  .btn{background:var(--accent);color:#fff;border-radius:14px;padding:13px 16px;font-weight:650;width:100%}
+  .btn.ghost{background:var(--card2);color:var(--txt)}
+  .btn.danger{background:#ff5c6c22;color:var(--danger)}
+  .row{display:flex;gap:10px}
+  .row>*{flex:1}
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#12151bf2;backdrop-filter:blur(10px);
+    border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+  nav.tabs button{flex:1;padding:10px 0 12px;color:var(--muted);font-size:12px;display:flex;
+    flex-direction:column;align-items:center;gap:2px}
+  nav.tabs button b{font-size:22px;font-weight:400}
+  nav.tabs button.on{color:var(--txt)}
+  .card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px}
+  .card h3{margin:0 0 12px;font-size:16px}
+  .seg{display:flex;background:var(--card);border-radius:12px;padding:4px;margin-bottom:14px}
+  .seg button{flex:1;padding:8px;border-radius:9px;color:var(--muted);font-weight:600}
+  .seg button.on{background:var(--card2);color:var(--txt)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .stat{background:var(--card);border-radius:14px;padding:12px;text-align:center}
+  .stat b{display:block;font-size:22px}
+  .stat small{color:var(--muted);font-size:12px}
+  .chart{display:flex;align-items:flex-end;gap:4px;height:160px;padding-top:18px}
+  .chart .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+  .chart .b{width:100%;max-width:28px;background:var(--accent);border-radius:6px 6px 3px 3px;min-height:3px;position:relative}
+  .chart .b.zero{background:var(--line)}
+  .chart .b span{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+  .chart .lbl{font-size:10px;color:var(--muted);margin-top:6px;white-space:nowrap}
+  .secstat{margin-bottom:12px}
+  .secstat .top{display:flex;justify-content:space-between;font-size:14px}
+  .secstat .bar i{background:var(--c)}
+  .overlay{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:10}
+  .overlay.show{display:flex}
+  .sheet{background:var(--card);width:100%;max-width:560px;border-radius:22px 22px 0 0;
+    padding:20px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;
+    max-height:90vh;overflow:auto}
+  .sheet h2{margin:0 0 4px;font-size:19px}
+  .sheet label{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{padding:8px 12px;border-radius:99px;background:var(--card2);border:1px solid var(--line);font-size:14px}
+  .chip.on{border-color:var(--accent);background:#7c5cff22}
+  .colors{display:flex;gap:10px;flex-wrap:wrap}
+  .colors button{width:34px;height:34px;border-radius:50%;border:3px solid transparent}
+  .colors button.on{border-color:#fff}
+  .hint{font-size:13px;color:var(--muted);line-height:1.4}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--card2);
+    padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:20}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<nav class="tabs">
+  <button id="tab-rotina" class="on" onclick="irPara('rotina')"><b>☑</b>Rotina</button>
+  <button id="tab-constancia" onclick="irPara('constancia')"><b>📈</b>Constância</button>
+  <button id="tab-ajustes" onclick="irPara('ajustes')"><b>⚙</b>Ajustes</button>
+</nav>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)fecharSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+<input type="file" id="arquivo" accept="application/json" hidden>
+
+<script>
+/* =========================================================
+   DADOS — tudo fica salvo no próprio celular (localStorage)
+   estrutura:
+   {
+     secoes: [{ id, nome, emoji, cor, rotuloNome, rotuloDetalhe,
+                itens: [{ id, nome, detalhe, criadoEm:"AAAA-MM-DD" }] }],
+     feitos: { "AAAA-MM-DD": [idItem, idItem, ...] }
+   }
+   ========================================================= */
+const CHAVE = 'rotina-app-v1';
+const CORES = ['#7c5cff','#2ecc71','#ff9f43','#ff5c6c','#28c2ff','#f368e0','#feca57','#9aa5b1'];
+const MODELOS = [
+  { nome:'Treino', emoji:'🏋️', cor:'#ff5c6c', rotuloNome:'Exercício', rotuloDetalhe:'Carga' },
+  { nome:'Estudo', emoji:'📚', cor:'#28c2ff', rotuloNome:'Matéria',   rotuloDetalhe:'Duração' },
+  { nome:'',       emoji:'⭐', cor:'#7c5cff', rotuloNome:'Tarefa',    rotuloDetalhe:'Detalhe' },
+];
+
+let dados = carregar();
+let tela = 'rotina';        // rotina | secao | constancia | ajustes
+let secaoAberta = null;     // id da seção aberta
+let diaSel = hoje();        // dia que está sendo marcado
+let periodo = 7;            // período do gráfico
+
+function carregar(){
+  try{ const d = JSON.parse(localStorage.getItem(CHAVE)); if(d && d.secoes) return d; }catch(e){}
+  return { secoes: [], feitos: {} };
+}
+function salvar(){
+  try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); }
+  catch(e){ toast('Não consegui salvar 😕'); }
+}
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- datas (sempre no fuso do celular) ---------- */
+function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function hoje(){ return fmt(new Date()); }
+function somaDias(iso, n){ const [a,m,d] = iso.split('-').map(Number); const x = new Date(a, m-1, d); x.setDate(x.getDate()+n); return fmt(x); }
+function nomeDia(iso){
+  if(iso === hoje()) return 'Hoje';
+  if(iso === somaDias(hoje(), -1)) return 'Ontem';
+  const [a,m,d] = iso.split('-').map(Number);
+  return new Date(a,m-1,d).toLocaleDateString('pt-BR',{weekday:'short', day:'2-digit', month:'2-digit'});
+}
+function curto(iso){ const [,m,d] = iso.split('-'); return d+'/'+m; }
+
+/* ---------- regras da constância ---------- */
+// itens que "existiam" num dia (criados até aquele dia)
+function itensDoDia(dia, secao){
+  const secs = secao ? [secao] : dados.secoes;
+  return secs.flatMap(s => s.itens.filter(i => i.criadoEm <= dia));
+}
+function feito(dia, idItem){ return (dados.feitos[dia] || []).includes(idItem); }
+function resumoDia(dia, secao){
+  const itens = itensDoDia(dia, secao);
+  const feitas = itens.filter(i => feito(dia, i.id)).length;
+  return { total: itens.length, feitas, pct: itens.length ? Math.round(feitas / itens.length * 100) : 0 };
+}
+function alternar(idItem){
+  const lista = dados.feitos[diaSel] || [];
+  dados.feitos[diaSel] = lista.includes(idItem) ? lista.filter(x => x !== idItem) : [...lista, idItem];
+  if(!dados.feitos[diaSel].length) delete dados.feitos[diaSel];
+  salvar(); render();
+}
+
+/* ---------- navegação (botão voltar do Android funciona) ---------- */
+function irPara(t){
+  if(tela === 'secao') history.back();
+  tela = t; secaoAberta = null; render(); scrollTo(0,0);
+}
+function abrirSecao(id){
+  secaoAberta = id; tela = 'secao';
+  history.pushState({secao:id}, '');
+  render(); scrollTo(0,0);
+}
+let ignorarPop = false; // true quando nós mesmos chamamos history.back() pra fechar uma janela
+addEventListener('popstate', () => {
+  if(ignorarPop){ ignorarPop = false; return; }
+  if(document.getElementById('overlay').classList.contains('show')){ fecharSheet(true); return; }
+  if(tela === 'secao'){ tela = 'rotina'; secaoAberta = null; render(); }
+});
+
+/* ---------- telas ---------- */
+function render(){
+  ['rotina','constancia','ajustes'].forEach(t =>
+    document.getElementById('tab-'+t).classList.toggle('on', t === tela || (t==='rotina' && tela==='secao')));
+  const app = document.getElementById('app');
+  if(tela === 'rotina')     app.innerHTML = telaRotina();
+  if(tela === 'secao')      app.innerHTML = telaSecao();
+  if(tela === 'constancia') app.innerHTML = telaConstancia();
+  if(tela === 'ajustes')    app.innerHTML = telaAjustes();
+}
+
+function seletorDia(){
+  return `<div class="day">
+    <button onclick="mudarDia(-1)" aria-label="Dia anterior">‹</button>
+    <span>${nomeDia(diaSel)}</span>
+    <button onclick="mudarDia(1)" ${diaSel >= hoje() ? 'disabled' : ''} aria-label="Próximo dia">›</button>
+  </div>`;
+}
+function mudarDia(n){ const d = somaDias(diaSel, n); if(d <= hoje()){ diaSel = d; render(); } }
+
+function telaRotina(){
+  const r = resumoDia(diaSel);
+  const cards = dados.secoes.map(s => {
+    const rs = resumoDia(diaSel, s);
+    return `<button class="sec" style="--c:${s.cor}" onclick="abrirSecao('${s.id}')">
+      <span class="emo">${esc(s.emoji)}</span>
+      <span class="nm">${esc(s.nome)}</span>
+      <small>${rs.total ? rs.feitas+' de '+rs.total+' feitas' : 'Sem itens ainda'}</small>
+      <div class="bar"><i style="width:${rs.pct}%"></i></div>
+    </button>`;
+  }).join('');
+  return `
+    <header class="top"><h1>Minha rotina</h1></header>
+    ${seletorDia()}
+    <div class="summary">
+      <small>${nomeDia(diaSel)} você fez</small>
+      <div class="big">${r.pct}%</div>
+      <small>${r.feitas} de ${r.total} tarefas</small>
+      <div class="bar"><i style="width:${r.pct}%"></i></div>
+    </div>
+    <div class="grid">
+      ${cards}
+      <button class="sec add-sec" onclick="sheetSecao()">＋ Nova seção</button>
+    </div>
+    ${dados.secoes.length ? '' : '<p class="empty">Comece criando uma seção, tipo <b>Treino</b> ou <b>Estudo</b>.</p>'}
+  `;
+}
+
+function telaSecao(){
+  const s = dados.secoes.find(x => x.id === secaoAberta);
+  if(!s){ tela = 'rotina'; return telaRotina(); }
+  const r = resumoDia(diaSel, s);
+  const itens = s.itens.filter(i => i.criadoEm <= diaSel);
+  const lista = itens.map(i => `
+    <div class="item ${feito(diaSel, i.id) ? 'done' : ''}" style="--c:${s.cor}">
+      <button class="check" onclick="alternar('${i.id}')" aria-label="Marcar">✓</button>
+      <div class="info" onclick="alternar('${i.id}')">
+        <b>${esc(i.nome)}</b>
+        ${i.detalhe ? `<small>${esc(s.rotuloDetalhe)}: ${esc(i.detalhe)}</small>` : ''}
+      </div>
+      <button class="more" onclick="sheetItem('${i.id}')" aria-label="Editar">⋯</button>
+    </div>`).join('');
+  return `
+    <header class="top">
+      <button class="icon-btn" onclick="history.back()" aria-label="Voltar">←</button>
+      <h1>${esc(s.emoji)} ${esc(s.nome)}</h1>
+      <button class="icon-btn" onclick="sheetSecao('${s.id}')" aria-label="Editar seção">✎</button>
+    </header>
+    ${seletorDia()}
+    <div class="summary" style="background:linear-gradient(135deg,${s.cor}55,#181b22)">
+      <div class="big">${r.pct}%</div>
+      <small>${r.feitas} de ${r.total} feitas · ${nomeDia(diaSel).toLowerCase()}</small>
+      <div class="bar"><i style="width:${r.pct}%;background:${s.cor}"></i></div>
+    </div>
+    ${lista || `<p class="empty">Nenhum item. Adicione o primeiro ${esc(s.rotuloNome.toLowerCase())}.</p>`}
+    <button class="btn" style="background:${s.cor}" onclick="sheetItem()">＋ Adicionar ${esc(s.rotuloNome.toLowerCase())}</button>
+  `;
+}
+
+function telaConstancia(){
+  if(!dados.secoes.some(s => s.itens.length))
+    return `<header class="top"><h1>Constância</h1></header>
+            <p class="empty">Adicione itens na sua rotina e vá marcando o que fizer. O gráfico aparece aqui.</p>`;
+
+  const dias = [];
+  for(let i = periodo - 1; i >= 0; i--) dias.push(somaDias(hoje(), -i));
+  const resumos = dias.map(d => ({ d, ...resumoDia(d) }));
+  const comTarefa = resumos.filter(r => r.total);
+  const tot = comTarefa.reduce((a,r) => a + r.total, 0);
+  const fei = comTarefa.reduce((a,r) => a + r.feitas, 0);
+  const media = tot ? Math.round(fei / tot * 100) : 0;
+
+  // sequência: dias seguidos (até hoje) com pelo menos metade feita
+  let seq = 0;
+  for(let d = hoje(), i = 0; i < 400; i++, d = somaDias(d, -1)){
+    const r = resumoDia(d);
+    if(r.total && r.pct >= 50) seq++;
+    else if(d === hoje()) continue;   // hoje ainda pode estar em andamento
+    else break;
+  }
+  const melhor = comTarefa.length ? Math.max(...comTarefa.map(r => r.pct)) : 0;
+
+  const passo = periodo > 14 ? 5 : 1;
+  const barras = resumos.map((r, idx) => `
+    <div class="col">
+      <div class="b ${r.pct ? '' : 'zero'}" style="height:${Math.max(r.pct, 2)}%">
+        ${periodo <= 14 && r.total ? `<span>${r.pct}%</span>` : ''}
+      </div>
+      <div class="lbl">${(idx % passo === 0 || idx === resumos.length - 1) ? curto(r.d) : '&nbsp;'}</div>
+    </div>`).join('');
+
+  const porSecao = dados.secoes.map(s => {
+    let t = 0, f = 0;
+    dias.forEach(d => { const r = resumoDia(d, s); t += r.total; f += r.feitas; });
+    const p = t ? Math.round(f / t * 100) : 0;
+    return `<div class="secstat" style="--c:${s.cor}">
+      <div class="top"><span>${esc(s.emoji)} ${esc(s.nome)}</span><b>${p}%</b></div>
+      <div class="bar"><i style="width:${p}%"></i></div>
+    </div>`;
+  }).join('');
+
+  return `
+    <header class="top"><h1>Constância</h1></header>
+    <div class="seg">
+      ${[7,30,90].map(p => `<button class="${p===periodo?'on':''}" onclick="periodo=${p};render()">${p} dias</button>`).join('')}
+    </div>
+    <div class="summary">
+      <small>Nos últimos ${periodo} dias você cumpriu</small>
+      <div class="big">${media}%</div>
+      <small>${fei} de ${tot} tarefas</small>
+      <div class="bar"><i style="width:${media}%"></i></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${resumoDia(hoje()).pct}%</b><small>hoje</small></div>
+      <div class="stat"><b>🔥 ${seq}</b><small>dias seguidos ≥50%</small></div>
+      <div class="stat"><b>${melhor}%</b><small>melhor dia</small></div>
+    </div>
+    <div class="card">
+      <h3>Dia a dia</h3>
+      <div class="chart">${barras}</div>
+    </div>
+    <div class="card">
+      <h3>Por seção</h3>
+      ${porSecao}
+    </div>
+  `;
+}
+
+function telaAjustes(){
+  return `
+    <header class="top"><h1>Ajustes</h1></header>
+    <div class="card">
+      <h3>Backup</h3>
+      <p class="hint">Seus dados ficam só neste celular. Se limpar os dados do navegador ou trocar de celular, eles somem. Faça um backup de vez em quando.</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" onclick="exportar()">Salvar backup</button>
+        <button class="btn ghost" onclick="document.getElementById('arquivo').click()">Restaurar</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Zerar tudo</h3>
+      <p class="hint">Apaga todas as seções, itens e histórico.</p>
+      <button class="btn danger" style="margin-top:12px" onclick="sheetConfirmar('Apagar tudo?','Isso não dá pra desfazer.',()=>{dados={secoes:[],feitos:{}};salvar();render();toast('Tudo apagado')})">Apagar tudo</button>
+    </div>
+  `;
+}
+
+/* ---------- janelas (bottom sheets) ---------- */
+function abrirSheet(html){
+  document.getElementById('sheet').innerHTML = html;
+  document.getElementById('overlay').classList.add('show');
+  history.pushState({sheet:true}, '');
+  const primeiro = document.querySelector('#sheet input');
+  if(primeiro && !primeiro.value) setTimeout(() => primeiro.focus(), 80);
+}
+function fecharSheet(vindoDoVoltar){
+  document.getElementById('overlay').classList.remove('show');
+  if(!vindoDoVoltar){ ignorarPop = true; history.back(); }
+}
+
+let rascunho = null;
+function sheetSecao(id){
+  const s = id ? dados.secoes.find(x => x.id === id) : null;
+  rascunho = s ? {...s} : {...MODELOS[0], modelo:0};
+  desenharSheetSecao(!!s);
+}
+function desenharSheetSecao(editando){
+  const r = rascunho;
+  abrirSheetOuAtualizar(`
+    <h2>${editando ? 'Editar seção' : 'Nova seção'}</h2>
+    ${editando ? '' : `<div class="chips">
+      ${MODELOS.map((m,i) => `<button class="chip ${r.modelo===i?'on':''}" onclick="usarModelo(${i})">${m.emoji} ${m.nome || 'Personalizada'}</button>`).join('')}
+    </div>`}
+    <div class="row">
+      <label style="flex:0 0 76px">Emoji<input id="f-emoji" value="${esc(r.emoji)}" maxlength="4" style="text-align:center"></label>
+      <label>Nome da seção<input id="f-nome" value="${esc(r.nome)}" placeholder="Ex.: Treino"></label>
+    </div>
+    <div class="row">
+      <label>Cada item é um(a)…<input id="f-rn" value="${esc(r.rotuloNome)}" placeholder="Ex.: Exercício"></label>
+      <label>E tem…<input id="f-rd" value="${esc(r.rotuloDetalhe)}" placeholder="Ex.: Carga"></label>
+    </div>
+    <label>Cor<div class="colors">
+      ${CORES.map(c => `<button style="background:${c}" class="${r.cor===c?'on':''}" onclick="lerSecao();rascunho.cor='${c}';desenharSheetSecao(${editando})"></button>`).join('')}
+    </div></label>
+    <button class="btn" onclick="salvarSecao(${editando})">${editando ? 'Salvar' : 'Criar seção'}</button>
+    ${editando ? `<button class="btn danger" onclick="excluirSecao()">Excluir seção</button>` : ''}
+  `);
+}
+function abrirSheetOuAtualizar(html){
+  if(document.getElementById('overlay').classList.contains('show')) document.getElementById('sheet').innerHTML = html;
+  else abrirSheet(html);
+}
+function lerSecao(){
+  rascunho.emoji = document.getElementById('f-emoji').value.trim() || '⭐';
+  rascunho.nome = document.getElementById('f-nome').value.trim();
+  rascunho.rotuloNome = document.getElementById('f-rn').value.trim() || 'Tarefa';
+  rascunho.rotuloDetalhe = document.getElementById('f-rd').value.trim() || 'Detalhe';
+}
+function usarModelo(i){ rascunho = {...MODELOS[i], modelo:i}; desenharSheetSecao(false); }
+function salvarSecao(editando){
+  lerSecao();
+  if(!rascunho.nome){ toast('Dá um nome pra seção'); return; }
+  const { modelo, ...s } = rascunho;
+  if(editando){
+    const i = dados.secoes.findIndex(x => x.id === s.id);
+    dados.secoes[i] = { ...dados.secoes[i], ...s };
+  } else {
+    dados.secoes.push({ ...s, id: uid(), itens: [] });
+  }
+  salvar(); fecharSheet(); render(); toast(editando ? 'Seção salva' : 'Seção criada');
+}
+function excluirSecao(){
+  const s = rascunho;
+  sheetConfirmar(`Excluir "${s.nome}"?`, 'Os itens e o histórico dessa seção somem da constância.', () => {
+    dados.secoes = dados.secoes.filter(x => x.id !== s.id);
+    salvar(); tela = 'rotina'; secaoAberta = null;
+    history.back(); // sai da tela da seção
+    render(); toast('Seção excluída');
+  });
+}
+
+function sheetItem(idItem){
+  const s = dados.secoes.find(x => x.id === secaoAberta);
+  const it = idItem ? s.itens.find(i => i.id === idItem) : null;
+  abrirSheet(`
+    <h2>${it ? 'Editar' : 'Adicionar'} ${esc(s.rotuloNome.toLowerCase())}</h2>
+    <label>${esc(s.rotuloNome)}<input id="f-in" value="${esc(it?.nome)}" placeholder="${s.rotuloNome==='Exercício'?'Ex.: Supino reto':s.rotuloNome==='Matéria'?'Ex.: Spring Data':''}"></label>
+    <label>${esc(s.rotuloDetalhe)} (opcional)<input id="f-id" value="${esc(it?.detalhe)}" placeholder="${s.rotuloDetalhe==='Carga'?'Ex.: 40 kg · 4x10':s.rotuloDetalhe==='Duração'?'Ex.: 1h':''}"></label>
+    <button class="btn" style="background:${s.cor}" onclick="salvarItem('${idItem||''}')">${it ? 'Salvar' : 'Adicionar'}</button>
+    ${it ? `<button class="btn danger" onclick="excluirItem('${it.id}')">Excluir</button>` : ''}
+  `);
+  document.querySelectorAll('#sheet input').forEach(inp =>
+    inp.addEventListener('keydown', e => { if(e.key === 'Enter') salvarItem(idItem||''); }));
+}
+function salvarItem(idItem){
+  const s = dados.secoes.find(x => x.id === secaoAberta);
+  const nome = document.getElementById('f-in').value.trim();
+  const detalhe = document.getElementById('f-id').value.trim();
+  if(!nome){ toast('Preenche o campo ' + s.rotuloNome.toLowerCase()); return; }
+  if(idItem){
+    Object.assign(s.itens.find(i => i.id === idItem), { nome, detalhe });
+  } else {
+    // conta a partir do dia que você está vendo (permite cadastrar algo que fez ontem)
+    s.itens.push({ id: uid(), nome, detalhe, criadoEm: diaSel });
+  }
+  salvar(); fecharSheet(); render();
+}
+function excluirItem(idItem){
+  const s = dados.secoes.find(x => x.id === secaoAberta);
+  s.itens = s.itens.filter(i => i.id !== idItem);
+  Object.keys(dados.feitos).forEach(d => {
+    dados.feitos[d] = dados.feitos[d].filter(x => x !== idItem);
+    if(!dados.feitos[d].length) delete dados.feitos[d];
+  });
+  salvar(); fecharSheet(); render(); toast('Item excluído');
+}
+
+let acaoConfirmar = null;
+function sheetConfirmar(titulo, texto, acao){
+  acaoConfirmar = acao;
+  abrirSheetOuAtualizar(`
+    <h2>${esc(titulo)}</h2>
+    <p class="hint">${esc(texto)}</p>
+    <div class="row">
+      <button class="btn ghost" onclick="fecharSheet()">Cancelar</button>
+      <button class="btn danger" onclick="confirmarAgora()">Confirmar</button>
+    </div>
+  `);
+}
+function confirmarAgora(){
+  const acao = acaoConfirmar; acaoConfirmar = null;
+  document.getElementById('overlay').classList.remove('show');
+  ignorarPop = true; history.back();
+  // espera o "voltar" do sheet terminar antes de executar
+  setTimeout(acao, 60);
+}
+
+/* ---------- backup ---------- */
+function exportar(){
+  const blob = new Blob([JSON.stringify(dados, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rotina-backup-' + hoje() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Backup salvo em Downloads');
+}
+document.getElementById('arquivo').addEventListener('change', async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    if(!Array.isArray(d.secoes)) throw 0;
+    dados = { secoes: d.secoes, feitos: d.feitos || {} };
+    salvar(); render(); toast('Backup restaurado ✓');
+  }catch(err){ toast('Arquivo inválido'); }
+  e.target.value = '';
+});
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1900);
+}
+
+// quando o app volta do segundo plano num dia novo, atualiza o "Hoje"
+let ultimoHoje = hoje();
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && hoje() !== ultimoHoje){
+    if(diaSel === ultimoHoje) diaSel = hoje();
+    ultimoHoje = hoje(); render();
+  }
+});
+
+// faz funcionar offline e permite instalar como app
+if('serviceWorker' in navigator){
+  try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
+}
+
+render();
+</script>
+</body>
+</html>
