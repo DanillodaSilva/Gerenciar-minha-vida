@@ -284,6 +284,18 @@
   .comemoracao h2{margin:0;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold)}
   .comemoracao p{margin:0;color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
   .confete{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:39}
+  .menu-pop{position:fixed;z-index:35;min-width:calc(var(--touch) * 4.5);background:var(--surface);border-radius:var(--radius-card);box-shadow:var(--shadow-sheet);
+    padding:var(--space-1);display:flex;flex-direction:column;border:var(--border-width) solid var(--border)}
+  .menu-pop .menu-tit{margin:0;padding:var(--space-2) var(--space-3) var(--space-1);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);
+    font-weight:var(--w-medium);max-width:calc(var(--touch) * 6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .menu-pop button{display:flex;align-items:center;gap:var(--space-3);min-height:var(--touch);padding:0 var(--space-3);border-radius:var(--radius-chip);
+    font-size:var(--fs-body);text-align:left;transition:background-color var(--dur-toque) var(--ease-saida)}
+  .menu-pop button:active,.menu-pop button:focus-visible{background-color:var(--surface-variant)}
+  .menu-pop button.perigo{color:var(--danger)}
+  .add-linha{padding:var(--space-1) 0 0}
+  .add-linha .add-item{color:var(--text-secondary)}
+  .add-linha input{background:var(--surface)}
+  .toast .barra{position:absolute;left:var(--space-3);right:var(--space-3);bottom:0;height:var(--alca-h);border-radius:var(--radius-full);background:var(--snack-action);transform-origin:left center;opacity:.8}
   .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
   .hoje-tit{flex:1;min-width:0}
   .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
@@ -463,7 +475,7 @@
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
     transition:opacity var(--dur-base) var(--ease-saida),transform var(--dur-base) var(--ease-saida);pointer-events:none;z-index:20;
-    display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+    display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);overflow:hidden}
   .toast.show{opacity:1;transform:none}
   .toast.com-acao{pointer-events:auto;padding-right:var(--space-2)}
   .toast .snack-acao{color:var(--snack-action);font-weight:var(--w-medium);min-height:var(--touch);padding:0 var(--space-3);border-radius:var(--radius-chip);flex:none}
@@ -554,6 +566,7 @@ const ICONES = {
   graficoVazio:'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z',
   ajustesCheio:'M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z',
   ajustesVazio:'M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.09-.16-.26-.25-.44-.25-.06 0-.12.01-.17.03l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.06-.02-.12-.03-.18-.03-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.09.16.26.25.44.25.06 0 .12-.01.17-.03l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-1.98-1.71c.04.31.05.52.05.73 0 .21-.02.43-.05.73l-.14 1.13.89.7 1.08.84-.7 1.21-1.27-.51-1.04-.42-.9.68c-.43.32-.84.56-1.25.73l-1.06.43-.16 1.13-.2 1.35h-1.4l-.19-1.35-.16-1.13-1.06-.43c-.43-.18-.83-.41-1.23-.71l-.91-.7-1.06.43-1.27.51-.7-1.21 1.08-.84.89-.7-.14-1.13c-.03-.31-.05-.54-.05-.74s.02-.43.05-.73l.14-1.13-.89-.7-1.08-.84.7-1.21 1.27.51 1.04.42.9-.68c.43-.32.84-.56 1.25-.73l1.06-.43.16-1.13.2-1.35h1.39l.19 1.35.16 1.13 1.06.43c.43.18.83.41 1.23.71l.91.7 1.06-.43 1.27-.51.7 1.21-1.07.85-.89.7.14 1.13zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z',
+  reordenar:'M20 9H4v2h16V9zM4 15h16v-2H4v2z',
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
@@ -806,13 +819,21 @@ function desfazerSnack(){
   if(s && s.desfazer) s.desfazer();
 }
 function snack(msg, desfazer, aoExpirar){
-  finalizarSnack();
   const t = document.getElementById('toast');
-  t.innerHTML = `<span>${esc(msg)}</span>` + (desfazer ? '<button class="snack-acao" onclick="desfazerSnack()">Desfazer</button>' : '');
+  const visivel = t.classList.contains('show');
+  finalizarSnack();
+  const duracao = desfazer ? Animacoes.MOV.desfazer : Animacoes.MOV.aviso;
+  t.innerHTML = `<span>${esc(msg)}</span>` + (desfazer ? '<button class="snack-acao" onclick="desfazerSnack()">Desfazer</button><i class="barra" aria-hidden="true"></i>' : '');
   t.classList.toggle('com-acao', !!desfazer);
   void t.offsetHeight; t.classList.add('show');
+  if(visivel && !Animacoes.reduzido()) t.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
+  const barra = t.querySelector('.barra');
+  if(barra){
+    if(Animacoes.reduzido()) barra.remove();
+    else barra.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }], { duration: duracao, easing: 'linear', fill: 'forwards' });
+  }
   snackAtual = { desfazer, aoExpirar };
-  t._h = setTimeout(finalizarSnack, desfazer ? 5000 : 2000);
+  t._h = setTimeout(finalizarSnack, duracao);
 }
 const toast = msg => snack(msg);
 
@@ -832,7 +853,7 @@ document.addEventListener('pointerdown', e => {
   item.getAnimations().forEach(a => { a.commitStyles(); a.cancel(); });
   gesto = { linha, item, x: e.clientX, y: e.clientY, dx: 0, dy: 0, modo: null, id: e.pointerId, amostras: [[e.timeStamp, e.clientX]], cruzou: false };
   gesto.timer = setTimeout(() => {
-    if(gesto && !gesto.modo){ gesto.modo = 'longo'; suprimirClique = true; vibrar(); abrirMenu(linha.dataset); }
+    if(gesto && !gesto.modo){ gesto.modo = 'longo'; suprimirClique = true; vibrar(); abrirMenu(linha.dataset, gesto.x, gesto.y); }
   }, 500);
 });
 document.addEventListener('pointermove', e => {
@@ -932,26 +953,101 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('contextmenu', e => { if(e.target.closest('.linha')) e.preventDefault(); });
 
-function abrirMenu(d){
+let menuPop = null;
+function fecharMenu(devolverFoco = true){
+  const m = menuPop; if(!m) return;
+  menuPop = null;
+  const fim = () => m.remove();
+  if(devolverFoco && m._abridor && m._abridor.isConnected) m._abridor.focus({ preventScroll: true });
+  if(Animacoes.reduzido()) return fim();
+  m.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.96)' }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim;
+}
+function abrirMenu(d, x, y){
+  fecharMenu(false);
   menuAlvo = { ...d };
-  const s = dados.secoes.find(x => x.id === d.sid);
+  const s = dados.secoes.find(sx => sx.id === d.sid);
   const it = d.tipo === 'tarefa' ? tarefaPorId(d.id) : s && s.itens.find(i => i.id === d.id);
   if(!it) return;
   const nomeMenu = d.tipo === 'tarefa' ? it.title : it.nome;
-  const concluir = d.concluivel === '1' ? `<button onclick="menuAcao('concluir')">${ic('check')}${estaFeita(d.tipo, d.id) ? 'Desmarcar' : 'Concluir'}</button>` : '';
-  abrirSheetOuAtualizar(`
-    <h2 class="menu-tit">${esc(nomeMenu)}</h2>
-    <div class="menu">
-      ${concluir}
-      <button onclick="menuAcao('editar')">${ic('editar')}Editar</button>
-      <button class="perigo" onclick="menuAcao('excluir')">${ic('excluir')}Excluir</button>
-    </div>`);
+  const marcar = d.concluivel === '1' ? `<button role="menuitem" onclick="menuAcao('concluir')">${ic('check')}${estaFeita(d.tipo, d.id) ? 'Desmarcar' : 'Marcar'}</button>` : '';
+  const m = document.createElement('div');
+  m.className = 'menu-pop';
+  m.setAttribute('role', 'menu');
+  m.setAttribute('aria-label', nomeMenu);
+  m.innerHTML = `<p class="menu-tit" aria-hidden="true">${esc(nomeMenu)}</p>${marcar}
+    <button role="menuitem" onclick="menuAcao('editar')">${ic('editar')}Editar</button>
+    <button role="menuitem" class="perigo" onclick="menuAcao('excluir')">${ic('excluir')}Excluir</button>`;
+  m._abridor = document.activeElement;
+  document.body.appendChild(m);
+  const linha = document.querySelector(`#app .linha[data-id="${d.id}"]`);
+  const r = linha ? linha.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight / 2, width: 0, height: 0 };
+  const px = x ?? r.left + r.width / 2, py = y ?? r.top + r.height / 2;
+  const w = m.offsetWidth, hh = m.offsetHeight, margem = 16;
+  const left = Math.min(Math.max(margem, px - w / 2), innerWidth - w - margem);
+  const top = py + hh + margem > innerHeight ? Math.max(margem, py - hh) : py;
+  m.style.left = left + 'px'; m.style.top = top + 'px';
+  m.style.transformOrigin = `${px - left}px ${py - top}px`;
+  const M = Animacoes.MOV;
+  if(Animacoes.reduzido()) m.animate([{ opacity: 0 }, { opacity: 1 }], { duration: M.reduzida });
+  else m.animate([{ opacity: 0, transform: 'scale(0.92)' }, { opacity: 1, transform: 'scale(1)' }], { duration: M.rapida, easing: M.saida });
+  menuPop = m;
+  setTimeout(() => { const b = m.querySelector('button'); if(b) b.focus({ preventScroll: true }); }, 0);
 }
+document.addEventListener('pointerdown', e => { if(menuPop && !menuPop.contains(e.target)) fecharMenu(false); }, true);
+document.addEventListener('keydown', e => {
+  if(!menuPop) return;
+  if(e.key === 'Escape'){ e.stopImmediatePropagation(); fecharMenu(); return; }
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    const bs = [...menuPop.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
+    bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
+  }
+}, true);
 function menuAcao(acao){
   const d = menuAlvo;
+  fecharMenu(false);
   if(acao === 'editar'){ if(d.tipo === 'tarefa') editarTarefa(d.id); else sheetItem(d.id, d.sid); return; }
-  fecharSheet();
-  setTimeout(() => acao === 'concluir' ? concluirEntrada(d.tipo, d.id) : excluirEntrada(d.tipo, d.id), 60);
+  if(acao === 'concluir') concluirEntrada(d.tipo, d.id); else excluirEntrada(d.tipo, d.id);
+}
+
+let adicaoAberta = null, erroAdicao = '';
+function linhaAdicao(s){
+  if(adicaoAberta !== s.id) return `<div class="add-linha" data-chave="add-${s.id}"><button class="btn text inicio add-item" onclick="abrirAdicao('${s.id}')">${ic('add')} Adicionar item</button></div>`;
+  return `<div class="add-linha" data-chave="add-${s.id}">
+    <label class="sr" for="add-${s.id}">Nome do novo item em ${esc(s.nome)}</label>
+    <input id="add-${s.id}" class="add-campo" name="novo-item" autocomplete="off" enterkeyhint="done" placeholder="Nome do item" aria-describedby="erro-add-${s.id}" aria-invalid="${!!erroAdicao}"
+      onkeydown="teclaAdicao(event, '${s.id}')" onblur="setTimeout(() => saiuAdicao('${s.id}'), 0)">
+    <span class="erro" id="erro-add-${s.id}" role="alert">${esc(erroAdicao)}</span>
+  </div>`;
+}
+function abrirAdicao(sid){
+  adicaoAberta = sid; erroAdicao = '';
+  render();
+  const campo = document.getElementById('add-' + sid);
+  if(campo) campo.focus();
+}
+function fecharAdicao(){ if(!adicaoAberta) return; adicaoAberta = null; erroAdicao = ''; render(); }
+function saiuAdicao(sid){
+  const campo = document.getElementById('add-' + sid);
+  if(adicaoAberta === sid && campo && document.activeElement !== campo && !campo.value.trim()) fecharAdicao();
+}
+function teclaAdicao(e, sid){
+  if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); fecharAdicao(); return; }
+  if(e.key !== 'Enter') return;
+  e.preventDefault();
+  const campo = e.currentTarget;
+  const nome = campo.value.trim();
+  if(!nome) return;
+  const erro = Regras.validarTitulo(nome);
+  if(erro){ erroAdicao = erro; campo.setAttribute('aria-invalid', 'true'); document.getElementById('erro-add-' + sid).textContent = erro; return; }
+  const s = secaoDe(sid); if(!s) return;
+  erroAdicao = '';
+  s.itens.push({ id: uid(), nome, detalhe: '', criadoEm: diaSel, notas: null, horario: null, dias: Regras.TODOS_OS_DIAS.slice(), lembreteMin: null });
+  salvar();
+  campo.value = '';
+  render();
+  const atual = document.getElementById('add-' + sid);
+  if(atual){ atual.value = ''; atual.setAttribute('aria-invalid', 'false'); atual.focus(); }
 }
 
 /* ---------- navegação (botão voltar do Android funciona) ---------- */
@@ -1195,6 +1291,7 @@ function telaHoje(){
           <span class="emo" aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
         </button>
         ${pendentes.length ? `<div class="lista">${pendentes.map(e => linhaEntrada(e, s, false)).join('')}</div>` : ''}
+        ${linhaAdicao(s)}
       </section>`;
     });
   });
