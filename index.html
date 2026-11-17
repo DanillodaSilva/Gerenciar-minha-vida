@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
 <title>Rotina</title>
 <link rel="manifest" href="manifest.webmanifest">
+<script>if(window.androidBridge)document.write('<script src="capacitor.js"><\/script>')</script>
 <script>try{var a=JSON.parse(localStorage.getItem('rotina-app-v1')||'{}').ajustes;if(a&&(a.tema==='light'||a.tema==='dark'))document.documentElement.setAttribute('data-theme',a.tema)}catch(e){}</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -374,6 +375,9 @@
   .secao-linha .icon-btn.perigo{color:var(--danger)}
   .sobre{display:flex;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap}
   .sobre span{color:var(--text-secondary)}
+  .boas-vindas{background:var(--primary-container);border:0;text-align:left}
+  .boas-vindas h2{margin:0 0 var(--space-2);font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--on-container)}
+  .boas-vindas .hint{color:var(--on-container)}
   .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--fab-h) + var(--space-5) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
@@ -409,6 +413,14 @@
      feitos: { "AAAA-MM-DD": [idItem, ...] } }
    ========================================================= */
 const CHAVE = 'rotina-app-v1';
+const NATIVO = !!(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform() && Capacitor.registerPlugin);
+const plugin = nome => NATIVO ? (Capacitor.Plugins[nome] || Capacitor.registerPlugin(nome)) : null;
+const temaEscuro = () => { const t = dados && dados.ajustes ? dados.ajustes.tema : 'system'; return t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches); };
+function ajustarBarras(){
+  if(!NATIVO) return;
+  plugin('SystemBars').setStyle({ style: temaEscuro() ? 'DARK' : 'LIGHT' }).catch(() => {});
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ajustarBarras);
 const VERSAO = '1.1.0';
 const tokenCss = nome => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
 const CORES_TEMA = { get light(){ return tokenCss('--p-sand-50'); }, get dark(){ return tokenCss('--p-night-950'); } };
@@ -420,6 +432,7 @@ function aplicarTema(){
     const doSistema = m.media.includes('dark') ? CORES_TEMA.dark : CORES_TEMA.light;
     m.content = t === 'light' || t === 'dark' ? CORES_TEMA[t] : doSistema;
   });
+  ajustarBarras();
 }
 function mudarTema(t){ dados.ajustes.tema = t; salvar(); aplicarTema(); render(); }
 const { CORES, corTokenDe } = Regras;
@@ -500,7 +513,10 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 /* ---------- concluir, excluir e desfazer ---------- */
 function teclaBotao(e, el){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); el.click(); } }
 const durMs = nome => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(nome)) || 0;
-const vibrar = () => { try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){} };
+const vibrar = () => {
+  if(NATIVO){ plugin('Haptics').impact({ style: 'LIGHT' }).catch(() => {}); return; }
+  try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){}
+};
 function marcarItem(idItem, dia, valor){
   const lista = dados.feitos[dia] || [];
   const tem = lista.includes(idItem);
@@ -833,7 +849,12 @@ function telaHoje(){
   concluidas.sort(([, a], [, b]) => (a.tipo === 'tarefa') - (b.tipo === 'tarefa') || String(b.obj.completedAt || '').localeCompare(String(a.obj.completedAt || '')));
   let corpo;
   if(!r.total){
-    corpo = blocoAtrasadas + `<div class="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
+    const boasVindas = NATIVO && !dados.secoes.length && !dados.tarefas.length && !dados.ajustes.boasVindasOk ? `<div class="card boas-vindas">
+      <h2>Já usava o Minha Rotina no navegador?</h2>
+      <p class="hint">No app antigo, abra Ajustes e toque em Exportar tarefas. Depois importe o arquivo aqui para trazer tudo.</p>
+      <div class="row mt"><button class="btn" onclick="importarBackup()">Importar backup</button><button class="btn ghost" onclick="dados.ajustes.boasVindasOk=true;salvar();render()">Começar do zero</button></div>
+    </div>` : '';
+    corpo = boasVindas + blocoAtrasadas + `<div class="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
       <button class="btn" onclick="novaTarefa()">Adicionar tarefa</button></div>`;
   } else {
     const tudo = r.feitas === r.total ? `<div class="vazio tudo-feito" role="status">${ic('hoje','lg')}<p><b>${ehHoje ? 'Tudo feito por hoje' : 'Tudo feito neste dia'}</b><br><small>${r.feitas} de ${r.total} concluídas</small></p></div>` : '';
@@ -1418,8 +1439,18 @@ function arquivoBackup(){
   const texto = JSON.stringify(Regras.montarBackup(dados, new Date().toISOString()), null, 2);
   return new File([texto], 'rotina-backup-' + hoje() + '.json', { type: 'application/json' });
 }
+async function exportarNativo(){
+  const nome = 'rotina-backup-' + hoje() + '.json';
+  try{
+    const r = await plugin('Filesystem').writeFile({ path: nome, data: JSON.stringify(Regras.montarBackup(dados, new Date().toISOString()), null, 2), directory: 'CACHE', encoding: 'utf8' });
+    await plugin('Share').share({ title: 'Backup da rotina', dialogTitle: 'Salvar ou enviar o backup', files: [r.uri] });
+  }catch(e){
+    if(!/cancel/i.test(String(e && (e.message || e)))) toast('Não foi possível exportar o backup');
+  }
+}
 function exportar(){
   finalizarSnack();
+  if(NATIVO){ exportarNativo(); return; }
   const arq = arquivoBackup();
   const a = document.createElement('a');
   a.href = URL.createObjectURL(arq);
@@ -1428,7 +1459,7 @@ function exportar(){
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   toast('Backup salvo em Downloads');
 }
-const podeCompartilhar = () => { try{ return !!(navigator.canShare && navigator.canShare({ files: [new File(['{}'], 'x.json', { type: 'application/json' })] })); }catch(e){ return false; } };
+const podeCompartilhar = () => { if(NATIVO) return false; try{ return !!(navigator.canShare && navigator.canShare({ files: [new File(['{}'], 'x.json', { type: 'application/json' })] })); }catch(e){ return false; } };
 async function compartilharBackup(){
   finalizarSnack();
   try{ await navigator.share({ files: [arquivoBackup()], title: 'Backup da rotina' }); }
@@ -1469,8 +1500,8 @@ function agendarMeiaNoite(){
 agendarMeiaNoite();
 document.addEventListener('visibilitychange', () => { if(!document.hidden) conferirDia(); });
 
-// faz funcionar offline e permite instalar como app
-if('serviceWorker' in navigator){
+// faz funcionar offline e permite instalar como app (no APK os arquivos já estão no aparelho)
+if(!NATIVO && 'serviceWorker' in navigator){
   try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 }
 
@@ -1486,6 +1517,7 @@ function iniciar(){
   try{ dados = carregar(); }
   catch(e){ dados = null; console.error('Falha ao carregar os dados:', e && e.message); telaErro(); return; }
   if(history.state) history.replaceState(null, '');
+  if(NATIVO) document.getElementById('arquivo').removeAttribute('accept');
   aplicarTema(); montarNav(); render();
 }
 iniciar();

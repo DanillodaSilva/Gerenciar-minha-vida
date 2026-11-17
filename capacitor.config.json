@@ -7,7 +7,7 @@
   },
   "plugins": {
     "SystemBars": {
-      "insetsHandling": "css",
+      "insetsHandling": "native",
       "style": "DEFAULT"
     },
     "LocalNotifications": {

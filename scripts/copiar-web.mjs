@@ -9,4 +9,5 @@ const arquivos = ['index.html', 'regras.js', 'manifest.webmanifest', 'sw.js', 'i
 rmSync(destino, { recursive: true, force: true });
 mkdirSync(destino);
 for (const a of arquivos) cpSync(join(raiz, a), join(destino, a), { recursive: true });
-console.log('www/ pronto com: ' + arquivos.join(', '));
+cpSync(join(raiz, 'node_modules', '@capacitor', 'core', 'dist', 'capacitor.js'), join(destino, 'capacitor.js'));
+console.log('www/ pronto com: ' + arquivos.join(', ') + ', capacitor.js');
