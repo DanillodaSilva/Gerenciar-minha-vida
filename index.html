@@ -34,9 +34,9 @@
     --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
     --radius-chip:8px; --radius-card:12px; --radius-sheet:16px; --radius-fab:16px; --radius-full:999px; --radius-check:6px; --radius-bar:4px;
     --border-width:1px; --border-focus:2px; --touch:48px;
-    --dur-toque:100ms; --dur-rapida:160ms; --dur-base:240ms; --dur-lenta:340ms; --dur-comemoracao:1100ms; --dur-reduzida:120ms;
+    --dur-toque:100ms; --dur-rapida:160ms; --dur-base:240ms; --dur-lenta:340ms; --dur-comemoracao:1100ms; --dur-reduzida:120ms; --dur-onda:400ms;
     --ease-saida:cubic-bezier(0.22, 1, 0.36, 1); --ease-entrada:cubic-bezier(0.4, 0, 1, 1); --ease-movimento:cubic-bezier(0.65, 0, 0.35, 1);
-    --ease-mola:var(--ease-saida); --teclado:0px; --press:0.97;
+    --ease-mola:var(--ease-saida); --teclado:0px; --press:0.97; --press-item:0.98; --risco:2px;
     --shadow-fab:0 3px 8px rgb(0 0 0 / .18), 0 1px 3px rgb(0 0 0 / .12);
     --shadow-sheet:0 -4px 16px rgb(0 0 0 / .16);
 
@@ -109,9 +109,9 @@
   @supports (transition-timing-function: linear(0, 1)){
     :root{ --ease-mola:linear(0, 0.051 4.2%, 0.166 8.3%, 0.309 12.5%, 0.456 16.7%, 0.591 20.8%, 0.708 25%, 0.803 29.2%, 0.877 33.3%, 0.932 37.5%, 0.970 41.7%, 0.996 45.8%, 1.011 50%, 1.019 54.2%, 1.022 58.3%, 1.022 62.5%, 1.020 66.7%, 1.017 70.8%, 1.013 75%, 1.010 79.2%, 1.008 83.3%, 1.005 87.5%, 1.003 91.7%, 1.002 95.8%, 1); }
   }
-  :root[data-animacoes="reduzidas"]{ --dur-toque:0ms; --dur-rapida:0ms; --dur-base:0ms; --dur-lenta:0ms; --press:1; }
+  :root[data-animacoes="reduzidas"]{ --dur-toque:0ms; --dur-rapida:0ms; --dur-base:0ms; --dur-lenta:0ms; --press:1; --press-item:1; }
   @media (prefers-reduced-motion: reduce){
-    :root{ --dur-toque:0ms; --dur-rapida:0ms; --dur-base:0ms; --dur-lenta:0ms; --press:1; }
+    :root{ --dur-toque:0ms; --dur-rapida:0ms; --dur-base:0ms; --dur-lenta:0ms; --press:1; --press-item:1; }
   }
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -178,11 +178,20 @@
   .check{width:var(--touch);height:var(--touch);flex:none;display:grid;place-items:center}
   .check i{width:var(--check-size);height:var(--check-size);border:var(--check-border) solid var(--c);border-radius:var(--radius-check);
     display:grid;place-items:center;color:transparent;transition:background var(--dur-rapida) var(--ease-saida),border-color var(--dur-rapida) var(--ease-saida),transform var(--dur-rapida) var(--ease-saida)}
-  .check i svg{width:var(--icon-sm);height:var(--icon-sm);fill:currentColor}
-  .item.done .check i,.check[aria-checked="true"] i{background:var(--c);border-color:var(--c);color:var(--on-primary)}
+  .check i svg{width:var(--icon-sm);height:var(--icon-sm);fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+  .check i svg path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset var(--dur-rapida) var(--ease-saida)}
+  .item.done .check i svg path{stroke-dashoffset:0;transition-delay:calc(var(--dur-rapida) * .35)}
+  .item.done .check i,.check[aria-pressed="true"] i{background:var(--c);border-color:var(--c);color:var(--on-primary)}
   .item .info{flex:1;min-width:0;padding:var(--space-2) 0;cursor:pointer}
-  .item .info b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-weight:var(--w-regular)}
-  .item.done .info b{text-decoration:line-through;color:var(--text-secondary)}
+  .item .info b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-weight:var(--w-regular);position:relative;width:fit-content;max-width:100%}
+  .item .info b::before,.item .info b::after{content:'';position:absolute;left:0;right:0;height:var(--risco);background:currentColor;border-radius:var(--radius-full);
+    transform:scaleX(0);transform-origin:left center;transition:transform var(--dur-base) var(--ease-saida);pointer-events:none}
+  .item .info b::after{top:calc(var(--lh-body) / 2 - var(--risco) / 2)}
+  .item .info b::before{top:calc(var(--lh-body) * 1.5 - var(--risco) / 2);display:none}
+  .item .info b.duas-linhas::before{display:block}
+  .item.done .info b::after{transform:scaleX(1)}
+  .item.done .info b::before{transform:scaleX(1);transition-delay:calc(var(--dur-base) * .4)}
+  .item.done .info b{color:var(--text-secondary)}
   .item .info small{display:block;color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta);overflow-wrap:anywhere}
   .item .more{width:var(--touch);height:var(--touch);border-radius:var(--radius-full);color:var(--text-secondary);display:grid;place-items:center;flex:none}
 
@@ -235,7 +244,7 @@
   .anel svg{width:var(--ring-size);height:var(--ring-size);transform:rotate(-90deg)}
   .anel circle{fill:none;stroke-width:var(--ring-stroke)}
   .anel .trilho{stroke:var(--primary-container)}
-  .anel .arco{stroke:var(--primary);stroke-linecap:round;transition:stroke-dasharray var(--dur-lenta) var(--ease-saida)}
+  .anel .arco{stroke:var(--primary);stroke-linecap:round;transition:stroke-dashoffset var(--dur-lenta) var(--ease-saida)}
   .anel .arco.zero{stroke:none}
   .anel span{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);white-space:nowrap}
   .grupo{margin-bottom:var(--space-3)}
@@ -250,7 +259,9 @@
   .lista .linha+.linha{border-top:var(--border-width) solid var(--divider-container)}
   .grupo.tinta .lista,.lista.tinta{background:var(--cc);border:0;--cc-item:var(--cc)}
   .linha{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden;content-visibility:auto;contain-intrinsic-size:auto var(--item-min-h)}
-  .linha .item{position:relative;transition:transform var(--dur-base) var(--ease-saida)}
+  .linha .item{position:relative;transition:transform var(--dur-toque) var(--ease-saida)}
+  .linha:active:not(.arrastando) .item{transform:scale(var(--press-item))}
+  .onda{position:absolute;border-radius:var(--radius-full);background:var(--c);pointer-events:none;opacity:0}
   .linha.arrastando .item{transition:none}
   .linha .fundo{position:absolute;inset:0;display:none;align-items:center;gap:var(--space-2);padding:0 var(--space-5);
     font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium)}
@@ -562,6 +573,35 @@ function definirFeita(tipo, id, valor){
   }
   marcarItem(id, diaSel, valor);
 }
+let ultimoToque = null;
+document.addEventListener('pointerdown', e => { ultimoToque = { x: e.clientX, y: e.clientY, alvo: e.target }; }, true);
+function onda(item, x, y){
+  if(!item || Animacoes.reduzido()) return;
+  const r = item.getBoundingClientRect();
+  const lado = Math.hypot(Math.max(x - r.left, r.right - x), Math.max(y - r.top, r.bottom - y)) * 2;
+  const el = document.createElement('span');
+  el.className = 'onda';
+  el.style.cssText = `width:${lado}px;height:${lado}px;left:${x - r.left - lado / 2}px;top:${y - r.top - lado / 2}px`;
+  item.appendChild(el);
+  el.animate([{ transform: 'scale(0.2)', opacity: 0.16 }, { transform: 'scale(1)', opacity: 0 }], { duration: Animacoes.MOV.onda, easing: Animacoes.MOV.saida })
+    .onfinish = () => el.remove();
+}
+function marcarComToque(e, tipo, id){
+  const item = e.currentTarget.closest('.item');
+  const vaiMarcar = !estaFeita(tipo, id);
+  const pt = ultimoToque && item && item.contains(ultimoToque.alvo) ? ultimoToque : null;
+  concluirEntrada(tipo, id);
+  if(vaiMarcar){
+    const r = item && item.getBoundingClientRect();
+    if(r) onda(item, pt ? pt.x : r.left + r.width / 2, pt ? pt.y : r.top + r.height / 2);
+  }
+}
+function marcarDuasLinhas(){
+  document.querySelectorAll('#app .item .info b').forEach(b => {
+    const lh = parseFloat(getComputedStyle(b).lineHeight) || 24;
+    b.classList.toggle('duas-linhas', b.scrollHeight > lh * 1.5);
+  });
+}
 const segurando = new Set();
 const timersMarcar = new Map();
 const ESPERA_CONCLUIDAS = 350;
@@ -763,6 +803,7 @@ function render(refazer = false){
   if(!refazer && telaDesenhada === chaveTela) Animacoes.flip(app, () => Animacoes.mesclarHtml(app, html));
   else { app.innerHTML = html; telaDesenhada = chaveTela; }
   if(tela === 'ajustes') atualizarEstadoNotif();
+  marcarDuasLinhas();
 }
 
 function seletorDia(){
@@ -781,7 +822,7 @@ function anel(feitas, total){
   if(!total) return '';
   const pct = Math.round(feitas / total * 100);
   return `<div class="anel" role="img" aria-label="${feitas} de ${total} concluídas">
-    <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="trilho" cx="24" cy="24" r="21.5"/><circle class="arco ${pct ? '' : 'zero'}" cx="24" cy="24" r="21.5" pathLength="100" stroke-dasharray="${pct} 100"/></svg>
+    <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="trilho" cx="24" cy="24" r="21.5"/><circle class="arco ${pct ? '' : 'zero'}" cx="24" cy="24" r="21.5" pathLength="100" stroke-dasharray="100" style="stroke-dashoffset:${100 - pct}"/></svg>
     <span aria-hidden="true">${feitas} de ${total}</span></div>`;
 }
 function linhaHoje(s, i, comSecao){
@@ -796,6 +837,7 @@ function linhaHoje(s, i, comSecao){
   if(i.horario && i.lembreteMin != null) partes.push(`<span class="rep">${ic('sino','sm')}<span class="sr">Com lembrete</span></span>`);
   return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
 }
+const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path pathLength="1" d="M5 12.5l4.2 4.2L19 7"/></svg>';
 const fundoLinha = f => `<div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Concluir'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>`;
 function linhaTarefa(t, o){
   const partes = [];
@@ -816,8 +858,8 @@ function itemTarefa(t, o = {}){
   return `<div class="linha" data-tipo="tarefa" data-id="${t.id}" data-sid="${s ? s.id : ''}" data-concluivel="1">
     ${fundoLinha(f)}
     <div class="item ${f ? 'done' : ''} ${t.priority === 'high' ? 'alta' : ''}" style="--c:${s ? corDe(s) : 'var(--primary)'}">
-      <button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(t.title)}" onclick="concluirEntrada('tarefa','${t.id}')"><i>${ic('check')}</i></button>
-      <div class="info" role="button" tabindex="0" onclick="editarTarefa('${t.id}')" onkeydown="teclaBotao(event, this)">
+      <button class="check" aria-pressed="${f}" aria-label="${esc(t.title)}, ${f ? 'feito' : 'não feito'}" onclick="marcarComToque(event,'tarefa','${t.id}')"><i>${CHECK_SVG}</i></button>
+      <div class="info" onclick="marcarComToque(event,'tarefa','${t.id}')">
         <b>${esc(t.title)}</b>${linhaTarefa(t, o)}
       </div>
       <button class="sr" onclick="abrirMenu(this.closest('.linha').dataset)">Mais ações: ${esc(t.title)}</button>
@@ -831,8 +873,8 @@ function itemHoje(s, i, comSecao, concluivel = true){
   return `<div class="linha" data-tipo="item" data-id="${i.id}" data-sid="${s.id}" data-concluivel="${concluivel ? 1 : 0}">
     ${fundoLinha(f)}
     <div class="item ${f ? 'done' : ''}" style="--c:${corDe(s)}">
-      ${concluivel ? `<button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(i.nome)}" onclick="concluirEntrada('item','${i.id}')"><i>${ic('check')}</i></button>` : ''}
-      <div class="info ${concluivel ? '' : 'sem-check'}" role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="teclaBotao(event, this)">
+      ${concluivel ? `<button class="check" aria-pressed="${f}" aria-label="${esc(i.nome)}, ${f ? 'feito' : 'não feito'}" onclick="marcarComToque(event,'item','${i.id}')"><i>${CHECK_SVG}</i></button>` : ''}
+      <div class="info ${concluivel ? '' : 'sem-check'}" ${concluivel ? `onclick="marcarComToque(event,'item','${i.id}')"` : `role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="teclaBotao(event, this)"`}>
         <b>${esc(i.nome)}</b>${linhaHoje(s, i, comSecao)}
       </div>
       <button class="sr" onclick="abrirMenu(this.closest('.linha').dataset)">Mais ações: ${esc(i.nome)}</button>

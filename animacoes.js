@@ -1,6 +1,6 @@
 (function (raiz) {
   const MOV = {
-    toque: 100, rapida: 160, base: 240, lenta: 340, comemoracao: 1100,
+    toque: 100, rapida: 160, base: 240, lenta: 340, comemoracao: 1100, onda: 400, contagem: 400,
     saida: 'cubic-bezier(0.22, 1, 0.36, 1)',
     entrada: 'cubic-bezier(0.4, 0, 1, 1)',
     movimento: 'cubic-bezier(0.65, 0, 0.35, 1)',

@@ -187,6 +187,7 @@ Fonte única de toda duração e curva. CSS lê as variáveis; o JavaScript usa 
 | `--dur-base` | 240ms | entrada de elementos, troca de aba, snackbar, saída da folha |
 | `--dur-lenta` | 340ms | folha inferior, troca de dia, reorganizar lista (FLIP) |
 | `--dur-comemoracao` | 1100ms | confete e comemoração do dia (única exceção ao limite de 400 ms) |
+| `--dur-onda` | 400ms | onda do toque ao marcar e contagem dos números (limite da interface) |
 
 - Saída ≈ 70% da entrada correspondente (folha: abre em 340 ms, fecha em 240 ms; elemento pequeno: entra em 240 ms, sai em 160 ms).
 - Nenhuma animação de interface passa de 400 ms, fora as comemorações.
