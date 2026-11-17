@@ -1,7 +1,7 @@
 // Service worker: guarda os arquivos do app no celular pra ele abrir mesmo sem internet.
 // Quando mudar algum arquivo do app, aumente a versão abaixo (v2, v3...) pra forçar a atualização.
 const CACHE = 'rotina-v4';
-const ARQUIVOS = ['./', './index.html', './regras.js', './animacoes.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+const ARQUIVOS = ['./', './index.html', './regras.js?v=1.3.0', './animacoes.js?v=1.3.0', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS)));

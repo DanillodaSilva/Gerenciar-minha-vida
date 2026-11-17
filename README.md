@@ -21,7 +21,7 @@ Pronto: o ícone aparece na tela inicial, o app abre em tela cheia e funciona at
 
 - **Backup:** se você limpar os dados do Chrome ou trocar de celular, os dados somem. Use **Ajustes → Exportar tarefas** de vez em quando
   (no site o arquivo vai pra pasta Downloads; no APK abre o compartilhamento do Android). Pra recuperar, use **Importar backup**.
-- **Atualizar o app:** se mudar algum arquivo, aumente o número do cache no `sw.js` (hoje `rotina-v3`; a próxima é `rotina-v4`) antes de subir. Assim o celular baixa a versão nova. Arquivo novo do app entra na lista `ARQUIVOS` do `sw.js`.
+- **Atualizar o app:** se mudar algum arquivo, aumente o número do cache no `sw.js` (hoje `rotina-v4`; a próxima é `rotina-v5`) e o `?v=` dos scripts no `index.html` e no `sw.js` (hoje `1.3.0`) antes de subir. Sem o `?v=`, o navegador pode juntar o `index.html` novo com um script antigo guardado em cache. Assim o celular baixa a versão nova. Arquivo novo do app entra na lista `ARQUIVOS` do `sw.js`.
 - **Testes:** `node --test` na pasta do projeto (Node 18 ou mais novo).
 - **Nunca mude o endereço do site** nem `start_url`/`scope` do manifest: os dados ficam presos ao endereço e sumiriam.
 
