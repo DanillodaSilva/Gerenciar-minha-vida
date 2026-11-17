@@ -1485,6 +1485,7 @@ function telaErro(){
 function iniciar(){
   try{ dados = carregar(); }
   catch(e){ dados = null; console.error('Falha ao carregar os dados:', e && e.message); telaErro(); return; }
+  if(history.state) history.replaceState(null, '');
   aplicarTema(); montarNav(); render();
 }
 iniciar();
