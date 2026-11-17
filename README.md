@@ -21,11 +21,13 @@ Pronto: o ícone aparece na tela inicial, o app abre em tela cheia e funciona at
 
 - **Backup:** se você limpar os dados do Chrome ou trocar de celular, os dados somem. Use **Ajustes → Salvar backup** de vez em quando
   (o arquivo vai pra pasta Downloads). Pra recuperar, use **Restaurar**.
-- **Atualizar o app:** se mudar algum arquivo, troque `rotina-v1` por `rotina-v2` no `sw.js` antes de subir. Assim o celular baixa a versão nova.
+- **Atualizar o app:** se mudar algum arquivo, aumente o número do cache no `sw.js` (hoje `rotina-v2`; a próxima é `rotina-v3`) antes de subir. Assim o celular baixa a versão nova. Arquivo novo do app entra na lista `ARQUIVOS` do `sw.js`.
+- **Testes:** `node --test` na pasta do projeto (Node 18 ou mais novo).
+- **Nunca mude o endereço do site** nem `start_url`/`scope` do manifest: os dados ficam presos ao endereço e sumiriam.
 
 ## Como a constância é calculada
 
 - Cada item da rotina conta como 1 tarefa por dia, a partir do dia em que foi criado.
 - % do dia = tarefas marcadas ÷ tarefas que existiam naquele dia. Ex.: fez 2 de 10 = 20%.
-- **Dias seguidos:** quantos dias em sequência você fez pelo menos 50% (o dia de hoje não quebra a sequência enquanto não acaba).
+- **Dias seguidos:** quantos dias em sequência você fez pelo menos 50% (o dia de hoje não quebra a sequência enquanto não acaba; dia sem nenhuma tarefa é pulado).
 - Esqueceu de marcar ontem? Use as setas **‹ ›** no topo pra voltar o dia.
