@@ -152,7 +152,7 @@
   const antecedencia = v => (ANTECEDENCIAS.includes(v) ? v : null);
   const TODOS_OS_DIAS = [1, 2, 3, 4, 5, 6, 7];
   const ehObjeto = x => x !== null && typeof x === 'object' && !Array.isArray(x);
-  const vazio = () => ({ schemaVersion: SCHEMA, secoes: [], feitos: {}, tarefas: [], ajustes: { tema: 'system' } });
+  const vazio = () => ({ schemaVersion: SCHEMA, secoes: [], feitos: {}, tarefas: [], ajustes: normalizarAjustes({}, false) });
 
   function diasValidos(dias) {
     if (!Array.isArray(dias)) return null;
@@ -160,15 +160,33 @@
     return v.length ? v : null;
   }
 
+  function normalizarAjustes(a, temDados) {
+    const ajustes = ehObjeto(a) ? a : {};
+    const marco = ehObjeto(ajustes.ultimoMarco) && ehData(ajustes.ultimoMarco.inicio) && Number.isInteger(ajustes.ultimoMarco.valor) ? ajustes.ultimoMarco : null;
+    return {
+      ...ajustes,
+      tema: ['system', 'light', 'dark'].includes(ajustes.tema) ? ajustes.tema : 'system',
+      nome: typeof ajustes.nome === 'string' ? Array.from(ajustes.nome).slice(0, 24).join('') : '',
+      animacoes: ajustes.animacoes === 'reduzidas' ? 'reduzidas' : 'auto',
+      vibracao: typeof ajustes.vibracao === 'boolean' ? ajustes.vibracao : true,
+      sons: typeof ajustes.sons === 'boolean' ? ajustes.sons : false,
+      dicaGestoVista: ajustes.dicaGestoVista === true,
+      boasVindasVista: typeof ajustes.boasVindasVista === 'boolean' ? ajustes.boasVindasVista : (!!temDados || ajustes.boasVindasOk === true),
+      ultimaComemoracao: ehData(ajustes.ultimaComemoracao) ? ajustes.ultimaComemoracao : null,
+      ultimoMarco: marco,
+    };
+  }
+
   function normalizar(d) {
     const feitos = ehObjeto(d.feitos) ? d.feitos : {};
     const ajustes = ehObjeto(d.ajustes) ? d.ajustes : {};
+    const temDados = d.secoes.length > 0 || Object.keys(feitos).length > 0 || (Array.isArray(d.tarefas) && d.tarefas.length > 0);
     return {
       ...d,
       schemaVersion: SCHEMA,
       feitos,
       tarefas: (Array.isArray(d.tarefas) ? d.tarefas : []).map(t => (ehObjeto(t) ? { ...t, reminderOffsetMin: antecedencia(t.reminderOffsetMin) } : t)),
-      ajustes: { ...ajustes, tema: ['system', 'light', 'dark'].includes(ajustes.tema) ? ajustes.tema : 'system' },
+      ajustes: normalizarAjustes(ajustes, temDados),
       secoes: d.secoes.filter(ehObjeto).map(s => ({
         ...s,
         corToken: corTokenDe(s),
@@ -271,7 +289,7 @@
   const textoComemoracao = (feitos, sequencia) => feitos + ' de ' + feitos + ' feitos · sequência de ' + sequencia + (sequencia === 1 ? ' dia' : ' dias');
   const contarTarefas = d => d.secoes.reduce((a, s) => a + s.itens.length, 0) + (d.tarefas || []).length;
 
-  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
+  const Regras = { normalizarAjustes, CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
     APP, montarBackup, lerBackup, contarTarefas,

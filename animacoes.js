@@ -146,6 +146,30 @@
     requestAnimationFrame(passo);
   }
 
+  const SONS = { volume: 0.08, tique: { freq: [880], dur: 40 }, comemoracao: { freq: [523, 659, 784], dur: 120 } };
+  let audio = null;
+  function prepararAudio() {
+    if (audio || typeof window === 'undefined') return audio;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) audio = new Ctx();
+    return audio;
+  }
+  function tocar(tipo) {
+    const ctx = audio;
+    const s = SONS[tipo];
+    if (!ctx || !s) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    s.freq.forEach((freq, i) => {
+      const ini = ctx.currentTime + i * s.dur / 1000;
+      const osc = ctx.createOscillator(), ganho = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      ganho.gain.setValueAtTime(SONS.volume, ini);
+      ganho.gain.exponentialRampToValueAtTime(0.0001, ini + s.dur / 1000);
+      osc.connect(ganho).connect(ctx.destination);
+      osc.start(ini); osc.stop(ini + s.dur / 1000 + 0.01);
+    });
+  }
+
   function sair(el, depois) {
     if (!el || reduzido()) { depois(); return; }
     const a = el.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.98)' }], { duration: MOV.rapida, easing: MOV.entrada, fill: 'forwards' });
@@ -153,7 +177,7 @@
     a.oncancel = depois;
   }
 
-  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar, confete };
+  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar, confete, prepararAudio, tocar, SONS };
   if (typeof module !== 'undefined' && module.exports) module.exports = Animacoes;
   else raiz.Animacoes = Animacoes;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

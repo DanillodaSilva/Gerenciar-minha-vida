@@ -86,7 +86,8 @@ describe('migração v1 → atual', () => {
     assert.equal(deVersao, 1);
     assert.equal(dados.schemaVersion, R.SCHEMA);
     assert.deepEqual(dados.tarefas, []);
-    assert.deepEqual(dados.ajustes, { tema: 'system' });
+    assert.deepEqual(dados.ajustes, R.normalizarAjustes({}, true));
+    assert.equal(dados.ajustes.boasVindasVista, true);
     assert.deepEqual(dados.feitos, v1.feitos);
     const s = dados.secoes[0];
     assert.equal(s.corToken, 'blue');
@@ -455,5 +456,29 @@ describe('comemoração do dia', () => {
   test('texto do cartão, com singular', () => {
     assert.equal(R.textoComemoracao(7, 4), '7 de 7 feitos · sequência de 4 dias');
     assert.equal(R.textoComemoracao(3, 1), '3 de 3 feitos · sequência de 1 dia');
+  });
+});
+
+describe('normalizarAjustes', () => {
+  test('objeto vazio recebe todos os padrões da 5.16', () => {
+    assert.deepEqual(R.normalizarAjustes({}, false), { tema: 'system', nome: '', animacoes: 'auto', vibracao: true, sons: false, dicaGestoVista: false, boasVindasVista: false, ultimaComemoracao: null, ultimoMarco: null });
+  });
+  test('com dados existentes, boasVindasVista = true (e o campo antigo do APK também conta)', () => {
+    assert.equal(R.normalizarAjustes({}, true).boasVindasVista, true);
+    assert.equal(R.normalizarAjustes({ boasVindasOk: true }, false).boasVindasVista, true);
+    assert.equal(R.migrar(JSON.stringify({ secoes: [{ id: 's', itens: [] }] })).dados.ajustes.boasVindasVista, true);
+    assert.equal(R.migrar(null).dados.ajustes.boasVindasVista, false);
+  });
+  test('campo desconhecido é preservado; valores inválidos voltam ao padrão', () => {
+    const a = R.normalizarAjustes({ extra: 7, animacoes: 'muito', vibracao: 'sim', nome: 'x'.repeat(30), ultimoMarco: { inicio: '2026-11-10', valor: 7 } }, true);
+    assert.equal(a.extra, 7);
+    assert.equal(a.animacoes, 'auto');
+    assert.equal(a.vibracao, true);
+    assert.equal(a.nome.length, 24);
+    assert.deepEqual(a.ultimoMarco, { inicio: '2026-11-10', valor: 7 });
+  });
+  test('normalizar duas vezes não muda nada', () => {
+    const uma = R.migrar(JSON.stringify({ secoes: [], feitos: {}, ajustes: { nome: 'Ana', sons: true } })).dados;
+    assert.equal(R.migrar(JSON.stringify(uma)).migrou, false);
   });
 });

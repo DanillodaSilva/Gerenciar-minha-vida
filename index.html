@@ -8,7 +8,7 @@
 <title>Rotina</title>
 <link rel="manifest" href="manifest.webmanifest">
 <script>if(window.androidBridge)document.write('<script src="capacitor.js"><\/script>')</script>
-<script>try{var a=JSON.parse(localStorage.getItem('rotina-app-v1')||'{}').ajustes;if(a&&(a.tema==='light'||a.tema==='dark'))document.documentElement.setAttribute('data-theme',a.tema)}catch(e){}</script>
+<script>try{var a=JSON.parse(localStorage.getItem('rotina-app-v1')||'{}').ajustes;if(a&&(a.tema==='light'||a.tema==='dark'))document.documentElement.setAttribute('data-theme',a.tema);if(a&&a.animacoes==='reduzidas')document.documentElement.setAttribute('data-animacoes','reduzidas')}catch(e){}</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
@@ -296,6 +296,16 @@
   .add-linha .add-item{color:var(--text-secondary)}
   .add-linha input{background:var(--surface)}
   .toast .barra{position:absolute;left:var(--space-3);right:var(--space-3);bottom:0;height:var(--alca-h);border-radius:var(--radius-full);background:var(--snack-action);transform-origin:left center;opacity:.8}
+  .interruptor{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);min-height:var(--touch);width:100%;text-align:left;font-size:var(--fs-body)}
+  .interruptor .sw{position:relative;flex:none;width:calc(var(--space-6) * 1.625);height:var(--space-6);border-radius:var(--radius-full);background:var(--surface-variant);
+    border:var(--check-border) solid var(--border-strong);transition:background-color var(--dur-rapida) var(--ease-saida),border-color var(--dur-rapida) var(--ease-saida)}
+  .interruptor .sw::after{content:'';position:absolute;top:calc(var(--space-1) - var(--check-border));left:calc(var(--space-1) - var(--check-border));
+    width:calc(var(--space-6) - var(--space-2));height:calc(var(--space-6) - var(--space-2));border-radius:var(--radius-full);background:var(--border-strong);
+    transition:transform var(--dur-rapida) var(--ease-mola),background-color var(--dur-rapida) var(--ease-saida)}
+  .interruptor[aria-checked="true"] .sw{background:var(--primary);border-color:var(--primary)}
+  .interruptor[aria-checked="true"] .sw::after{background:var(--on-primary);transform:translateX(calc(var(--space-6) * .625))}
+  .experiencia label{margin-bottom:var(--space-3)}
+  .experiencia .rotulo-grupo{display:block;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary);margin:var(--space-2) 0 0}
   .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
   .hoje-tit{flex:1;min-width:0}
   .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
@@ -519,7 +529,19 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ajustarBar
 const VERSAO = '1.2.0';
 const tokenCss = nome => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
 const CORES_TEMA = { get light(){ return tokenCss('--p-sand-50'); }, get dark(){ return tokenCss('--p-night-950'); } };
+function aplicarAnimacoes(){
+  if(dados && dados.ajustes.animacoes === 'reduzidas') document.documentElement.setAttribute('data-animacoes', 'reduzidas');
+  else document.documentElement.removeAttribute('data-animacoes');
+}
+function mudarNome(v){ dados.ajustes.nome = Array.from(v).slice(0, 24).join(''); salvar(); }
+function mudarAnimacoes(v){ dados.ajustes.animacoes = v; salvar(); aplicarAnimacoes(); render(); }
+function alternarAjuste(chave){
+  dados.ajustes[chave] = !dados.ajustes[chave]; salvar(); render();
+  if(chave === 'sons' && dados.ajustes.sons){ Animacoes.prepararAudio(); Animacoes.tocar('tique'); }
+  if(chave === 'vibracao' && dados.ajustes.vibracao) vibrar();
+}
 function aplicarTema(){
+  aplicarAnimacoes();
   const t = dados && dados.ajustes ? dados.ajustes.tema : 'system';
   const raiz = document.documentElement;
   if(t === 'light' || t === 'dark') raiz.setAttribute('data-theme', t); else raiz.removeAttribute('data-theme');
@@ -646,6 +668,7 @@ if(window.visualViewport){
   visualViewport.addEventListener('scroll', ajustarTeclado);
 }
 const vibrar = (padrao = 10) => {
+  if(dados && dados.ajustes.vibracao === false) return;
   if(NATIVO){ plugin('Haptics').impact({ style: 'LIGHT' }).catch(() => {}); return; }
   try{ if(navigator.vibrate) navigator.vibrate(padrao); }catch(e){}
 };
@@ -712,6 +735,7 @@ function mostrarCartao(titulo, linha, icone, depois){
 }
 function comemorarDiaCompleto(total){
   vibrar([15, 40, 15, 40, 30]);
+  if(dados.ajustes.sons) Animacoes.tocar('comemoracao');
   const anelEl = document.querySelector('#app .anel .circ');
   if(anelEl && !Animacoes.reduzido()){
     const r = anelEl.getBoundingClientRect();
@@ -721,7 +745,7 @@ function comemorarDiaCompleto(total){
   mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), ic('hoje'));
 }
 let ultimoToque = null;
-document.addEventListener('pointerdown', e => { ultimoToque = { x: e.clientX, y: e.clientY, alvo: e.target }; }, true);
+document.addEventListener('pointerdown', e => { ultimoToque = { x: e.clientX, y: e.clientY, alvo: e.target }; if(dados && dados.ajustes.sons) Animacoes.prepararAudio(); }, true);
 function onda(item, x, y){
   if(!item || Animacoes.reduzido()) return;
   const r = item.getBoundingClientRect();
@@ -774,6 +798,7 @@ function concluirEntrada(tipo, id){
   render();
   if(secaoCompletou) comemorarSecao(s.id);
   if(comemorarDia) setTimeout(() => comemorarDiaCompleto(depoisDia.total), Animacoes.MOV.rapida);
+  if(valor && !comemorarDia && dados.ajustes.sons) Animacoes.tocar('tique');
   if(valor){
     if(!secaoCompletou && !comemorarDia) vibrar();
     snack('Tarefa concluída', () => { segurando.delete(id); const d0 = diaSel; diaSel = dia; definirFeita(tipo, id, false); diaSel = d0; salvar(); render(); });
@@ -1508,8 +1533,20 @@ function telaAjustes(){
       <button class="icon-btn perigo" onclick="pedirExcluirSecao('${s.id}')" aria-label="Excluir ${esc(s.nome)}">${ic('excluir')}</button>
     </div>`;
   }).join('');
+  const aj = dados.ajustes;
+  const temVibracao = NATIVO || typeof navigator.vibrate === 'function';
+  const interruptor = (chave, rotulo) => `<button class="interruptor" role="switch" aria-checked="${!!aj[chave]}" onclick="alternarAjuste('${chave}')"><span>${rotulo}</span><span class="sw" aria-hidden="true"></span></button>`;
+  const opcaoAnim = (id, rotulo) => `<button class="opcao" role="radio" aria-checked="${aj.animacoes === id}" onclick="mudarAnimacoes('${id}')"><span class="radio"></span>${rotulo}</button>`;
   return `
     <header class="top"><h1>Ajustes</h1></header>
+    <div class="card experiencia" data-chave="experiencia">
+      <h2>Experiência</h2>
+      <label>Seu nome<input id="f-meu-nome" name="nome-usuario" autocomplete="given-name" maxlength="24" value="${esc(aj.nome)}" placeholder="Opcional" oninput="mudarNome(this.value)"></label>
+      <span class="rotulo-grupo" id="rot-anim">Animações</span>
+      <div class="opcoes" role="radiogroup" aria-labelledby="rot-anim">${opcaoAnim('auto', 'Automático (segue o sistema)')}${opcaoAnim('reduzidas', 'Reduzidas')}</div>
+      ${temVibracao ? interruptor('vibracao', 'Vibração') : ''}
+      ${interruptor('sons', 'Sons')}
+    </div>
     <div class="card">
       <h2 id="rot-tema">Tema</h2>
       <div class="opcoes" role="radiogroup" aria-labelledby="rot-tema">

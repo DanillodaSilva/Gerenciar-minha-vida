@@ -28,3 +28,12 @@ describe('tokens de movimento', () => {
   });
   test('sem DOM, reduzir movimento é verdadeiro (nada anima fora do navegador)', () => assert.equal(A.reduzido(), true));
 });
+
+describe('sons', () => {
+  test('tique: 880 Hz, 40 ms; comemoração: 523, 659 e 784 Hz de 120 ms; volume 0,08', () => {
+    assert.deepEqual(A.SONS.tique, { freq: [880], dur: 40 });
+    assert.deepEqual(A.SONS.comemoracao, { freq: [523, 659, 784], dur: 120 });
+    assert.equal(A.SONS.volume, 0.08);
+  });
+  test('sem contexto de áudio criado, tocar não faz nada', () => assert.doesNotThrow(() => A.tocar('tique')));
+});
