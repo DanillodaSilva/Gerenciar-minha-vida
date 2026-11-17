@@ -482,3 +482,23 @@ describe('normalizarAjustes', () => {
     assert.equal(R.migrar(JSON.stringify(uma)).migrou, false);
   });
 });
+
+describe('marcos de sequência', () => {
+  const m = (sequencia, ultimoMarco, inicioSequencia = '2026-11-10') => R.marcoParaComemorar({ sequencia, inicioSequencia, ultimoMarco });
+  test('casos da especificação', () => {
+    assert.equal(m(3, null), 3);
+    assert.equal(m(5, { inicio: '2026-11-10', valor: 3 }), null);
+    assert.equal(m(7, { inicio: '2026-11-10', valor: 3 }), 7);
+    assert.equal(m(7, { inicio: '2026-10-01', valor: 30 }), 7);
+    assert.equal(m(2, null), null);
+    assert.equal(m(365, { inicio: '2026-11-10', valor: 200 }), 365);
+  });
+  test('início e maior sequência pela regra de 50%', () => {
+    const d = base([item('a', '2026-11-01')], { '2026-11-05': ['a'], '2026-11-06': ['a'], '2026-11-07': ['a'], '2026-11-08': ['a'], '2026-11-15': ['a'], '2026-11-16': ['a'] });
+    assert.equal(R.sequencia(d, HOJE), 2);
+    assert.equal(R.inicioSequencia(d, HOJE), '2026-11-15');
+    assert.equal(R.maiorSequencia(d, HOJE), 4);
+    assert.equal(R.inicioSequencia({ secoes: [], feitos: {} }, HOJE), null);
+    assert.equal(R.maiorSequencia({ secoes: [], feitos: {} }, HOJE), 0);
+  });
+});

@@ -128,6 +128,37 @@
     return seq;
   }
 
+  function inicioSequencia(dados, hoje) {
+    let inicio = null;
+    for (let d = hoje, i = 0; i < LIMITE_SEQUENCIA; i++, d = somaDias(d, -1)) {
+      const r = resumoDia(dados, d);
+      if (!r.total) continue;
+      if (r.pct >= 50) inicio = d;
+      else if (d === hoje) continue;
+      else break;
+    }
+    return inicio;
+  }
+  function maiorSequencia(dados, hoje) {
+    const datas = [...Object.keys(dados.feitos), ...dados.secoes.flatMap(s => s.itens.map(i => i.criadoEm)), ...(dados.tarefas || []).map(t => t.dueDate).filter(Boolean)].filter(d => d <= hoje).sort();
+    if (!datas.length) return 0;
+    let maior = 0, atual = 0;
+    for (let d = datas[0]; d <= hoje; d = somaDias(d, 1)) {
+      const r = resumoDia(dados, d);
+      if (!r.total) continue;
+      if (r.pct >= 50) { atual++; maior = Math.max(maior, atual); }
+      else if (d !== hoje) atual = 0;
+    }
+    return maior;
+  }
+  const MARCOS = [3, 7, 14, 30, 60, 100, 200, 365];
+  function marcoParaComemorar({ sequencia, inicioSequencia, ultimoMarco }) {
+    const marco = MARCOS.filter(m => m <= sequencia).pop();
+    if (!marco) return null;
+    if (ultimoMarco && ultimoMarco.inicio === inicioSequencia && ultimoMarco.valor >= marco) return null;
+    return marco;
+  }
+
   const LIMITE_SECOES = 20;
   const tamanho = t => Array.from(String(t || '').trim()).length;
   function validarTitulo(t) {
@@ -293,7 +324,7 @@
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
     APP, montarBackup, lerBackup, contarTarefas,
-    ANTECEDENCIAS, idNotificacao, lembretesPendentes, periodo, saudacao, fraseProgresso, deveComemorarDia, textoComemoracao };
+    ANTECEDENCIAS, idNotificacao, lembretesPendentes, periodo, saudacao, fraseProgresso, deveComemorarDia, textoComemoracao, inicioSequencia, maiorSequencia, MARCOS, marcoParaComemorar };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

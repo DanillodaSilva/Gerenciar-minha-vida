@@ -283,6 +283,7 @@
   .comemoracao .cartao{background:var(--surface);border-radius:var(--radius-sheet);box-shadow:var(--shadow-sheet);padding:var(--space-5);max-width:var(--dialog-max);width:100%;
     text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
   .comemoracao .cartao svg{width:var(--icon-lg);height:var(--icon-lg);color:var(--primary)}
+  .comemoracao .cartao svg.chama{color:var(--priority-high)}
   .comemoracao h2{margin:0;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold)}
   .comemoracao p{margin:0;color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
   .confete{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:39}
@@ -729,7 +730,7 @@ let cartaoAberto = null;
 function fecharCartao(){
   const c = cartaoAberto; if(!c) return;
   cartaoAberto = null; clearTimeout(c._timer);
-  const fim = () => { c.remove(); if(c._depois) c._depois(); };
+  const fim = () => { c.remove(); if(c._depois) setTimeout(c._depois, Animacoes.MOV.toque); };
   if(Animacoes.reduzido()) return fim();
   c.querySelector('.cartao').animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.96)' }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim;
 }
@@ -740,7 +741,7 @@ function mostrarCartao(titulo, linha, icone, depois){
   c.setAttribute('role', 'status');
   c.setAttribute('aria-live', 'polite');
   c.innerHTML = `<div class="cartao">${icone}<h2>${esc(titulo)}</h2><p>${esc(linha)}</p></div>`;
-  c.addEventListener('pointerdown', fecharCartao);
+  c.addEventListener('pointerdown', e => { e.preventDefault(); fecharCartao(); });
   document.body.appendChild(c);
   cartaoAberto = c; c._depois = depois;
   const M = Animacoes.MOV;
@@ -748,7 +749,21 @@ function mostrarCartao(titulo, linha, icone, depois){
   else c.querySelector('.cartao').animate([{ opacity: 0, transform: 'scale(0.9)' }, { opacity: 1, transform: 'scale(1)' }], { duration: M.lenta, easing: Animacoes.curvaMola() });
   c._timer = setTimeout(fecharCartao, M.cartao);
 }
-function comemorarDiaCompleto(total){
+function verificarMarco(){
+  const v = visao(), hj = hoje();
+  const sequencia = Regras.sequencia(v, hj);
+  const inicio = Regras.inicioSequencia(v, hj);
+  const valor = Regras.marcoParaComemorar({ sequencia, inicioSequencia: inicio, ultimoMarco: dados.ajustes.ultimoMarco });
+  if(!valor) return null;
+  dados.ajustes.ultimoMarco = { inicio, valor };
+  return { valor, recorde: sequencia >= Regras.maiorSequencia(v, hj) };
+}
+const CHAMA = '<svg class="chama" viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M25 4c2 8 11 13 11 24a12 12 0 0 1-24 0c0-6 3-9 6-12 0 4 2 7 5 8-2-7 0-13 2-20z"/><path fill="var(--surface)" opacity=".55" d="M24 26c1 4 5 6 5 10a5 5 0 0 1-10 0c0-3 2-5 5-10z"/></svg>';
+function comemorarMarco({ valor, recorde }){
+  vibrar([12, 30, 12]);
+  mostrarCartao(valor + ' dias seguidos', recorde ? 'Sua maior sequência até agora.' : 'Continue assim.', CHAMA);
+}
+function comemorarDiaCompleto(total, depois){
   vibrar([15, 40, 15, 40, 30]);
   if(dados.ajustes.sons) Animacoes.tocar('comemoracao');
   const anelEl = document.querySelector('#app .anel .circ');
@@ -757,7 +772,7 @@ function comemorarDiaCompleto(total){
     const cor = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
     Animacoes.confete(r.left + r.width / 2, r.top + r.height / 2, ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor));
   }
-  mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), ic('hoje'));
+  mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), ic('hoje'), depois);
 }
 let ultimoToque = null;
 document.addEventListener('pointerdown', e => { ultimoToque = { x: e.clientX, y: e.clientY, alvo: e.target }; if(dados && dados.ajustes.sons) Animacoes.prepararAudio(); }, true);
@@ -805,6 +820,7 @@ function concluirEntrada(tipo, id){
   const depoisDia = resumoDia(dia);
   const comemorarDia = valor && antesDia.feitas < antesDia.total && Regras.deveComemorarDia({ data: dia, hoje: hoje(), percentual: depoisDia.pct, ultimaComemoracao: dados.ajustes.ultimaComemoracao });
   if(comemorarDia) dados.ajustes.ultimaComemoracao = dia;
+  const marco = valor ? verificarMarco() : null;
   salvar();
   const depoisSecao = s && resumoDia(dia, s);
   const secaoCompletou = valor && s && antesSecao.total && antesSecao.feitas < antesSecao.total && depoisSecao.feitas === depoisSecao.total;
@@ -812,7 +828,8 @@ function concluirEntrada(tipo, id){
   if(valor) segurando.add(id); else segurando.delete(id);
   render();
   if(secaoCompletou) comemorarSecao(s.id);
-  if(comemorarDia) setTimeout(() => comemorarDiaCompleto(depoisDia.total), Animacoes.MOV.rapida);
+  if(comemorarDia) setTimeout(() => comemorarDiaCompleto(depoisDia.total, marco ? () => comemorarMarco(marco) : null), Animacoes.MOV.rapida);
+  else if(marco) setTimeout(() => comemorarMarco(marco), Animacoes.MOV.rapida);
   if(valor && !comemorarDia && dados.ajustes.sons) Animacoes.tocar('tique');
   if(valor){
     if(!secaoCompletou && !comemorarDia) vibrar();
