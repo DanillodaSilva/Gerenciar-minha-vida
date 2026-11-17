@@ -24,6 +24,10 @@
     --p-teal-700:#0F766E; --p-teal-300:#5EC4B8;
     --p-brown-600:#7C5A3A; --p-brown-300:#C9A27E;
     --p-gray-600:#57534E; --p-gray-400:#A8A29E;
+    --p-green-50:#DFF1E9; --p-blue-50:#DBE3F5; --p-teal-50:#DBF5F3; --p-orange-50:#F5E3DB;
+    --p-red-50:#F5DBDB; --p-yellow-50:#F5EADB; --p-brown-50:#F0E8E0; --p-gray-50:#EAE8E6; --p-green-100:#C2EBD8;
+    --p-green-850:#1E362B; --p-blue-850:#1E2636; --p-teal-850:#1E3634; --p-orange-850:#36251E;
+    --p-red-850:#361E1E; --p-yellow-850:#362C1E; --p-brown-850:#362A1E; --p-gray-850:#2C2A28; --p-green-800:#2E5644;
 
     --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
     --radius-chip:8px; --radius-card:12px; --radius-sheet:16px; --radius-fab:16px; --radius-full:999px; --radius-check:6px; --radius-bar:4px;
@@ -53,6 +57,9 @@
     --scrim:rgb(28 27 25 / .45);
     --cat-green:var(--p-green-600); --cat-blue:var(--p-blue-600); --cat-teal:var(--p-teal-700); --cat-orange:var(--p-orange-700);
     --cat-red:var(--p-red-700); --cat-yellow:var(--p-yellow-700); --cat-brown:var(--p-brown-600); --cat-gray:var(--p-gray-600);
+    --primary-container:var(--p-green-100);
+    --cat-green-container:var(--p-green-50); --cat-blue-container:var(--p-blue-50); --cat-teal-container:var(--p-teal-50); --cat-orange-container:var(--p-orange-50);
+    --cat-red-container:var(--p-red-50); --cat-yellow-container:var(--p-yellow-50); --cat-brown-container:var(--p-brown-50); --cat-gray-container:var(--p-gray-50);
     color-scheme:light;
   }
   @media (prefers-color-scheme: dark){
@@ -65,6 +72,9 @@
       --scrim:rgb(0 0 0 / .6);
       --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
       --cat-red:var(--p-red-400); --cat-yellow:var(--p-yellow-400); --cat-brown:var(--p-brown-300); --cat-gray:var(--p-gray-400);
+      --primary-container:var(--p-green-800);
+      --cat-green-container:var(--p-green-850); --cat-blue-container:var(--p-blue-850); --cat-teal-container:var(--p-teal-850); --cat-orange-container:var(--p-orange-850);
+      --cat-red-container:var(--p-red-850); --cat-yellow-container:var(--p-yellow-850); --cat-brown-container:var(--p-brown-850); --cat-gray-container:var(--p-gray-850);
       color-scheme:dark;
     }
   }
@@ -77,16 +87,20 @@
     --scrim:rgb(0 0 0 / .6);
     --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
     --cat-red:var(--p-red-400); --cat-yellow:var(--p-yellow-400); --cat-brown:var(--p-brown-300); --cat-gray:var(--p-gray-400);
+    --primary-container:var(--p-green-800);
+    --cat-green-container:var(--p-green-850); --cat-blue-container:var(--p-blue-850); --cat-teal-container:var(--p-teal-850); --cat-orange-container:var(--p-orange-850);
+    --cat-red-container:var(--p-red-850); --cat-yellow-container:var(--p-yellow-850); --cat-brown-container:var(--p-brown-850); --cat-gray-container:var(--p-gray-850);
     color-scheme:dark;
   }
   :root{
     --item-bg:var(--surface); --item-border:var(--border); --item-radius:var(--radius-card);
     --chip-bg:var(--surface-variant); --chip-border:var(--border-strong);
     --btn-bg:var(--primary); --btn-fg:var(--on-primary);
-    --fab-bg:var(--primary); --fab-fg:var(--on-primary);
+    --fab-bg:var(--primary-container); --fab-fg:var(--text-primary);
+    --on-container:var(--text-primary); --divider-container:color-mix(in srgb, var(--text-primary) 10%, transparent);
     --field-bg:var(--surface-variant); --field-border:var(--border-strong);
     --snack-bg:var(--text-primary); --snack-fg:var(--background);
-    --c:var(--primary);
+    --c:var(--primary); --cc:var(--primary-container);
   }
   @media (prefers-reduced-motion: reduce){
     :root{ --dur-fast:0ms; --dur-check:0ms; --dur-move:0ms; }
@@ -141,7 +155,7 @@
   .item{display:flex;align-items:center;gap:var(--space-1);background:var(--item-bg);border:var(--border-width) solid var(--item-border);
     border-radius:var(--item-radius);min-height:var(--item-min-h);padding:var(--space-1) var(--space-1) var(--space-1) 0;margin-bottom:var(--space-2)}
   .check{width:var(--touch);height:var(--touch);flex:none;display:grid;place-items:center}
-  .check i{width:var(--check-size);height:var(--check-size);border:var(--check-border) solid var(--border-strong);border-radius:var(--radius-check);
+  .check i{width:var(--check-size);height:var(--check-size);border:var(--check-border) solid var(--c);border-radius:var(--radius-check);
     display:grid;place-items:center;color:transparent;transition:background var(--dur-check) var(--ease-out),border-color var(--dur-check) var(--ease-out),transform var(--dur-check) var(--ease-out)}
   .check i svg{width:var(--icon-sm);height:var(--icon-sm);fill:currentColor}
   .item.done .check i,.check[aria-checked="true"] i{background:var(--c);border-color:var(--c);color:var(--on-primary)}
@@ -171,7 +185,7 @@
     line-height:var(--lh-meta);font-weight:var(--w-medium);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-1)}
   nav.tabs button span.ind{display:grid;place-items:center;width:calc(var(--space-6) * 2);height:var(--space-6);border-radius:var(--radius-full);transition:background var(--dur-fast) var(--ease-out)}
   nav.tabs button.on{color:var(--text-primary)}
-  nav.tabs button.on span.ind{background:var(--surface-variant)}
+  nav.tabs button.on span.ind{background:var(--primary-container)}
 
   .seg{display:flex;background:var(--surface-variant);border-radius:var(--radius-card);padding:var(--space-1);margin-bottom:var(--space-4)}
   .seg button{flex:1;min-height:calc(var(--touch) - var(--space-2));border-radius:var(--radius-chip);color:var(--text-secondary);
@@ -197,7 +211,7 @@
   .anel{display:flex;flex-direction:column;align-items:center;gap:var(--space-1);flex:none;padding-top:var(--space-1)}
   .anel svg{width:var(--ring-size);height:var(--ring-size);transform:rotate(-90deg)}
   .anel circle{fill:none;stroke-width:var(--ring-stroke)}
-  .anel .trilho{stroke:var(--surface-variant)}
+  .anel .trilho{stroke:var(--primary-container)}
   .anel .arco{stroke:var(--primary);stroke-linecap:round;transition:stroke-dasharray var(--dur-move) var(--ease-out)}
   .anel .arco.zero{stroke:none}
   .anel span{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);white-space:nowrap}
@@ -210,7 +224,12 @@
   .grupo-top[aria-expanded="true"] svg{transform:rotate(180deg)}
   .lista{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);overflow:hidden}
   .lista .item{border:0;border-radius:0;margin:0;background:none;padding-right:var(--space-4)}
-  .lista .item+.item{border-top:var(--border-width) solid var(--border)}
+  .lista .item+.item{border-top:var(--border-width) solid var(--divider-container)}
+  .grupo.tinta .lista{background:var(--cc);border:0}
+  .grupo-top .emo{display:grid;place-items:center;width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--cc);flex:none}
+  .summary.tinta{background:var(--cc);border:0}
+  .summary.tinta small{color:var(--on-container)}
+  .item.tinta{background:var(--cc);border:0}
   .item small .passou{color:var(--danger);font-weight:var(--w-medium)}
   .item small .rep svg,.item small .cat .ponto{vertical-align:text-bottom;margin-right:var(--space-1)}
   .ponto{display:inline-block;width:var(--dot);height:var(--dot);border-radius:var(--radius-full);background:var(--c)}
@@ -218,10 +237,11 @@
   .vazio p{margin:0}
   .vazio .btn{width:auto}
   svg.ic.lg{width:var(--icon-lg);height:var(--icon-lg)}
-  .tudo-feito{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);margin-bottom:var(--space-3);color:var(--text-primary)}
+  .tudo-feito{background:var(--primary-container);border:0;border-radius:var(--radius-card);margin-bottom:var(--space-3);color:var(--text-primary)}
   .tudo-feito svg{color:var(--primary)}
-  .tudo-feito small{color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
-  .nova-secao{margin:var(--space-2) auto 0;display:flex}
+  .tudo-feito svg{color:var(--on-container)}
+  .tudo-feito small{color:var(--on-container);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .nova-secao{margin:var(--space-2) 0 0;display:flex}
   .fab{position:fixed;right:calc(var(--space-4) + env(safe-area-inset-right));bottom:calc(var(--nav-h) + var(--space-4) + env(safe-area-inset-bottom));
     display:inline-flex;align-items:center;gap:var(--space-2);min-height:var(--fab-h);padding:0 var(--space-5) 0 var(--space-4);border-radius:var(--radius-fab);
     background:var(--fab-bg);color:var(--fab-fg);box-shadow:var(--shadow-fab);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);z-index:6}
@@ -251,7 +271,7 @@
   .chip{min-height:var(--touch);display:inline-flex;align-items:center;background:none;padding:0}
   .chip>span{display:inline-flex;align-items:center;gap:var(--space-1);min-height:var(--chip-h);padding:0 var(--space-3);border-radius:var(--radius-chip);
     background:var(--chip-bg);border:var(--border-width) solid var(--chip-border);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-primary)}
-  .chip.on>span{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+  .chip.on>span{background:var(--primary-container);border-color:var(--primary);color:var(--on-container)}
   .colors{display:flex;gap:0;flex-wrap:wrap}
   .colors button{width:var(--touch);height:var(--touch);display:grid;place-items:center}
   .colors button i{width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--c);display:grid;place-items:center;color:var(--surface)}
@@ -289,6 +309,7 @@ const CHAVE = 'rotina-app-v1';
 const { CORES, corTokenDe } = Regras;
 const NOME_COR = { green:'Verde', blue:'Azul', teal:'Verde-azulado', orange:'Laranja', red:'Vermelho', yellow:'Amarelo', brown:'Marrom', gray:'Cinza' };
 const corDe = s => `var(--cat-${corTokenDe(s)})`;
+const tintaDe = s => `--c:var(--cat-${corTokenDe(s)});--cc:var(--cat-${corTokenDe(s)}-container)`;
 const MODELOS = [
   { nome:'Treino', emoji:'🏋️', corToken:'red',   rotuloNome:'Exercício', rotuloDetalhe:'Carga' },
   { nome:'Estudo', emoji:'📚', corToken:'teal',  rotuloNome:'Matéria',   rotuloDetalhe:'Duração' },
@@ -440,9 +461,9 @@ function telaHoje(){
     itens.filter(i => feito(diaSel, i.id)).forEach(i => concluidas.push([s, i]));
     if(!pendentes.length) return;
     const rs = resumoDia(diaSel, s);
-    grupos.push(`<section class="grupo">
+    grupos.push(`<section class="grupo tinta" style="${tintaDe(s)}">
       <button class="grupo-top" onclick="abrirSecao('${s.id}')" aria-label="Abrir ${esc(s.nome)}, ${rs.feitas} de ${rs.total} feitas">
-        <span aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
+        <span class="emo" aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
       </button>
       <div class="lista">${pendentes.map(i => itemHoje(s, i, false)).join('')}</div>
     </section>`);
@@ -501,7 +522,7 @@ function telaSecao(){
   const lista = itens.map(i => {
     const f = feito(diaSel, i.id);
     return `
-    <div class="item ${f ? 'done' : ''}" style="--c:${corDe(s)}">
+    <div class="item tinta ${f ? 'done' : ''}" style="${tintaDe(s)}">
       <button class="check" role="checkbox" aria-checked="${f}" onclick="alternar('${i.id}')" aria-label="${esc(i.nome)}"><i>${ic('check')}</i></button>
       <div class="info" onclick="alternar('${i.id}')">
         <b>${esc(i.nome)}</b>
@@ -510,7 +531,7 @@ function telaSecao(){
       <button class="more" onclick="sheetItem('${i.id}')" aria-label="Editar ${esc(i.nome)}">${ic('mais')}</button>
     </div>`; }).join('');
   const listaOutros = outros.map(i => `
-    <div class="item">
+    <div class="item tinta" style="${tintaDe(s)}">
       <div class="info sem-check" onclick="sheetItem('${i.id}')"><b>${esc(i.nome)}</b>${linhaItem(s, i)}</div>
       <button class="more" onclick="sheetItem('${i.id}')" aria-label="Editar ${esc(i.nome)}">${ic('mais')}</button>
     </div>`).join('');
@@ -521,7 +542,7 @@ function telaSecao(){
       <button class="icon-btn" onclick="sheetSecao('${s.id}')" aria-label="Editar seção">${ic('editar')}</button>
     </header>
     ${seletorDia()}
-    <div class="summary" style="--c:${corDe(s)}">
+    <div class="summary tinta" style="${tintaDe(s)}">
       <div class="big">${r.pct}%</div>
       <small>${r.feitas} de ${r.total} feitas · ${nomeDia(diaSel).toLowerCase()}</small>
       <div class="bar"><i style="width:${r.pct}%"></i></div>

@@ -57,6 +57,25 @@ Componente (peça específica)                                 --fab-bg: var(--p
 | `--cat-brown` | `#7C5A3A` | `#C9A27E` |
 | `--cat-gray` | `#57534E` | `#A8A29E` |
 
+### 1.2.1 Contêineres pastel (pedido do dono do app, 17/11/2026)
+
+O pastel vai nas superfícies, nunca no texto: texto em pastel não passa de 4,5:1. Sobre os contêineres, o texto usa `textPrimary`, `textSecondary` e `danger`. A caixa de conclusão usa a cor da seção como borda (3:1 garantido).
+
+| Token | Claro | Escuro | Uso |
+|---|---|---|---|
+| `--primary-container` | `#C2EBD8` | `#2E5644` | botão flutuante, chip selecionado, indicador da aba, trilho do anel, cartão "Tudo feito" |
+| `--cat-green-container` | `#DFF1E9` | `#1E362B` | cartão da seção |
+| `--cat-blue-container` | `#DBE3F5` | `#1E2636` | cartão da seção |
+| `--cat-teal-container` | `#DBF5F3` | `#1E3634` | cartão da seção |
+| `--cat-orange-container` | `#F5E3DB` | `#36251E` | cartão da seção |
+| `--cat-red-container` | `#F5DBDB` | `#361E1E` | cartão da seção |
+| `--cat-yellow-container` | `#F5EADB` | `#362C1E` | cartão da seção |
+| `--cat-brown-container` | `#F0E8E0` | `#362A1E` | cartão da seção |
+| `--cat-gray-container` | `#EAE8E6` | `#2C2A28` | cartão da seção |
+| `--divider-container` | `textPrimary` a 10% | `textPrimary` a 10% | divisória dentro do contêiner |
+
+Contraste mínimo medido sobre os contêineres: claro `textPrimary` 13,1 · `textSecondary` 5,2 · `danger` 4,9 · cor da seção (borda da caixa) 4,1. Escuro `textPrimary` 11,3 · `textSecondary` 5,8 · `danger` 4,7 · cor da seção 5,6. `onPrimaryContainer` = `textPrimary` (13,3 claro / 7,3 escuro).
+
 Conversão das cores antigas das seções (gravada em `corToken`, a cor antiga fica salva em `cor`):
 
 | Antiga | Nova |
@@ -170,17 +189,17 @@ Um conjunto só: **Material Icons**, desenhados como SVG inline 24×24 com `fill
 | Componente | Tokens | Estados |
 |---|---|---|
 | Item de tarefa | `--item-bg: surface`, `--item-border: border`, `--item-radius: radius-card`, `--item-min-h: 56px`, `--item-pad-y: space-3` | normal; concluído (título riscado + `textSecondary`); pressionado (`surfaceVariant`); foco (contorno 2px `primary`) |
-| Caixa de conclusão | 24×24 visível, 48×48 de toque, borda 2px `borderStrong`, raio 6px | marcada: fundo `primary` (ou cor da seção), check `onPrimary`, 200 ms |
+| Caixa de conclusão | 24×24 visível, 48×48 de toque, borda 2px na cor da seção (ou `primary`), raio 6px | marcada: fundo `primary` (ou cor da seção), check `onPrimary`, 200 ms |
 | Cabeçalho de seção | `type-section`, `textSecondary`, altura 48 | recolhível: seta gira 180° |
-| Chip | `--chip-bg: surfaceVariant`, `--chip-border: borderStrong`, `--chip-radius: radius-chip`, altura visível 32, toque 48 | selecionado: fundo `primary`, texto `onPrimary`, ícone de check |
+| Chip | `--chip-bg: surfaceVariant`, `--chip-border: borderStrong`, `--chip-radius: radius-chip`, altura visível 32, toque 48 | selecionado: fundo `primaryContainer`, borda `primary`, texto `textPrimary` |
 | Botão principal | `--btn-bg: primary`, `--btn-fg: onPrimary`, `radius-card`, altura 48, `type-label` | desabilitado: fundo `surfaceVariant`, texto `textSecondary` |
 | Botão de texto | fundo transparente, texto `primary` (ou `danger`), altura 48 | pressionado: `surfaceVariant` |
-| Botão flutuante | `--fab-bg: primary`, `--fab-fg: onPrimary`, `radius-fab`, altura 56, `shadow-fab`, ícone + "Nova tarefa" | pressionado: sombra menor |
+| Botão flutuante | `--fab-bg: primaryContainer`, `--fab-fg: textPrimary`, `radius-fab`, altura 56, `shadow-fab`, ícone + "Nova tarefa" | pressionado: sombra menor |
 | Snackbar | fundo `textPrimary`, texto `background`, ação `primary` invertido, `radius-card`, 5 s | entra de baixo em 250 ms |
 | Folha inferior | `surface`, topo `radius-sheet`, `shadow-sheet`, `scrim` atrás | sobe em 250 ms |
 | Campo de texto | `surfaceVariant`, borda `borderStrong`, `radius-card`, altura 48 | foco: borda 2px `primary`; erro: borda e mensagem `danger` |
 | Cartão | `surface`, borda `border`, `radius-card`, padding `space-4` | — |
-| Anel de progresso | 48×48, trilho `surfaceVariant`, arco `primary`, traço 5 | some com total 0 |
+| Anel de progresso | 48×48, trilho `primaryContainer`, arco `primary`, traço 5 | some com total 0 |
 | Barra do gráfico | `primary` (hoje) / `border-strong` com 40% de mistura (outros dias), raio 4 no topo, número em cima | zero: traço de 2px |
 | Estado vazio | ícone 48 `textSecondary`, texto `type-body`, botão principal | — |
-| Navegação inferior | `surface`, borda superior `border`, 4 destinos de 48+ dp, indicador `surfaceVariant` atrás do ícone ativo | ativo: ícone e rótulo `textPrimary`; inativo: `textSecondary` |
+| Navegação inferior | `surface`, borda superior `border`, 4 destinos de 48+ dp, indicador `primaryContainer` atrás do ícone ativo | ativo: ícone e rótulo `textPrimary`; inativo: `textSecondary` |
