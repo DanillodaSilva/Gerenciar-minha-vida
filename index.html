@@ -56,7 +56,7 @@
     --background:var(--p-sand-50); --surface:var(--p-white); --surface-variant:var(--p-sand-100);
     --border:var(--p-sand-200); --border-strong:var(--p-sand-500);
     --text-primary:var(--p-ink-900); --text-secondary:var(--p-ink-600);
-    --primary:var(--p-green-600); --on-primary:var(--p-white); --danger:var(--p-red-700);
+    --primary:var(--p-green-600); --on-primary:var(--p-white); --danger:var(--p-red-700); --on-danger:var(--p-white);
     --priority-high:var(--p-orange-700); --priority-medium:var(--p-yellow-700); --priority-low:var(--p-slate-600);
     --scrim:rgb(28 27 25 / .45);
     --cat-green:var(--p-green-600); --cat-blue:var(--p-blue-600); --cat-teal:var(--p-teal-700); --cat-orange:var(--p-orange-700);
@@ -71,7 +71,7 @@
       --background:var(--p-night-950); --surface:var(--p-night-900); --surface-variant:var(--p-night-800);
       --border:var(--p-night-700); --border-strong:var(--p-night-500);
       --text-primary:var(--p-stone-50); --text-secondary:var(--p-stone-300);
-      --primary:var(--p-green-300); --on-primary:var(--p-green-950); --danger:var(--p-red-400);
+      --primary:var(--p-green-300); --on-primary:var(--p-green-950); --danger:var(--p-red-400); --on-danger:var(--p-night-950);
       --priority-high:var(--p-orange-400); --priority-medium:var(--p-yellow-400); --priority-low:var(--p-slate-300);
       --scrim:rgb(0 0 0 / .6);
       --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
@@ -86,7 +86,7 @@
     --background:var(--p-night-950); --surface:var(--p-night-900); --surface-variant:var(--p-night-800);
     --border:var(--p-night-700); --border-strong:var(--p-night-500);
     --text-primary:var(--p-stone-50); --text-secondary:var(--p-stone-300);
-    --primary:var(--p-green-300); --on-primary:var(--p-green-950); --danger:var(--p-red-400);
+    --primary:var(--p-green-300); --on-primary:var(--p-green-950); --danger:var(--p-red-400); --on-danger:var(--p-night-950);
     --priority-high:var(--p-orange-400); --priority-medium:var(--p-yellow-400); --priority-low:var(--p-slate-300);
     --scrim:rgb(0 0 0 / .6);
     --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
@@ -266,8 +266,10 @@
   .linha .fundo{position:absolute;inset:0;display:none;align-items:center;gap:var(--space-2);padding:0 var(--space-5);
     font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium)}
   .linha[data-dir] .fundo{display:flex}
-  .linha[data-dir="dir"] .fundo{background:var(--primary-container);color:var(--on-container)}
-  .linha[data-dir="esq"] .fundo{background:var(--danger-container);color:var(--danger);justify-content:flex-end}
+  .linha[data-dir="dir"] .fundo{background:var(--primary);color:var(--on-primary)}
+  .linha[data-dir="esq"] .fundo{background:var(--danger);color:var(--on-danger);justify-content:flex-end}
+  .linha .fundo svg{transform:scale(0.8);transition:transform var(--dur-rapida) var(--ease-mola)}
+  .linha.cruzou .fundo svg{transform:scale(1)}
   .linha[data-dir="dir"] .fundo .lado-dir,.linha[data-dir="esq"] .fundo .lado-esq{display:none}
   .linha .fundo span{display:inline-flex;align-items:center;gap:var(--space-2)}
   .menu{display:flex;flex-direction:column}
@@ -537,7 +539,6 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 
 /* ---------- concluir, excluir e desfazer ---------- */
 function teclaBotao(e, el){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); el.click(); } }
-const durMs = nome => Animacoes.reduzido() ? 0 : Animacoes.MOV[nome];
 if(window.visualViewport){
   const ajustarTeclado = () => {
     const vv = window.visualViewport;
@@ -547,9 +548,9 @@ if(window.visualViewport){
   visualViewport.addEventListener('resize', ajustarTeclado);
   visualViewport.addEventListener('scroll', ajustarTeclado);
 }
-const vibrar = () => {
+const vibrar = (padrao = 10) => {
   if(NATIVO){ plugin('Haptics').impact({ style: 'LIGHT' }).catch(() => {}); return; }
-  try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){}
+  try{ if(navigator.vibrate) navigator.vibrate(padrao); }catch(e){}
 };
 function marcarItem(idItem, dia, valor){
   const lista = dados.feitos[dia] || [];
@@ -604,7 +605,7 @@ function marcarDuasLinhas(){
 }
 const segurando = new Set();
 const timersMarcar = new Map();
-const ESPERA_CONCLUIDAS = 350;
+const ESPERA_CONCLUIDAS = Animacoes.MOV.esperaConcluidas;
 function concluirEntrada(tipo, id){
   const dia = diaSel;
   const valor = !estaFeita(tipo, id);
@@ -679,7 +680,9 @@ function fimGesto(){
 document.addEventListener('pointerdown', e => {
   const linha = e.target.closest('.linha');
   if(!linha || e.button > 0) return;
-  gesto = { linha, item: linha.querySelector('.item'), x: e.clientX, y: e.clientY, dx: 0, modo: null, id: e.pointerId };
+  const item = linha.querySelector('.item');
+  item.getAnimations().forEach(a => { a.commitStyles(); a.cancel(); });
+  gesto = { linha, item, x: e.clientX, y: e.clientY, dx: 0, dy: 0, modo: null, id: e.pointerId, amostras: [[e.timeStamp, e.clientX]], cruzou: false };
   gesto.timer = setTimeout(() => {
     if(gesto && !gesto.modo){ gesto.modo = 'longo'; suprimirClique = true; vibrar(); abrirMenu(linha.dataset); }
   }, 500);
@@ -688,41 +691,88 @@ document.addEventListener('pointermove', e => {
   if(!gesto || e.pointerId !== gesto.id || gesto.modo === 'longo') return;
   const dx = e.clientX - gesto.x, dy = e.clientY - gesto.y;
   if(!gesto.modo){
-    if(Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)){ fimGesto(); return; }
-    if(Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5){
-      clearTimeout(gesto.timer);
-      gesto.modo = 'desliza'; gesto.linha.classList.add('arrastando');
-    } else return;
+    if(Math.abs(dx) < Animacoes.GESTO.trava && Math.abs(dy) < Animacoes.GESTO.trava) return;
+    clearTimeout(gesto.timer);
+    if(Animacoes.decidirGesto({ dx, dy, largura: gesto.linha.offsetWidth }) === 'rolar'){ fimGesto(); return; }
+    gesto.modo = 'desliza'; gesto.linha.classList.add('arrastando');
+    try{ gesto.linha.setPointerCapture(e.pointerId); }catch(err){}
   }
+  const largura = gesto.linha.offsetWidth;
   const podeDir = gesto.linha.dataset.concluivel === '1';
   gesto.dx = podeDir ? dx : Math.min(dx, 0);
-  gesto.item.style.transform = `translateX(${gesto.dx}px)`;
+  gesto.dy = dy;
+  gesto.amostras.push([e.timeStamp, e.clientX]);
+  if(gesto.amostras.length > 8) gesto.amostras.shift();
+  gesto.item.style.transform = `translateX(${Animacoes.elastico(gesto.dx, largura)}px)`;
   if(gesto.dx > 0) gesto.linha.dataset.dir = 'dir';
   else if(gesto.dx < 0) gesto.linha.dataset.dir = 'esq';
+  const cruzou = Math.abs(gesto.dx) >= largura * Animacoes.GESTO.limite;
+  if(cruzou && !gesto.cruzou) vibrar(8);
+  gesto.cruzou = gesto.cruzou || cruzou;
+  gesto.linha.classList.toggle('cruzou', cruzou);
 });
+function velocidadeGesto(g){
+  const recentes = g.amostras.filter(([t]) => t >= g.amostras[g.amostras.length - 1][0] - 100);
+  if(recentes.length < 2) return 0;
+  const [t0, x0] = recentes[0], [t1, x1] = recentes[recentes.length - 1];
+  return t1 > t0 ? (x1 - x0) / (t1 - t0) : 0;
+}
+function voltarItem(g){
+  const de = g.item.style.transform;
+  g.item.style.transform = '';
+  const limpar = () => { delete g.linha.dataset.dir; g.linha.classList.remove('cruzou'); };
+  if(!de || Animacoes.reduzido()){ limpar(); return; }
+  const a = g.item.animate([{ transform: de }, { transform: 'none' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() });
+  a.onfinish = limpar;
+}
 function soltar(e){
   if(!gesto || e.pointerId !== gesto.id) return;
   const g = gesto; fimGesto();
   if(g.modo !== 'desliza') return;
   suprimirClique = true;
   const largura = g.linha.offsetWidth;
-  const passou = Math.abs(g.dx) > largura * 0.35;
   const { tipo, id } = g.linha.dataset;
-  if(passou && g.dx < 0){
+  const decisao = Animacoes.decidirGesto({ dx: g.dx, dy: 0, largura, velocidade: velocidadeGesto(g) });
+  if(decisao === 'excluir'){
+    const de = g.item.style.transform;
     g.item.style.transform = `translateX(${-largura}px)`;
-    setTimeout(() => excluirEntrada(tipo, id), durMs('base'));
+    if(Animacoes.reduzido()){ excluirEntrada(tipo, id); return; }
+    const a = g.item.animate([{ transform: de }, { transform: `translateX(${-largura}px)` }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.entrada });
+    a.onfinish = () => excluirEntrada(tipo, id);
     return;
   }
-  g.item.style.transform = '';
-  setTimeout(() => { delete g.linha.dataset.dir; }, durMs('base'));
-  if(passou && g.dx > 0) concluirEntrada(tipo, id);
+  if(decisao === 'marcar') concluirEntrada(tipo, id);
+  voltarItem(g);
 }
 document.addEventListener('pointerup', soltar);
 document.addEventListener('pointercancel', e => {
   if(!gesto || e.pointerId !== gesto.id) return;
   const g = gesto; fimGesto();
-  g.item.style.transform = ''; delete g.linha.dataset.dir;
+  if(g.modo === 'desliza') voltarItem(g);
 });
+
+let dicaAgendada = false;
+function talvezMostrarDica(){
+  if(dicaAgendada || tela !== 'rotina' || dados.ajustes.dicaGestoVista) return;
+  const linha = document.querySelector('#app .linha[data-concluivel="1"]');
+  if(!linha) return;
+  dicaAgendada = true;
+  dados.ajustes.dicaGestoVista = true; salvar();
+  if(Animacoes.reduzido()) return;
+  setTimeout(() => {
+    const atual = document.querySelector(`#app .linha[data-id="${linha.dataset.id}"]`);
+    if(!atual || gesto) return;
+    const item = atual.querySelector('.item');
+    const M = Animacoes.MOV;
+    atual.dataset.dir = 'dir';
+    const a = item.animate([
+      { transform: 'translateX(0)', easing: M.saida },
+      { transform: `translateX(${M.dicaDistancia}px)`, offset: 0.4, easing: Animacoes.curvaMola() },
+      { transform: 'translateX(0)' },
+    ], { duration: M.dicaDuracao });
+    a.onfinish = a.oncancel = () => { delete atual.dataset.dir; };
+  }, Animacoes.MOV.dicaAtraso);
+}
 document.addEventListener('click', e => {
   if(suprimirClique){ suprimirClique = false; if(e.target.closest('.linha')){ e.stopPropagation(); e.preventDefault(); } }
 }, true);
@@ -804,6 +854,7 @@ function render(refazer = false){
   else { app.innerHTML = html; telaDesenhada = chaveTela; }
   if(tela === 'ajustes') atualizarEstadoNotif();
   marcarDuasLinhas();
+  talvezMostrarDica();
 }
 
 function seletorDia(){

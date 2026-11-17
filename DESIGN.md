@@ -39,6 +39,7 @@ Componente (peça específica)                                 --fab-bg: var(--p
 | `--primary` | `#2F6B4F` | `#6FBF95` | ação principal, seleção, anel, barra de hoje |
 | `--on-primary` | `#FFFFFF` | `#0E2A1C` | texto e ícone sobre `--primary` |
 | `--danger` | `#B91C1C` | `#F87171` | excluir, erro, horário passado |
+| `--on-danger` | `#FFFFFF` | `#141413` | ícone e texto sobre `danger` sólido (fundo do gesto de excluir): 6,47:1 claro, 6,66:1 escuro; `onPrimary` sobre `primary` sólido (gesto de marcar): 6,29:1 e 7,00:1 |
 | `--priority-high` | `#C0400C` | `#FB8B5B` | prioridade alta |
 | `--priority-medium` | `#9A5E07` | `#E6B84A` | prioridade média |
 | `--priority-low` | `#4B6B8A` | `#8FB3D9` | prioridade baixa |
