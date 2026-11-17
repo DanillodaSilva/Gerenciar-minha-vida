@@ -37,8 +37,10 @@
     --dur-toque:100ms; --dur-rapida:160ms; --dur-base:240ms; --dur-lenta:340ms; --dur-comemoracao:1100ms; --dur-reduzida:120ms; --dur-onda:400ms; --dur-periodo:600ms;
     --ease-saida:cubic-bezier(0.22, 1, 0.36, 1); --ease-entrada:cubic-bezier(0.4, 0, 1, 1); --ease-movimento:cubic-bezier(0.65, 0, 0.35, 1);
     --ease-mola:var(--ease-saida); --teclado:0px; --press:0.97; --press-item:0.98; --risco:2px;
-    --shadow-fab:0 3px 8px rgb(0 0 0 / .18), 0 1px 3px rgb(0 0 0 / .12);
-    --shadow-sheet:0 -4px 16px rgb(0 0 0 / .16);
+    --sombra-cor:rgb(0 0 0 / .12);
+    --shadow-fab:0 8px 24px var(--sombra-cor);
+    --shadow-sheet:0 -8px 24px var(--sombra-cor);
+    --dur-esqueleto:1200ms;
 
     --font:system-ui,Roboto,"Segoe UI",sans-serif;
     --fs-title:1.75rem; --lh-title:2.125rem;
@@ -49,8 +51,8 @@
     --fs-number:2.125rem; --lh-number:2.5rem;
     --w-regular:400; --w-medium:500; --w-semibold:600;
 
-    --content-max:560px; --dialog-max:400px; --nav-h:64px; --item-min-h:56px; --fab-h:56px; --chip-h:32px;
-    --check-size:24px; --check-border:2px; --ring-size:56px; --alca-w:36px; --alca-h:4px; --zona-arrasto:48px; --mini-ring:24px; --mini-stroke:3px; --ring-stroke:5px; --dot:8px; --icon:24px; --icon-sm:16px; --icon-lg:48px;
+    --content-max:480px; --dialog-max:400px; --nav-h:64px; --item-min-h:56px; --fab-h:56px; --chip-h:32px;
+    --check-size:24px; --check-border:2px; --ring-size:56px; --alca-w:36px; --alca-h:4px; --zona-arrasto:48px; --mini-ring:24px; --emoji-secao:1.75rem; --mini-stroke:3px; --ring-stroke:5px; --dot:8px; --icon:24px; --icon-sm:16px; --icon-lg:48px;
     --chart-h:140px; --bar-max:28px; --bar-zero:2px; --emoji:1.5rem;
 
     --background:var(--p-sand-50); --surface:var(--p-white); --surface-variant:var(--p-sand-100);
@@ -73,7 +75,7 @@
       --text-primary:var(--p-stone-50); --text-secondary:var(--p-stone-300);
       --primary:var(--p-green-300); --on-primary:var(--p-green-950); --danger:var(--p-red-400); --on-danger:var(--p-night-950);
       --priority-high:var(--p-orange-400); --priority-medium:var(--p-yellow-400); --priority-low:var(--p-slate-300);
-      --scrim:rgb(0 0 0 / .6);
+      --scrim:rgb(0 0 0 / .6); --sombra-cor:rgb(0 0 0 / .4);
       --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
       --cat-red:var(--p-red-400); --cat-yellow:var(--p-yellow-400); --cat-brown:var(--p-brown-300); --cat-gray:var(--p-gray-400);
       --primary-container:var(--p-green-800); --danger-container:var(--p-red-850); --snack-action:var(--p-green-600);
@@ -88,7 +90,7 @@
     --text-primary:var(--p-stone-50); --text-secondary:var(--p-stone-300);
     --primary:var(--p-green-300); --on-primary:var(--p-green-950); --danger:var(--p-red-400); --on-danger:var(--p-night-950);
     --priority-high:var(--p-orange-400); --priority-medium:var(--p-yellow-400); --priority-low:var(--p-slate-300);
-    --scrim:rgb(0 0 0 / .6);
+    --scrim:rgb(0 0 0 / .6); --sombra-cor:rgb(0 0 0 / .4);
     --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
     --cat-red:var(--p-red-400); --cat-yellow:var(--p-yellow-400); --cat-brown:var(--p-brown-300); --cat-gray:var(--p-gray-400);
     --primary-container:var(--p-green-800); --danger-container:var(--p-red-850); --snack-action:var(--p-green-600);
@@ -220,8 +222,8 @@
   nav.tabs{isolation:isolate}
   nav.tabs .pilula{position:absolute;left:0;top:calc((var(--nav-h) - var(--space-6) - var(--lh-meta) - var(--space-1)) / 2);width:calc(var(--space-6) * 2);height:var(--space-6);
     border-radius:var(--radius-full);background:var(--primary-container);z-index:-1;transition:transform var(--dur-lenta) var(--ease-mola);pointer-events:none}
-  nav.tabs svg.cheio,nav.tabs button.on svg.vazio{display:none}
-  nav.tabs button.on svg.cheio{display:block}
+  nav.tabs svg.ic-cheio,nav.tabs button.on svg.ic-vazio{display:none}
+  nav.tabs button.on svg.ic-cheio{display:block}
   #app{view-transition-name:conteudo}
   ::view-transition-old(root),::view-transition-new(root){animation:none}
   ::view-transition-old(conteudo){animation:var(--dur-base) var(--ease-entrada) both sai-aba}
@@ -317,7 +319,7 @@
   .anel .pct{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-meta);line-height:1;font-weight:var(--w-semibold);color:var(--text-primary);font-variant-numeric:tabular-nums}
   .anel svg{width:var(--ring-size);height:var(--ring-size);transform:rotate(-90deg)}
   .anel circle{fill:none;stroke-width:var(--ring-stroke)}
-  .anel .trilho{stroke:var(--primary-container)}
+  .anel .trilho{stroke:var(--surface-variant)}
   .anel .arco{stroke:var(--primary);stroke-linecap:round;transition:stroke-dashoffset var(--dur-lenta) var(--ease-saida)}
   .anel .arco.zero{stroke:none}
   .anel span{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);white-space:nowrap}
@@ -352,7 +354,9 @@
   .menu button.perigo{color:var(--danger)}
   .sheet h2.menu-tit{font-size:var(--fs-section);line-height:var(--lh-section);color:var(--text-secondary);overflow-wrap:anywhere}
   .sr:focus{position:static;width:auto;height:auto;clip:auto;white-space:normal}
-  .grupo-top .emo{display:grid;place-items:center;width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--cc);flex:none}
+  .grupo-top .emo{display:grid;place-items:center;width:calc(var(--touch) - var(--space-1));height:calc(var(--touch) - var(--space-1));border-radius:var(--radius-full);
+    background:color-mix(in srgb, var(--c) 14%, var(--surface));font-size:var(--emoji-secao);line-height:1;flex:none}
+  .grupo.tinta .lista{border:var(--border-width) solid color-mix(in srgb, var(--c) 20%, transparent)}
   .summary.tinta{background:var(--cc);border:0}
   .summary.tinta small{color:var(--on-container)}
   .item.tinta{background:var(--cc);border:0}
@@ -361,6 +365,12 @@
   .ponto{display:inline-block;width:var(--dot);height:var(--dot);border-radius:var(--radius-full);background:var(--c)}
   .vazio{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);text-align:center;padding:var(--space-6) var(--space-4);color:var(--text-secondary)}
   .vazio p{margin:0}
+  .vazio .ilustra{width:calc(var(--touch) * 2.5);height:calc(var(--touch) * 2.5)}
+  .vazio .ilustra .fundo-il{fill:var(--primary-container)}
+  .vazio .ilustra .traco-il{fill:none;stroke:var(--primary);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+  .vazio .ilustra .bloco-il{fill:var(--surface)}
+  .vazio .ilustra .detalhe-il{fill:var(--priority-medium)}
+  .vazio h2{margin:0;font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--text-primary)}
   .vazio .btn{width:auto}
   svg.ic.lg{width:var(--icon-lg);height:var(--icon-lg)}
   .tudo-feito{background:var(--primary-container);border:0;border-radius:var(--radius-card);margin-bottom:var(--space-3);color:var(--text-primary)}
@@ -373,7 +383,12 @@
     background:var(--fab-bg);color:var(--fab-fg);box-shadow:var(--shadow-fab);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);z-index:6}
 
   .wrap.com-fab{padding-bottom:calc(var(--fab-h) + var(--space-6))}
-  .esqueleto b,.esqueleto i{display:block;background:var(--surface-variant);border-radius:var(--radius-card)}
+  .esqueleto b,.esqueleto i{display:block;background:var(--surface-variant);border-radius:var(--radius-card);position:relative;overflow:hidden}
+  .esqueleto b::after,.esqueleto i::after{content:'';position:absolute;inset:0;transform:translateX(-100%);
+    background:linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface) 60%, transparent), transparent);animation:brilho-esqueleto var(--dur-esqueleto) linear infinite}
+  @keyframes brilho-esqueleto{to{transform:translateX(100%)}}
+  @media (prefers-reduced-motion: reduce){ .esqueleto b::after,.esqueleto i::after{animation:none;display:none} }
+  :root[data-animacoes="reduzidas"] .esqueleto b::after,:root[data-animacoes="reduzidas"] .esqueleto i::after{animation:none;display:none}
   .esqueleto b{height:var(--lh-title);width:40%;margin:var(--space-1) 0 var(--space-6)}
   .esqueleto i{height:var(--item-min-h);margin-bottom:var(--space-2)}
   .secstat{margin-bottom:var(--space-3)}
@@ -598,7 +613,7 @@ const rolagemAba = {};
 const abasVistas = new Set();
 function montarNav(){
   document.querySelector('nav.tabs').innerHTML = '<span class="pilula" aria-hidden="true"></span>' + ABAS.map(([id, icone, rotulo]) =>
-    `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone + 'Vazio', 'vazio')}${ic(icone + 'Cheio', 'cheio')}</span><span class="rot">${rotulo}</span></button>`).join('');
+    `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone + 'Vazio', 'ic-vazio')}${ic(icone + 'Cheio', 'ic-cheio')}</span><span class="rot">${rotulo}</span></button>`).join('');
 }
 function cascata(container){
   if(Animacoes.reduzido()) return;
@@ -1252,6 +1267,11 @@ function linhaHoje(s, i, comSecao){
   return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
 }
 const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path pathLength="1" d="M5 12.5l4.2 4.2L19 7"/></svg>';
+const ILUSTRA = {
+  dia: '<svg class="ilustra" viewBox="0 0 120 120" aria-hidden="true"><circle class="fundo-il" cx="60" cy="60" r="54"/><rect class="bloco-il" x="30" y="34" width="60" height="54" rx="10"/><path class="traco-il" d="M30 50h60M46 28v12M74 28v12"/><path class="traco-il" d="M48 69l8 8 16-16"/><circle class="detalhe-il" cx="92" cy="30" r="6"/></svg>',
+  futuro: '<svg class="ilustra" viewBox="0 0 120 120" aria-hidden="true"><circle class="fundo-il" cx="60" cy="60" r="54"/><rect class="bloco-il" x="26" y="38" width="44" height="44" rx="8"/><rect class="bloco-il" x="50" y="30" width="44" height="44" rx="8"/><path class="traco-il" d="M60 44h24M60 54h16M60 64h20"/><circle class="detalhe-il" cx="36" cy="92" r="5"/></svg>',
+  grafico: '<svg class="ilustra" viewBox="0 0 120 120" aria-hidden="true"><circle class="fundo-il" cx="60" cy="60" r="54"/><rect class="bloco-il" x="32" y="66" width="12" height="22" rx="4"/><rect class="bloco-il" x="54" y="50" width="12" height="38" rx="4"/><rect class="bloco-il" x="76" y="36" width="12" height="52" rx="4"/><path class="traco-il" d="M30 46l18-10 14 8 26-16"/><circle class="detalhe-il" cx="88" cy="28" r="5"/></svg>',
+};
 const fundoLinha = f => `<div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Marcar'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>`;
 function linhaTarefa(t, o){
   const partes = [];
@@ -1337,7 +1357,7 @@ function telaHoje(){
       <p class="hint">No app antigo, abra Ajustes e toque em Exportar tarefas. Depois importe o arquivo aqui para trazer tudo.</p>
       <div class="row mt"><button class="btn" onclick="importarBackup()">Importar backup</button><button class="btn ghost" onclick="dados.ajustes.boasVindasOk=true;salvar();render()">Começar do zero</button></div>
     </div>` : '';
-    corpo = boasVindas + blocoAtrasadas + `<div class="vazio" data-chave="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
+    corpo = boasVindas + blocoAtrasadas + `<div class="vazio" data-chave="vazio">${ILUSTRA.dia}<h2>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</h2><p>Adicione o que você quer fazer e acompanhe aqui.</p>
       <button class="btn" onclick="novaTarefa()">Adicionar tarefa</button></div>`;
   } else {
     const tudo = r.feitas === r.total ? `<div class="vazio tudo-feito" data-chave="tudo-feito" role="status">${ic('hoje','lg')}<p><b>${ehHoje ? 'Tudo feito por hoje' : 'Tudo feito neste dia'}</b><br><small>${r.feitas} de ${r.total} concluídas</small></p></div>` : '';
@@ -1400,7 +1420,7 @@ function listaProximos(){
       : '<div class="vazio"><p>Nenhuma tarefa encontrada.</p></div>';
   }
   const g = Regras.gruposProximos(ts, hoje());
-  if(!g.length) return `<div class="vazio">${ic('calendario','lg')}<p>Nada planejado para os próximos dias.</p></div>`;
+  if(!g.length) return `<div class="vazio" data-chave="vazio">${ILUSTRA.futuro}<h2>Nada planejado para os próximos dias.</h2><p>Tarefas com data futura aparecem aqui.</p><button class="btn" onclick="novaTarefaSemData()">Adicionar tarefa</button></div>`;
   return g.map(x => `<section class="grupo" data-chave="p-${x.chave}"><h2 class="grupo-top"><span class="nm">${esc(x.titulo)}</span></h2>
     <div class="lista">${x.tarefas.map(t => itemTarefa(t, { data: x.chave === 'depois', secao: true })).join('')}</div></section>`).join('');
 }
@@ -1444,7 +1464,7 @@ function telaProgresso(){
   const vis = visao();
   const total = Regras.totalConcluidas(vis);
   if(!total) return `<header class="top"><h1>Progresso</h1></header>
-    <div class="vazio">${ic('grafico','lg')}<p>Conclua sua primeira tarefa para ver seu progresso.</p></div>`;
+    <div class="vazio" data-chave="vazio">${ILUSTRA.grafico}<h2>Conclua sua primeira tarefa para ver seu progresso.</h2><p>Sua sequência e sua semana aparecem aqui.</p><button class="btn" onclick="irPara('rotina')">Ir para Hoje</button></div>`;
 
   const seq = Regras.sequencia(vis, hoje());
   const taxa = Regras.taxaSemana(vis, hoje());

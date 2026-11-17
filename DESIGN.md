@@ -169,9 +169,14 @@ Fonte do sistema (Roboto no Android), sem download: `system-ui, Roboto, "Segoe U
 | `--radius-fab` | 16px | botão flutuante |
 | `--radius-full` | 999px | ponto de cor, trilho do anel |
 | `--border-width` | 1px | todas as bordas |
-| `--shadow-fab` | `0 3px 8px rgb(0 0 0 / .18), 0 1px 3px rgb(0 0 0 / .12)` | só botão flutuante |
-| `--shadow-sheet` | `0 -4px 16px rgb(0 0 0 / .16)` | só folha inferior |
+| `--shadow-fab` | `0 8px 24px var(--sombra-cor)` | elementos flutuantes: botão flutuante, cartão de comemoração, menu de toque longo |
+| `--shadow-sheet` | `0 -8px 24px var(--sombra-cor)` | folha inferior (mesma sombra, voltada para cima) |
+| `--sombra-cor` | 12% de preto no claro, 40% no escuro | sombra estática, nunca animada; no máximo 3 níveis (fundo, cartão, flutuante) |
+| `--scrim-folha` | `rgb(0 0 0 / .4)` | véu atrás da folha inferior |
 | `--touch` | 48px | área mínima de tudo que é tocável |
+| `--content-max` | 480px | coluna centralizada no computador e no tablet |
+| `--alca-w` / `--alca-h` | 36px / 4px | alça da folha; `--zona-arrasto` 48px no topo da folha |
+| `--mini-ring` / `--mini-stroke` | 24px / 3px | mini anel da faixa da semana |
 
 - Elevação por borda de 1 dp (`border`) no lugar de sombra. Sombra só no botão flutuante e na folha inferior.
 
@@ -208,6 +213,18 @@ Fonte única de toda duração e curva. CSS lê as variáveis; o JavaScript usa 
 linear(0, 0.051 4.2%, 0.166 8.3%, 0.309 12.5%, 0.456 16.7%, 0.591 20.8%, 0.708 25%, 0.803 29.2%, 0.877 33.3%, 0.932 37.5%, 0.970 41.7%, 0.996 45.8%, 1.011 50%, 1.019 54.2%, 1.022 58.3%, 1.022 62.5%, 1.020 66.7%, 1.017 70.8%, 1.013 75%, 1.010 79.2%, 1.008 83.3%, 1.005 87.5%, 1.003 91.7%, 1.002 95.8%, 1)
 ```
 
+### Durações extras
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--dur-periodo` | 600ms | troca do fundo do cabeçalho entre manhã, tarde e noite (opacidade) |
+| `--dur-esqueleto` | 1200ms | brilho do esqueleto de carregamento (único loop permitido, só enquanto carrega) |
+| `--dur-reduzida` | 120ms | troca de opacidade quando o movimento está reduzido |
+
+### Constantes de comportamento (`MOV` em `animacoes.js`)
+
+Espera antes de ir para Concluídas 350 ms · dica de gesto 800 ms de atraso, 700 ms de duração, 28 px · brilho da seção completa 500 ms · cartão de comemoração fecha em 2,5 s · 80 confetes · cascata de 30 ms, no máximo 8 itens · snackbar com Desfazer 5 s, aviso 2 s · gesto: trava de 8 px, limite de 40%, ou 0,5 px/ms depois de 15%, elástico depois de 60% com 30% do movimento.
+
 ### Regras
 
 1. Só `transform` e `opacity`. Exceções: `stroke-dashoffset` dos anéis (SVG pequeno) e `background-color` em botões. Nunca `width`, `height`, `top`, `left`, `margin` nem `box-shadow`.
@@ -220,7 +237,7 @@ linear(0, 0.051 4.2%, 0.166 8.3%, 0.309 12.5%, 0.456 16.7%, 0.591 20.8%, 0.708 2
 
 ## 5. Ícones
 
-Um conjunto só: **Material Icons**, desenhados como SVG inline 24×24 com `fill: currentColor`. Ícone sozinho sempre tem rótulo (`aria-label`). O emoji da seção é dado do usuário e continua.
+Um conjunto só: **Material Icons** (Google, licença Apache 2.0), desenhados como SVG inline 24×24 com `fill: currentColor`. Os traços preenchido e vazado das abas (check_circle, event, insert_chart, settings) vieram do repositório oficial `google/material-design-icons`. Ícone sozinho sempre tem rótulo (`aria-label`). O emoji da seção é dado do usuário e continua.
 
 ## 6. Componentes (tokens de componente e estados)
 
@@ -237,9 +254,14 @@ Um conjunto só: **Material Icons**, desenhados como SVG inline 24×24 com `fill
 | Folha inferior | `surface`, topo `radius-sheet`, `shadow-sheet`, `scrim` atrás (até 40%) | sobe em `--dur-lenta` com `--ease-mola`; fecha em `--dur-base` com `--ease-entrada`; arrasta para baixo (fecha além de 30% ou 0,5 px/ms; elástico de 30% para cima) |
 | Campo de texto | `surfaceVariant`, borda `borderStrong`, `radius-card`, altura 48 | foco: borda 2px `primary`; erro: borda e mensagem `danger` |
 | Cartão | `surface`, borda `border`, `radius-card`, padding `space-4` | — |
-| Anel de progresso | 48×48, trilho `primaryContainer`, arco `primary`, traço 5 | some com total 0 |
+| Anel de progresso | `--ring-size` 56×56, trilho `surfaceVariant`, arco `primary` com ponta arredondada, traço 5, percentual no centro | `stroke-dashoffset` em `--dur-lenta`; o número conta do valor antigo ao novo em 400 ms; some com total 0 |
+| Cabeçalho da tela Hoje | degradê de `surface` para 8% de `priorityMedium` (manhã), 8% de `primary` (tarde) ou 10% de `priorityLow` (noite), cantos inferiores `radius-sheet` | troca de período por opacidade em `--dur-periodo`. Contraste do texto secundário sobre o fim do degradê: claro 6,07 / 6,03 / 5,91; escuro 6,54 / 6,63 / 6,36 |
+| Cartão de seção | fundo pastel (`cat-*-container`, mantido por decisão do dono), borda de 1 px com 20% da cor da seção, emoji `--emoji-secao` (28 px) num círculo de 44 px com 14% da cor | seção completa: emoji 1 → 1,25 → 1 com `--ease-mola`; brilho de 25% atravessa o cartão em 500 ms |
 | Barra do gráfico | `primary` (hoje) / `border-strong` com 40% de mistura (outros dias), raio 4 no topo, número em cima | zero: traço de 2px |
-| Estado vazio | ícone 48 `textSecondary`, texto `type-body`, botão principal | — |
+| Estado vazio | ilustração SVG original de 120 px (formas simples em `primaryContainer`, `surface`, `primary` e `priorityMedium`), título `type-section`, uma linha de apoio `textSecondary`, botão principal (verbo + objeto) | — |
+| Esqueleto | blocos `surfaceVariant` com brilho de `surface` a 60% passando em `--dur-esqueleto` | com movimento reduzido, sem brilho |
+| Menu de toque longo | `surface`, `radius-card`, `shadow-fab`, itens de 48 dp (Marcar/Desmarcar, Editar, Reordenar, Excluir em `danger`) | abre do ponto do toque: escala 0,92 → 1 e opacidade em `--dur-rapida` |
+| Interruptor | trilho 52×32 `surfaceVariant` com borda `borderStrong`; ligado: `primary` com bolinha `onPrimary` | bolinha desliza com `--ease-mola` em `--dur-rapida` |
 | Navegação inferior | `surface`, borda superior `border`, 4 destinos de 48+ dp | ativo: ícone preenchido e rótulo `textPrimary`; inativo: ícone vazado e `textSecondary` |
 | Indicador de aba | pílula `primaryContainer` 64×32, raio `radius-full`, uma só para a barra | desliza até a aba tocada com `translateX` em `--dur-lenta` + `--ease-mola` |
 | Faixa da semana | 7 dias (S T Q Q S S D + número + mini anel 24 px, traço 3), toque 48 dp, botão "Hoje" à direita | dia exibido: fundo `primary`, texto `onPrimary`; hoje: ponto embaixo; ≥50%: mini anel cheio em `primary`; futuro: `textSecondary` e sem toque |
