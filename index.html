@@ -646,7 +646,10 @@ function abrirSecao(id){
 let ignorarPop = false; // true quando nós mesmos chamamos history.back() pra fechar uma janela
 addEventListener('popstate', () => {
   if(ignorarPop){ ignorarPop = false; return; }
-  if(document.getElementById('dialogo').classList.contains('show')){ history.pushState({sheet:true}, ''); dialogoCancelar(); return; }
+  if(document.getElementById('dialogo').classList.contains('show')){
+    if(!dlgComEntrada) history.pushState({sheet:true}, '');
+    dlgComEntrada = false; fecharDialogo(true); return;
+  }
   if(document.getElementById('overlay').classList.contains('show')){
     if(ed && editorAlterado()){ history.pushState({sheet:true}, ''); pedirDescartar(); return; }
     ed = null; fecharSheet(true); return;
@@ -967,9 +970,10 @@ function telaAjustes(){
       <h3>Backup</h3>
       <p class="hint">Seus dados ficam só neste celular. Se limpar os dados do navegador ou trocar de celular, eles somem. Faça um backup de vez em quando.</p>
       <div class="row mt">
-        <button class="btn" onclick="exportar()">Salvar backup</button>
-        <button class="btn ghost" onclick="document.getElementById('arquivo').click()">Restaurar</button>
+        <button class="btn" onclick="exportar()">Exportar tarefas</button>
+        <button class="btn ghost" onclick="importarBackup()">Importar backup</button>
       </div>
+      ${podeCompartilhar() ? '<button class="btn text mt" onclick="compartilharBackup()">Compartilhar backup</button>' : ''}
     </div>
     <div class="card">
       <h3>Zerar tudo</h3>
@@ -1231,18 +1235,29 @@ function criarSecaoEditor(){
 }
 function cancelarEditor(){ if(editorAlterado()) pedirDescartar(); else fecharEditor(); }
 function fecharEditor(){ ed = null; fecharSheet(); }
-function pedirDescartar(){
-  $('dlg-caixa').innerHTML = `<h2 id="dlg-tit">Descartar alterações?</h2>
+let dlgComEntrada = false, dlgAcao = null;
+function mostrarDialogo({ titulo, texto = '', cancelar, ok, perigo = false, acao }){
+  dlgAcao = acao;
+  dlgComEntrada = !document.getElementById('overlay').classList.contains('show');
+  if(dlgComEntrada) history.pushState({dlg:true}, '');
+  $('dlg-caixa').innerHTML = `<h2 id="dlg-tit">${esc(titulo)}</h2>${texto ? `<p>${esc(texto)}</p>` : ''}
     <div class="dlg-acoes">
-      <button class="btn text" id="dlg-continuar" onclick="dialogoCancelar()">Continuar editando</button>
-      <button class="btn text danger" onclick="dialogoDescartar()">Descartar</button>
+      <button class="btn text" id="dlg-cancelar" onclick="dialogoCancelar()">${esc(cancelar)}</button>
+      <button class="btn text ${perigo ? 'danger' : ''}" onclick="dialogoOk()">${esc(ok)}</button>
     </div>`;
   $('dialogo').classList.add('show');
-  setTimeout(() => $('dlg-continuar').focus(), 50);
+  setTimeout(() => $('dlg-cancelar').focus(), 50);
 }
-function fecharDialogo(){ $('dialogo').classList.remove('show'); }
-function dialogoCancelar(){ fecharDialogo(); }
-function dialogoDescartar(){ fecharDialogo(); fecharEditor(); }
+function fecharDialogo(vindoDoVoltar){
+  $('dialogo').classList.remove('show');
+  if(dlgComEntrada && !vindoDoVoltar){ ignorarPop = true; history.back(); }
+  dlgComEntrada = false;
+}
+function dialogoCancelar(){ dlgAcao = null; fecharDialogo(); }
+function dialogoOk(){ const a = dlgAcao; dlgAcao = null; fecharDialogo(); if(a) setTimeout(a, 60); }
+function pedirDescartar(){
+  mostrarDialogo({ titulo: 'Descartar alterações?', cancelar: 'Continuar editando', ok: 'Descartar', perigo: true, acao: fecharEditor });
+}
 function excluirDoEditor(){
   const { tipo, id } = ed;
   ed = null; fecharSheet();
@@ -1313,25 +1328,44 @@ function confirmarAgora(){
 }
 
 /* ---------- backup ---------- */
+function arquivoBackup(){
+  const texto = JSON.stringify(Regras.montarBackup(dados, new Date().toISOString()), null, 2);
+  return new File([texto], 'rotina-backup-' + hoje() + '.json', { type: 'application/json' });
+}
 function exportar(){
-  const blob = new Blob([JSON.stringify(dados, null, 2)], {type:'application/json'});
+  finalizarSnack();
+  const arq = arquivoBackup();
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'rotina-backup-' + hoje() + '.json';
+  a.href = URL.createObjectURL(arq);
+  a.download = arq.name;
   document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   toast('Backup salvo em Downloads');
 }
+const podeCompartilhar = () => { try{ return !!(navigator.canShare && navigator.canShare({ files: [new File(['{}'], 'x.json', { type: 'application/json' })] })); }catch(e){ return false; } };
+async function compartilharBackup(){
+  finalizarSnack();
+  try{ await navigator.share({ files: [arquivoBackup()], title: 'Backup da rotina' }); }
+  catch(e){ if(e && e.name !== 'AbortError') toast('Não foi possível compartilhar'); }
+}
+function importarBackup(){ finalizarSnack(); document.getElementById('arquivo').click(); }
 document.getElementById('arquivo').addEventListener('change', async e => {
-  const f = e.target.files[0]; if(!f) return;
-  try{
-    const d = JSON.parse(await f.text());
-    if(!Array.isArray(d.secoes)) throw 0;
-    dados = { secoes: d.secoes, feitos: d.feitos || {} };
-    salvar(); render(); toast('Backup restaurado ✓');
-  }catch(err){ toast('Arquivo inválido'); }
-  e.target.value = '';
+  const f = e.target.files[0]; e.target.value = '';
+  if(!f) return;
+  let novo;
+  try{ novo = Regras.lerBackup(await f.text()); }
+  catch(err){ toast('Arquivo de backup inválido.'); return; }
+  const atuais = Regras.contarTarefas(dados), doBackup = Regras.contarTarefas(novo);
+  mostrarDialogo({
+    titulo: `Substituir suas ${atuais} ${atuais === 1 ? 'tarefa' : 'tarefas'} pelas ${doBackup} do backup?`,
+    cancelar: 'Cancelar', ok: 'Substituir', perigo: true,
+    acao: () => {
+      try{ localStorage.setItem('backup_pre_import', JSON.stringify(dados)); }
+      catch(err){ toast('Não consegui guardar a cópia de segurança. Nada foi alterado.'); return; }
+      dados = novo; ocultos.clear(); salvar(); render(); toast('Backup importado');
+    },
+  });
 });
-
 
 // quando o app volta do segundo plano num dia novo, atualiza o "Hoje"
 let ultimoHoje = hoje();

@@ -296,3 +296,43 @@ describe('progresso da semana', () => {
     assert.equal(R.textoSequencia(4), 'Sequência: 4 dias');
   });
 });
+
+describe('backup', () => {
+  const atual = () => R.migrar(JSON.stringify({
+    secoes: [{ id: 's1', nome: 'Treino', emoji: '🏋️', cor: '#ff5c6c', rotuloNome: 'Exercício', rotuloDetalhe: 'Carga', itens: [item('i1')] }],
+    feitos: { '2026-11-16': ['i1'] },
+    tarefas: [{ id: 'a1', title: 'Pagar conta', notes: null, dueDate: '2028-02-29', dueTime: '23:59', priority: 'high', categoryId: 's1', completedAt: null, createdAt: '2026-11-10T12:00:00.000Z', updatedAt: '2026-11-10T12:00:00.000Z' }],
+  })).dados;
+  test('exportar e importar devolve os mesmos dados', () => {
+    const d = atual();
+    const arquivo = JSON.stringify(R.montarBackup(d, '2026-11-17T18:00:00.000Z'));
+    const b = JSON.parse(arquivo);
+    assert.equal(b.app, 'minha-rotina');
+    assert.equal(b.schemaVersion, 2);
+    assert.deepEqual(R.lerBackup(arquivo), d);
+  });
+  test('backup antigo (formato v1, sem app) passa pela migração', () => {
+    const d = R.lerBackup(JSON.stringify({ secoes: [{ id: 's', nome: 'X', cor: '#7c5cff', itens: [item('i')] }], feitos: {} }));
+    assert.equal(d.schemaVersion, 2);
+    assert.equal(d.secoes[0].corToken, 'blue');
+  });
+  test('backup inválido falha com a mensagem certa', () => {
+    const msg = { message: 'Arquivo de backup inválido.' };
+    const ok = R.montarBackup(atual(), '2026-11-17T18:00:00.000Z');
+    const com = mudanca => JSON.stringify(mudanca(JSON.parse(JSON.stringify(ok))));
+    assert.throws(() => R.lerBackup('não é json'), msg);
+    assert.throws(() => R.lerBackup(com(b => ({ ...b, app: 'outro-app' }))), msg);
+    assert.throws(() => R.lerBackup(com(b => ({ ...b, schemaVersion: 3 }))), msg);
+    assert.throws(() => R.lerBackup(com(b => { b.tarefas[0].title = '  '; return b; })), msg);
+    assert.throws(() => R.lerBackup(com(b => { b.tarefas[0].dueDate = '2026-02-30'; return b; })), msg);
+    assert.throws(() => R.lerBackup(com(b => { b.tarefas[0].dueDate = null; return b; })), msg);
+    assert.throws(() => R.lerBackup(com(b => { b.tarefas[0].dueTime = '24:00'; return b; })), msg);
+    assert.throws(() => R.lerBackup(com(b => { b.secoes[0].itens[0].criadoEm = '17/11/2026'; return b; })), msg);
+  });
+  test('horários 00:00 e 23:59 e a data 29/02/2028 são aceitos', () => {
+    const ok = R.montarBackup(atual(), '2026-11-17T18:00:00.000Z');
+    ok.tarefas[0].dueTime = '00:00';
+    assert.equal(R.lerBackup(JSON.stringify(ok)).tarefas[0].dueDate, '2028-02-29');
+  });
+  test('conta itens da rotina e tarefas avulsas', () => assert.equal(R.contarTarefas(atual()), 2));
+});

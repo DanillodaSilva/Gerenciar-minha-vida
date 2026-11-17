@@ -190,9 +190,41 @@
     return { dados, migrou: JSON.stringify(dados) !== JSON.stringify(d), deVersao: versao };
   }
 
+  const APP = 'minha-rotina';
+  const ehData = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && fmt(parseDia(s)) === s;
+  const ehHora = s => typeof s === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s);
+  const ehIso = s => typeof s === 'string' && !isNaN(Date.parse(s));
+  function montarBackup(dados, agoraIso) {
+    return { app: APP, schemaVersion: SCHEMA, exportedAt: agoraIso, secoes: dados.secoes, feitos: dados.feitos, tarefas: dados.tarefas || [], ajustes: dados.ajustes || {} };
+  }
+  function tarefaValida(t) {
+    return ehObjeto(t) && typeof t.id === 'string' && t.id && !validarTitulo(t.title)
+      && (t.dueDate === null || t.dueDate === undefined || ehData(t.dueDate))
+      && (t.dueTime === null || t.dueTime === undefined || (ehHora(t.dueTime) && ehData(t.dueDate)))
+      && (t.priority === undefined || t.priority in PESO)
+      && (t.completedAt === null || t.completedAt === undefined || ehIso(t.completedAt));
+  }
+  const itemValido = i => ehObjeto(i) && typeof i.id === 'string' && i.id && typeof i.nome === 'string' && i.nome.trim() && ehData(i.criadoEm);
+  function lerBackup(texto) {
+    const invalido = () => new Error('Arquivo de backup inválido.');
+    let obj;
+    try { obj = JSON.parse(texto); } catch (e) { throw invalido(); }
+    if (!ehObjeto(obj) || (obj.app !== undefined && obj.app !== APP) || !Array.isArray(obj.secoes)) throw invalido();
+    if (obj.tarefas !== undefined && !Array.isArray(obj.tarefas)) throw invalido();
+    if (!obj.secoes.every(s => ehObjeto(s) && typeof s.id === 'string' && (s.itens === undefined || (Array.isArray(s.itens) && s.itens.every(itemValido))))) throw invalido();
+    if (!(obj.tarefas || []).every(tarefaValida)) throw invalido();
+    const { app, exportedAt, ...resto } = obj;
+    let r;
+    try { r = migrar(JSON.stringify(resto)); } catch (e) { throw invalido(); }
+    r.dados.tarefas = r.dados.tarefas.map(t => ({ notes: null, dueDate: null, dueTime: null, priority: 'medium', categoryId: null, completedAt: null, ...t }));
+    return r.dados;
+  }
+  const contarTarefas = d => d.secoes.reduce((a, s) => a + s.itens.length, 0) + (d.tarefas || []).length;
+
   const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
-    DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa };
+    DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
+    APP, montarBackup, lerBackup, contarTarefas };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
