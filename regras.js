@@ -17,9 +17,21 @@
 
   const corTokenDe = s => CORES.includes(s.corToken) ? s.corToken : (COR_ANTIGA[String(s.cor || '').toLowerCase()] || 'gray');
 
+  const DIAS_CURTOS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
+  const diaSemana = iso => { const d = parseDia(iso).getDay(); return d === 0 ? 7 : d; };
+  const repeteNoDia = (item, dia) => !Array.isArray(item.dias) || !item.dias.length || item.dias.includes(diaSemana(dia));
+  function resumoDias(dias) {
+    if (!Array.isArray(dias) || !dias.length || dias.length === 7) return 'Todo dia';
+    const v = dias.slice().sort((a, b) => a - b);
+    if (v.join() === '1,2,3,4,5') return 'Seg a sex';
+    if (v.join() === '6,7') return 'Fim de semana';
+    const t = v.map(n => DIAS_CURTOS[n - 1]).join(', ');
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+
   function itensDoDia(dados, dia, secao) {
     const secs = secao ? [secao] : dados.secoes;
-    return secs.flatMap(s => s.itens.filter(i => i.criadoEm <= dia));
+    return secs.flatMap(s => s.itens.filter(i => i.criadoEm <= dia && repeteNoDia(i, dia)));
   }
   const feito = (dados, dia, id) => (dados.feitos[dia] || []).includes(id);
   function resumoDia(dados, dia, secao) {
@@ -83,7 +95,7 @@
     return { dados, migrou: JSON.stringify(dados) !== JSON.stringify(d), deVersao: versao };
   }
 
-  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, corTokenDe, itensDoDia, feito, resumoDia, sequencia, vazio, migrar };
+  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

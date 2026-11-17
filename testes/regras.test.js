@@ -127,3 +127,27 @@ describe('migração v1 → v2', () => {
     assert.deepEqual(d([5, 1, 3, 1]), [1, 3, 5]);
   });
 });
+
+describe('dias da semana dos itens', () => {
+  test('diaSemana: 1 = segunda ... 7 = domingo', () => {
+    assert.equal(R.diaSemana('2026-11-16'), 1);
+    assert.equal(R.diaSemana('2026-11-20'), 5);
+    assert.equal(R.diaSemana('2026-11-22'), 7);
+  });
+  test('item só entra nos dias escolhidos', () => {
+    const d = base([item('a', '2026-11-01', { dias: [1, 3, 5] }), item('b')]);
+    assert.deepEqual(R.itensDoDia(d, '2026-11-16').map(i => i.id), ['a', 'b']);
+    assert.deepEqual(R.itensDoDia(d, '2026-11-17').map(i => i.id), ['b']);
+  });
+  test('15 completo, 16 sem itens no dia, 17 completo → 2 (dia sem itens é pulado)', () => {
+    const d = base([item('a', '2026-11-01', { dias: [2, 7] })], { '2026-11-15': ['a'], '2026-11-17': ['a'] });
+    assert.equal(R.itensDoDia(d, '2026-11-16').length, 0);
+    assert.equal(R.sequencia(d, HOJE), 2);
+  });
+  test('resumo dos dias', () => {
+    assert.equal(R.resumoDias([1, 2, 3, 4, 5, 6, 7]), 'Todo dia');
+    assert.equal(R.resumoDias([1, 2, 3, 4, 5]), 'Seg a sex');
+    assert.equal(R.resumoDias([6, 7]), 'Fim de semana');
+    assert.equal(R.resumoDias([5, 1, 3]), 'Seg, qua, sex');
+  });
+});

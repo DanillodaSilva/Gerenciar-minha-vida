@@ -189,6 +189,13 @@
   .chart .b span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);white-space:nowrap}
   .chart .lbl{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);margin-top:var(--space-1);white-space:nowrap}
   .secstat{margin-bottom:var(--space-3)}
+  .secao-titulo{font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--text-secondary);margin:var(--space-5) 0 var(--space-2)}
+  .item .info.sem-check{padding-left:var(--space-4)}
+  .sheet-campo{display:flex;flex-direction:column;gap:var(--space-1)}
+  .sheet-campo .rotulo{font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary)}
+  .chips.dias{flex-wrap:nowrap;justify-content:space-between;gap:0}
+  .chips.dias .chip{flex:1;justify-content:center;min-width:0}
+  .chips.dias .chip>span{min-width:calc(var(--touch) - var(--space-2));justify-content:center;padding:0}
   .secstat .top{display:flex;justify-content:space-between;gap:var(--space-2);font-size:var(--fs-label);line-height:var(--lh-label)}
 
   .overlay{position:fixed;inset:0;background:var(--scrim);display:none;align-items:flex-end;justify-content:center;z-index:10}
@@ -376,11 +383,19 @@ function telaRotina(){
   `;
 }
 
+function linhaItem(s, i){
+  const partes = [];
+  if(i.horario) partes.push(esc(i.horario));
+  if(i.detalhe) partes.push(esc(s.rotuloDetalhe) + ': ' + esc(i.detalhe));
+  if(Array.isArray(i.dias) && i.dias.length && i.dias.length < 7) partes.push(Regras.resumoDias(i.dias));
+  return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
+}
 function telaSecao(){
   const s = dados.secoes.find(x => x.id === secaoAberta);
   if(!s){ tela = 'rotina'; return telaRotina(); }
   const r = resumoDia(diaSel, s);
-  const itens = s.itens.filter(i => i.criadoEm <= diaSel);
+  const itens = s.itens.filter(i => i.criadoEm <= diaSel && Regras.repeteNoDia(i, diaSel));
+  const outros = s.itens.filter(i => !itens.includes(i));
   const lista = itens.map(i => {
     const f = feito(diaSel, i.id);
     return `
@@ -388,10 +403,15 @@ function telaSecao(){
       <button class="check" role="checkbox" aria-checked="${f}" onclick="alternar('${i.id}')" aria-label="${esc(i.nome)}"><i>${ic('check')}</i></button>
       <div class="info" onclick="alternar('${i.id}')">
         <b>${esc(i.nome)}</b>
-        ${i.detalhe ? `<small>${esc(s.rotuloDetalhe)}: ${esc(i.detalhe)}</small>` : ''}
+        ${linhaItem(s, i)}
       </div>
       <button class="more" onclick="sheetItem('${i.id}')" aria-label="Editar ${esc(i.nome)}">${ic('mais')}</button>
     </div>`; }).join('');
+  const listaOutros = outros.map(i => `
+    <div class="item">
+      <div class="info sem-check" onclick="sheetItem('${i.id}')"><b>${esc(i.nome)}</b>${linhaItem(s, i)}</div>
+      <button class="more" onclick="sheetItem('${i.id}')" aria-label="Editar ${esc(i.nome)}">${ic('mais')}</button>
+    </div>`).join('');
   return `
     <header class="top">
       <button class="icon-btn" onclick="history.back()" aria-label="Voltar">${ic('voltar')}</button>
@@ -404,7 +424,8 @@ function telaSecao(){
       <small>${r.feitas} de ${r.total} feitas · ${nomeDia(diaSel).toLowerCase()}</small>
       <div class="bar"><i style="width:${r.pct}%"></i></div>
     </div>
-    ${lista || `<p class="empty">Nenhum item. Adicione o primeiro ${esc(s.rotuloNome.toLowerCase())}.</p>`}
+    ${lista || `<p class="empty">${s.itens.length ? 'Nada desta seção para ' + nomeDia(diaSel).toLowerCase() + '.' : 'Nenhum item. Adicione o primeiro ' + esc(s.rotuloNome.toLowerCase()) + '.'}</p>`}
+    ${listaOutros ? `<h3 class="secao-titulo">Outros dias</h3>${listaOutros}` : ''}
     <button class="btn" onclick="sheetItem()">${ic('add')} Adicionar ${esc(s.rotuloNome.toLowerCase())}</button>
   `;
 }
@@ -571,22 +592,42 @@ function sheetItem(idItem){
     <h2>${it ? 'Editar' : 'Adicionar'} ${esc(s.rotuloNome.toLowerCase())}</h2>
     <label>${esc(s.rotuloNome)}<input id="f-in" value="${esc(it?.nome)}" placeholder="${s.rotuloNome==='Exercício'?'Ex.: Supino reto':s.rotuloNome==='Matéria'?'Ex.: Spring Data':''}"></label>
     <label>${esc(s.rotuloDetalhe)} (opcional)<input id="f-id" value="${esc(it?.detalhe)}" placeholder="${s.rotuloDetalhe==='Carga'?'Ex.: 40 kg · 4x10':s.rotuloDetalhe==='Duração'?'Ex.: 1h':''}"></label>
+    <label>Notas (opcional)<textarea id="f-notas" maxlength="1000" rows="2">${esc(it?.notas)}</textarea></label>
+    <label>Horário (opcional)<input id="f-hora" type="time" value="${esc(it?.horario)}"></label>
+    ${seletorDias(it ? it.dias : Regras.TODOS_OS_DIAS)}
     <button class="btn" onclick="salvarItem('${idItem||''}')">${it ? 'Salvar' : 'Adicionar'}</button>
     ${it ? `<button class="btn danger" onclick="excluirItem('${it.id}')">Excluir</button>` : ''}
   `);
-  document.querySelectorAll('#sheet input').forEach(inp =>
+  document.querySelectorAll('#sheet input:not([type=time])').forEach(inp =>
     inp.addEventListener('keydown', e => { if(e.key === 'Enter') salvarItem(idItem||''); }));
 }
+const NOMES_DIAS = ['segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado','domingo'];
+function seletorDias(dias){
+  return `<div class="sheet-campo"><span class="rotulo" id="rot-dias">Repetir</span>
+    <div class="chips dias" role="group" aria-labelledby="rot-dias">
+      ${['S','T','Q','Q','S','S','D'].map((l, i) => { const on = dias.includes(i + 1);
+        return `<button class="chip ${on?'on':''}" data-dia="${i + 1}" aria-pressed="${on}" aria-label="${NOMES_DIAS[i]}" onclick="alternarDia(this)"><span>${l}</span></button>`; }).join('')}
+    </div></div>`;
+}
+function alternarDia(b){
+  const on = b.getAttribute('aria-pressed') !== 'true';
+  b.setAttribute('aria-pressed', on); b.classList.toggle('on', on);
+}
+const diasMarcados = () => [...document.querySelectorAll('#sheet .dias .chip[aria-pressed="true"]')].map(b => +b.dataset.dia);
 function salvarItem(idItem){
   const s = dados.secoes.find(x => x.id === secaoAberta);
   const nome = document.getElementById('f-in').value.trim();
   const detalhe = document.getElementById('f-id').value.trim();
   if(!nome){ toast('Preenche o campo ' + s.rotuloNome.toLowerCase()); return; }
+  const notas = document.getElementById('f-notas').value.trim() || null;
+  const horario = document.getElementById('f-hora').value || null;
+  const dias = diasMarcados();
+  if(!dias.length){ toast('Escolha pelo menos um dia'); return; }
   if(idItem){
-    Object.assign(s.itens.find(i => i.id === idItem), { nome, detalhe });
+    Object.assign(s.itens.find(i => i.id === idItem), { nome, detalhe, notas, horario, dias });
   } else {
     // conta a partir do dia que você está vendo (permite cadastrar algo que fez ontem)
-    s.itens.push({ id: uid(), nome, detalhe, criadoEm: diaSel });
+    s.itens.push({ id: uid(), nome, detalhe, criadoEm: diaSel, notas, horario, dias });
   }
   salvar(); fecharSheet(); render();
 }
