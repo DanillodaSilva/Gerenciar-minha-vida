@@ -662,8 +662,14 @@ function menuAcao(acao){
 
 /* ---------- navegação (botão voltar do Android funciona) ---------- */
 function irPara(t){
-  if(tela === 'secao') history.back();
+  if(t === tela){ scrollTo(0,0); return; }
+  const deHoje = tela === 'rotina';
+  const volta = tela === 'secao' || t === 'rotina';
   tela = t; secaoAberta = null; render(); scrollTo(0,0);
+  if(volta){
+    ignorarPop = true; history.back();
+    if(t !== 'rotina') setTimeout(() => history.pushState({aba:t}, ''), 60);
+  } else if(deHoje) history.pushState({aba:t}, '');
 }
 function abrirSecao(id){
   secaoAberta = id; tela = 'secao';
@@ -681,7 +687,7 @@ addEventListener('popstate', () => {
     if(ed && editorAlterado()){ history.pushState({sheet:true}, ''); pedirDescartar(); return; }
     ed = null; fecharSheet(true); return;
   }
-  if(tela === 'secao'){ tela = 'rotina'; secaoAberta = null; render(); }
+  if(tela !== 'rotina'){ tela = 'rotina'; secaoAberta = null; render(); scrollTo(0,0); }
 });
 
 /* ---------- telas ---------- */
@@ -1431,12 +1437,19 @@ document.getElementById('arquivo').addEventListener('change', async e => {
 
 // quando o app volta do segundo plano num dia novo, atualiza o "Hoje"
 let ultimoHoje = hoje();
-document.addEventListener('visibilitychange', () => {
-  if(!document.hidden && hoje() !== ultimoHoje){
-    if(diaSel === ultimoHoje) diaSel = hoje();
-    ultimoHoje = hoje(); render();
-  }
-});
+function conferirDia(){
+  if(hoje() === ultimoHoje) return;
+  if(diaSel === ultimoHoje) diaSel = hoje();
+  ultimoHoje = hoje();
+  if(dados && !gesto) render();
+}
+function agendarMeiaNoite(){
+  const agora = new Date();
+  const meiaNoite = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 1, 0, 0, 1);
+  setTimeout(() => { conferirDia(); agendarMeiaNoite(); }, meiaNoite - agora);
+}
+agendarMeiaNoite();
+document.addEventListener('visibilitychange', () => { if(!document.hidden) conferirDia(); });
 
 // faz funcionar offline e permite instalar como app
 if('serviceWorker' in navigator){
