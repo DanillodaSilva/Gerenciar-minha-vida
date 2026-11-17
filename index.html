@@ -889,7 +889,7 @@ function linhaHoje(s, i, comSecao){
   return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
 }
 const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path pathLength="1" d="M5 12.5l4.2 4.2L19 7"/></svg>';
-const fundoLinha = f => `<div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Concluir'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>`;
+const fundoLinha = f => `<div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Marcar'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>`;
 function linhaTarefa(t, o){
   const partes = [];
   const s = secaoDe(t.categoryId);
