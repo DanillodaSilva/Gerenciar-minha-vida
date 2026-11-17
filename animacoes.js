@@ -5,7 +5,7 @@
     entrada: 'cubic-bezier(0.4, 0, 1, 1)',
     movimento: 'cubic-bezier(0.65, 0, 0.35, 1)',
     mola: 'linear(0, 0.051 4.2%, 0.166 8.3%, 0.309 12.5%, 0.456 16.7%, 0.591 20.8%, 0.708 25%, 0.803 29.2%, 0.877 33.3%, 0.932 37.5%, 0.970 41.7%, 0.996 45.8%, 1.011 50%, 1.019 54.2%, 1.022 58.3%, 1.022 62.5%, 1.020 66.7%, 1.017 70.8%, 1.013 75%, 1.010 79.2%, 1.008 83.3%, 1.005 87.5%, 1.003 91.7%, 1.002 95.8%, 1)',
-    reduzida: 120, esperaConcluidas: 350, dicaAtraso: 800, dicaDuracao: 700, dicaDistancia: 28, brilho: 500, cartao: 2500, confetes: 80, cascata: 30, cascataMax: 8, desfazer: 5000, aviso: 2000,
+    reduzida: 120, esperaConcluidas: 350, dicaAtraso: 800, dicaDuracao: 700, dicaDistancia: 28, brilho: 500, cartao: 2500, confetes: 80, cascata: 30, cascataMax: 8, desfazer: 5000, aviso: 2000, cascataBarras: 40, balao: 2000, contagemLonga: 600,
   };
 
   const GESTO = { trava: 8, limite: 0.4, minimoVeloz: 0.15, velocidade: 0.5, elastico: 0.6, resistencia: 0.3 };
@@ -103,9 +103,10 @@
     cancelAnimationFrame(el._quadro);
     el._mostrado = para;
     if (de === para || reduzido()) { el.textContent = para + sufixo; return; }
+    const duracao = Number(el.getAttribute('data-duracao')) || MOV.contagem;
     const t0 = performance.now();
     const passo = agora => {
-      const p = Math.min(1, (agora - t0) / MOV.contagem);
+      const p = Math.min(1, (agora - t0) / duracao);
       const e = 1 - Math.pow(1 - p, 3);
       el.textContent = Math.round(de + (para - de) * e) + sufixo;
       if (p < 1) el._quadro = requestAnimationFrame(passo);

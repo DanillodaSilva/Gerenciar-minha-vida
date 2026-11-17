@@ -498,7 +498,11 @@
   .chart.semana .b{background:color-mix(in srgb, var(--primary) 72%, var(--surface))}
   .chart.semana .b.zero{background:var(--border-strong)}
   .chart.semana .b.hoje{background:var(--primary)}
-  .chart.semana .b span{color:var(--text-primary);font-weight:var(--w-medium)}
+  .chart.semana .col{position:relative;border-radius:var(--radius-chip);padding:0}
+  .chart.semana .valor{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-primary);font-weight:var(--w-medium);font-variant-numeric:tabular-nums}
+  .chart.semana .b{transform-origin:bottom center}
+  .balao{position:absolute;bottom:calc(100% + var(--space-2));left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--snack-bg);color:var(--snack-fg);
+    font-size:var(--fs-meta);line-height:var(--lh-meta);padding:var(--space-1) var(--space-2);border-radius:var(--radius-chip);pointer-events:none;z-index:3}
   .chart .lbl.hoje{color:var(--text-primary);font-weight:var(--w-semibold)}
   .total-card{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap}
   .total-card b{font-size:var(--fs-number);line-height:var(--lh-number);font-weight:var(--w-semibold)}
@@ -1261,6 +1265,7 @@ function render(refazer = false){
   marcarDuasLinhas();
   talvezMostrarDica();
   document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
+  animarProgresso();
 }
 setInterval(() => {
   const topo = document.querySelector('#app .hoje-top');
@@ -1564,6 +1569,35 @@ function telaSecao(){
   `;
 }
 
+let progressoAnimado = false;
+function animarProgresso(){
+  if(progressoAnimado || tela !== 'constancia') return;
+  const barras = document.querySelectorAll('#app .chart.semana .b');
+  if(!barras.length) return;
+  progressoAnimado = true;
+  if(Animacoes.reduzido()) return;
+  const M = Animacoes.MOV;
+  barras.forEach((b, i) => b.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: M.lenta, delay: i * M.cascataBarras, easing: M.saida, fill: 'backwards' }));
+  document.querySelectorAll('#app .cartao-num [data-contar], #app .total-card [data-contar]').forEach(el => { el._mostrado = 0; Animacoes.contar(el); });
+}
+function balaoBarra(col, dia){
+  const r = Regras.resumoDia(visao(), dia);
+  const nome = Regras.DIAS_LONGOS[(Regras.parseDia(dia).getDay() + 6) % 7];
+  const texto = `${nome}, ${r.feitas} de ${r.total} feitos`;
+  document.querySelectorAll('.balao').forEach(b => b.remove());
+  const b = document.createElement('span');
+  b.className = 'balao'; b.setAttribute('role', 'status'); b.textContent = texto;
+  col.appendChild(b);
+  const lado = col.getBoundingClientRect(), larg = b.offsetWidth, margem = 8;
+  const deslocamento = Math.min(0, innerWidth - margem - (lado.left + lado.width / 2 + larg / 2)) + Math.max(0, margem - (lado.left + lado.width / 2 - larg / 2));
+  b.style.transform = `translateX(calc(-50% + ${deslocamento}px))`;
+  if(!Animacoes.reduzido()) b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.saida });
+  setTimeout(() => {
+    if(!b.isConnected) return;
+    if(Animacoes.reduzido()) return b.remove();
+    b.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = () => b.remove();
+  }, Animacoes.MOV.balao);
+}
 function telaProgresso(){
   const vis = visao();
   const total = Regras.totalConcluidas(vis);
@@ -1576,10 +1610,11 @@ function telaProgresso(){
   const maxSemana = Math.max(1, ...semana.map(b => b.valor));
   const letras = ['S','T','Q','Q','S','S','D'];
   const barrasSemana = semana.map((b, i) => `
-    <div class="col" role="img" aria-label="${Regras.DIAS_LONGOS[i]}, ${b.valor} ${b.valor === 1 ? 'tarefa concluída' : 'tarefas concluídas'}">
-      <div class="b ${b.valor ? '' : 'zero'} ${b.hoje ? 'hoje' : ''}" style="height:${b.valor / maxSemana * 100}%"><span aria-hidden="true">${b.valor}</span></div>
+    <button class="col" aria-label="${Regras.DIAS_LONGOS[i]}, ${b.valor} ${b.valor === 1 ? 'tarefa concluída' : 'tarefas concluídas'}" onclick="balaoBarra(this, '${b.dia}')">
+      <span class="valor" aria-hidden="true">${b.valor}</span>
+      <div class="b ${b.valor ? '' : 'zero'} ${b.hoje ? 'hoje' : ''}" style="height:${b.valor / maxSemana * 100}%"></div>
       <div class="lbl ${b.hoje ? 'hoje' : ''}" aria-hidden="true">${letras[i]}</div>
-    </div>`).join('');
+    </button>`).join('');
 
   const dias = [];
   for(let i = periodo - 1; i >= 0; i--) dias.push(somaDias(hoje(), -i));
@@ -1610,14 +1645,14 @@ function telaProgresso(){
   return `
     <header class="top"><h1>Progresso</h1></header>
     <div class="cartoes">
-      <div class="cartao-num destaque">${ic('fogo')}<b>${seq}</b><span>${Regras.textoSequencia(seq)}</span></div>
-      <div class="cartao-num">${ic('grafico')}<b>${taxa.pct === null ? '—' : taxa.pct + '%'}</b><span>${Regras.textoTaxa(taxa.pct)}</span></div>
+      <div class="cartao-num destaque">${ic('fogo')}<b data-contar="${seq}" data-duracao="600">${seq}</b><span>${Regras.textoSequencia(seq)}</span></div>
+      <div class="cartao-num">${ic('grafico')}<b ${taxa.pct === null ? '' : `data-contar="${taxa.pct}" data-sufixo="%" data-duracao="600"`}>${taxa.pct === null ? '—' : taxa.pct + '%'}</b><span>${Regras.textoTaxa(taxa.pct)}</span></div>
     </div>
     <div class="card">
       <h2>Concluídas por dia nesta semana</h2>
       <div class="chart semana">${barrasSemana}</div>
     </div>
-    <div class="card total-card"><span>Concluídas no total:</span><b>${total}</b></div>
+    <div class="card total-card"><span>Concluídas no total:</span><b data-contar="${total}" data-duracao="600">${total}</b></div>
 
     <h2 class="titulo-bloco">Histórico</h2>
     <div class="seg" role="radiogroup" aria-label="Período">
