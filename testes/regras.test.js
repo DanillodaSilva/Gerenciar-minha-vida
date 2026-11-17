@@ -71,7 +71,7 @@ describe('cores das seções', () => {
   });
 });
 
-describe('migração v1 → v2', () => {
+describe('migração v1 → atual', () => {
   const v1 = {
     secoes: [{ id: 'lx1abc', nome: 'Treino', emoji: '🏋️', cor: '#7c5cff', rotuloNome: 'Exercício', rotuloDetalhe: 'Carga', extraSecao: 1,
       itens: [{ id: 'lx2def', nome: 'Supino', detalhe: '40 kg', criadoEm: '2026-11-10', extraItem: 'x' }] }],
@@ -84,14 +84,14 @@ describe('migração v1 → v2', () => {
     const { dados, migrou, deVersao } = R.migrar(bruto);
     assert.equal(migrou, true);
     assert.equal(deVersao, 1);
-    assert.equal(dados.schemaVersion, 2);
+    assert.equal(dados.schemaVersion, R.SCHEMA);
     assert.deepEqual(dados.tarefas, []);
     assert.deepEqual(dados.ajustes, { tema: 'system' });
     assert.deepEqual(dados.feitos, v1.feitos);
     const s = dados.secoes[0];
     assert.equal(s.corToken, 'blue');
     assert.equal(s.cor, '#7c5cff');
-    assert.deepEqual(s.itens[0], { ...v1.secoes[0].itens[0], notas: null, horario: null, dias: [1, 2, 3, 4, 5, 6, 7] });
+    assert.deepEqual(s.itens[0], { ...v1.secoes[0].itens[0], notas: null, horario: null, dias: [1, 2, 3, 4, 5, 6, 7], lembreteMin: null });
   });
   test('rodar a migração duas vezes dá o mesmo resultado', () => {
     const uma = R.migrar(bruto).dados;
@@ -118,7 +118,7 @@ describe('migração v1 → v2', () => {
     assert.throws(() => R.migrar('{"secoes":['));
     assert.throws(() => R.migrar('{"itens":[]}'));
     assert.throws(() => R.migrar('[]'));
-    assert.throws(() => R.migrar(JSON.stringify({ schemaVersion: 3, secoes: [] })));
+    assert.throws(() => R.migrar(JSON.stringify({ schemaVersion: R.SCHEMA + 1, secoes: [] })));
   });
   test('dias inválidos voltam para todos os dias; dias válidos são ordenados sem repetição', () => {
     const d = (dias) => R.migrar(JSON.stringify({ schemaVersion: 2, secoes: [{ id: 's', itens: [{ id: 'i', criadoEm: HOJE, dias }] }] })).dados.secoes[0].itens[0].dias;
@@ -308,12 +308,12 @@ describe('backup', () => {
     const arquivo = JSON.stringify(R.montarBackup(d, '2026-11-17T18:00:00.000Z'));
     const b = JSON.parse(arquivo);
     assert.equal(b.app, 'minha-rotina');
-    assert.equal(b.schemaVersion, 2);
+    assert.equal(b.schemaVersion, R.SCHEMA);
     assert.deepEqual(R.lerBackup(arquivo), d);
   });
   test('backup antigo (formato v1, sem app) passa pela migração', () => {
     const d = R.lerBackup(JSON.stringify({ secoes: [{ id: 's', nome: 'X', cor: '#7c5cff', itens: [item('i')] }], feitos: {} }));
-    assert.equal(d.schemaVersion, 2);
+    assert.equal(d.schemaVersion, R.SCHEMA);
     assert.equal(d.secoes[0].corToken, 'blue');
   });
   test('backup inválido falha com a mensagem certa', () => {
@@ -322,7 +322,7 @@ describe('backup', () => {
     const com = mudanca => JSON.stringify(mudanca(JSON.parse(JSON.stringify(ok))));
     assert.throws(() => R.lerBackup('não é json'), msg);
     assert.throws(() => R.lerBackup(com(b => ({ ...b, app: 'outro-app' }))), msg);
-    assert.throws(() => R.lerBackup(com(b => ({ ...b, schemaVersion: 3 }))), msg);
+    assert.throws(() => R.lerBackup(com(b => ({ ...b, schemaVersion: R.SCHEMA + 1 }))), msg);
     assert.throws(() => R.lerBackup(com(b => { b.tarefas[0].title = '  '; return b; })), msg);
     assert.throws(() => R.lerBackup(com(b => { b.tarefas[0].dueDate = '2026-02-30'; return b; })), msg);
     assert.throws(() => R.lerBackup(com(b => { b.tarefas[0].dueDate = null; return b; })), msg);
@@ -335,4 +335,76 @@ describe('backup', () => {
     assert.equal(R.lerBackup(JSON.stringify(ok)).tarefas[0].dueDate, '2028-02-29');
   });
   test('conta itens da rotina e tarefas avulsas', () => assert.equal(R.contarTarefas(atual()), 2));
+});
+
+describe('migração v2 → v3 (lembretes)', () => {
+  const v2 = { schemaVersion: 2, ajustes: { tema: 'dark' }, secoes: [{ id: 's', nome: 'X', corToken: 'teal', itens: [{ id: 'i', nome: 'Item', detalhe: '', criadoEm: '2026-11-01', notas: null, horario: '08:00', dias: [1, 2, 3, 4, 5, 6, 7] }] }], feitos: {},
+    tarefas: [{ id: 'a', title: 'A', notes: null, dueDate: '2026-11-18', dueTime: '10:00', priority: 'medium', categoryId: null, completedAt: null, createdAt: '2026-11-10T12:00:00.000Z', updatedAt: '2026-11-10T12:00:00.000Z' }] };
+  test('adiciona lembreteMin e reminderOffsetMin nulos, mantendo o resto', () => {
+    const { dados, migrou, deVersao } = R.migrar(JSON.stringify(v2));
+    assert.equal(migrou, true); assert.equal(deVersao, 2); assert.equal(dados.schemaVersion, 3);
+    assert.equal(dados.secoes[0].itens[0].lembreteMin, null);
+    assert.equal(dados.tarefas[0].reminderOffsetMin, null);
+    assert.equal(dados.ajustes.tema, 'dark');
+    assert.equal(R.migrar(JSON.stringify(dados)).migrou, false);
+  });
+  test('antecedência fora de 0, 10, 30 e 60 vira nula', () => {
+    const x = JSON.parse(JSON.stringify(v2)); x.tarefas[0].reminderOffsetMin = 15; x.secoes[0].itens[0].lembreteMin = 30;
+    const { dados } = R.migrar(JSON.stringify(x));
+    assert.equal(dados.tarefas[0].reminderOffsetMin, null);
+    assert.equal(dados.secoes[0].itens[0].lembreteMin, 30);
+  });
+});
+
+describe('lembretes', () => {
+  const agora = new Date(2026, 10, 17, 10, 0).getTime();
+  const tf = (extra = {}) => ({ id: 'a', title: 'Dentista', notes: null, dueDate: '2026-11-17', dueTime: '14:30', priority: 'medium', categoryId: null, completedAt: null, createdAt: '2026-11-10T12:00:00.000Z', updatedAt: '2026-11-10T12:00:00.000Z', reminderOffsetMin: 30, ...extra });
+  const d = (tarefas, itens = [], feitos = {}) => ({ secoes: [{ id: 's', nome: 'X', itens }], feitos, tarefas });
+  test('disparo = data + hora − antecedência, com título e corpo', () => {
+    const [l] = R.lembretesPendentes(d([tf()]), agora);
+    assert.equal(l.at, new Date(2026, 10, 17, 14, 0).getTime());
+    assert.equal(l.title, 'Dentista');
+    assert.equal(l.body, 'Hoje às 14:30');
+  });
+  test('"Na hora" dispara no horário; corpo usa Amanhã ou a data curta', () => {
+    const [a] = R.lembretesPendentes(d([tf({ reminderOffsetMin: 0, dueDate: '2026-11-18' })]), agora);
+    assert.equal(a.at, new Date(2026, 10, 18, 14, 30).getTime());
+    assert.equal(a.body, 'Amanhã às 14:30');
+    const [b] = R.lembretesPendentes(d([tf({ dueDate: '2026-11-20', reminderOffsetMin: 60 })]), agora);
+    assert.equal(b.body, 'sex, 20 nov às 14:30');
+  });
+  test('disparo no passado não agenda; tarefa concluída não agenda; sem horário ou sem lembrete não agenda', () => {
+    assert.equal(R.lembretesPendentes(d([tf({ dueTime: '10:20' })]), agora).length, 0);
+    assert.equal(R.lembretesPendentes(d([tf({ completedAt: '2026-11-17T12:00:00.000Z' })]), agora).length, 0);
+    assert.equal(R.lembretesPendentes(d([tf({ dueTime: null })]), agora).length, 0);
+    assert.equal(R.lembretesPendentes(d([tf({ reminderOffsetMin: null })]), agora).length, 0);
+  });
+  test('só nos próximos 30 dias', () => {
+    assert.equal(R.lembretesPendentes(d([tf({ dueDate: '2026-12-16' })]), agora).length, 1);
+    assert.equal(R.lembretesPendentes(d([tf({ dueDate: '2026-12-18' })]), agora).length, 0);
+  });
+  test('item recorrente agenda só a ocorrência atual', () => {
+    const it = { id: 'i', nome: 'Remédio', detalhe: '', criadoEm: '2026-11-01', notas: null, horario: '08:00', dias: [1, 2, 3, 4, 5, 6, 7], lembreteMin: 10 };
+    const l = R.lembretesPendentes(d([], [it]), agora);
+    assert.equal(l.length, 1);
+    assert.equal(l[0].at, new Date(2026, 10, 18, 7, 50).getTime());
+    assert.equal(l[0].body, 'Amanhã às 08:00');
+  });
+  test('item já feito hoje pula para o próximo dia da semana em que repete', () => {
+    const it = { id: 'i', nome: 'Treino', detalhe: '', criadoEm: '2026-11-01', notas: null, horario: '20:00', dias: [2, 4], lembreteMin: 0 };
+    const l = R.lembretesPendentes(d([], [it], { '2026-11-17': ['i'] }), agora);
+    assert.equal(l[0].at, new Date(2026, 10, 19, 20, 0).getTime());
+  });
+  test('ids de notificação são inteiros positivos, estáveis e diferentes', () => {
+    const a = R.idNotificacao('tarefa:a'), b = R.idNotificacao('item:a');
+    assert.ok(Number.isInteger(a) && a > 0 && a <= 2147483647);
+    assert.notEqual(a, b);
+    assert.equal(a, R.idNotificacao('tarefa:a'));
+  });
+  test('backup aceita lembrete válido e recusa inválido', () => {
+    const base = R.montarBackup(R.migrar(JSON.stringify(d([tf()]))).dados, '2026-11-17T18:00:00.000Z');
+    assert.equal(R.lerBackup(JSON.stringify(base)).tarefas[0].reminderOffsetMin, 30);
+    base.tarefas[0].reminderOffsetMin = 45;
+    assert.throws(() => R.lerBackup(JSON.stringify(base)), { message: 'Arquivo de backup inválido.' });
+  });
 });

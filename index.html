@@ -302,6 +302,8 @@
   .chip>span{display:inline-flex;align-items:center;gap:var(--space-1);min-height:var(--chip-h);padding:0 var(--space-3);border-radius:var(--radius-chip);
     background:var(--chip-bg);border:var(--border-width) solid var(--chip-border);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-primary)}
   .chip.on>span{background:var(--primary-container);border-color:var(--primary);color:var(--on-container)}
+  .chip:disabled{cursor:default}
+  .chip:disabled>span{color:var(--text-secondary);border-color:var(--border);background:var(--surface)}
   .colors{display:flex;gap:0;flex-wrap:wrap}
   .colors button{width:var(--touch);height:var(--touch);display:grid;place-items:center}
   .colors button i{width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--c);display:grid;place-items:center;color:var(--surface)}
@@ -462,6 +464,7 @@ const ICONES = {
   fechar:'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
   buscar:'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
   bandeira:'M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z',
+  sino:'M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z',
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
@@ -504,6 +507,7 @@ function carregar(){
 }
 function salvar(){
   if(!dados) return;
+  agendarReconciliacao();
   try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); }
   catch(e){ toast('Não consegui salvar 😕'); }
 }
@@ -738,7 +742,7 @@ function render(){
   if(tela === 'proximos')   app.innerHTML = telaProximos();
   if(tela === 'secao')      app.innerHTML = telaSecao();
   if(tela === 'constancia') app.innerHTML = telaProgresso();
-  if(tela === 'ajustes')    app.innerHTML = telaAjustes();
+  if(tela === 'ajustes'){   app.innerHTML = telaAjustes(); atualizarEstadoNotif(); }
 }
 
 function seletorDia(){
@@ -769,6 +773,7 @@ function linhaHoje(s, i, comSecao){
   if(comSecao) partes.push(`<span class="cat"><i class="ponto"></i>${esc(s.nome)}</span>`);
   if(i.detalhe) partes.push(esc(s.rotuloDetalhe) + ': ' + esc(i.detalhe));
   if(i.dias.length < 7) partes.push(`<span class="rep">${ic('repetir','sm')}${Regras.resumoDias(i.dias)}</span>`);
+  if(i.horario && i.lembreteMin != null) partes.push(`<span class="rep">${ic('sino','sm')}<span class="sr">Com lembrete</span></span>`);
   return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
 }
 const fundoLinha = f => `<div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Concluir'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>`;
@@ -782,6 +787,7 @@ function linhaTarefa(t, o){
   }
   if(o.secao && s) partes.push(`<span class="cat"><i class="ponto"></i>${esc(s.nome)}</span>`);
   if(t.priority === 'high') partes.push(`<span class="prio">${ic('bandeira','sm')}Alta</span>`);
+  if(t.dueTime && t.reminderOffsetMin != null) partes.push(`<span class="rep">${ic('sino','sm')}<span class="sr">Com lembrete</span></span>`);
   return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
 }
 function itemTarefa(t, o = {}){
@@ -1074,6 +1080,11 @@ function telaAjustes(){
       <p class="hint">Apaga todas as seções, tarefas e o histórico.</p>
       <button class="btn danger mt" onclick="pedirApagarTudo()">Apagar tudo</button>
     </div>
+    ${NATIVO ? `<div class="card">
+      <h2>Notificações</h2>
+      <p class="hint" id="estado-notif" aria-live="polite">Verificando…</p>
+      <button class="btn ghost mt" onclick="abrirConfigNotif()">Abrir configurações</button>
+    </div>` : ''}
     <div class="card sobre"><b>Minha Rotina</b><span>Versão ${VERSAO}</span></div>
   `;
 }
@@ -1206,16 +1217,16 @@ function abrirEditor(o){
     if(!it) return;
     tipo = 'item'; id = it.id;
     v = { nome: it.nome, detalhe: it.detalhe || '', notas: it.notas || '', horario: it.horario || '', dias: it.dias.slice(), sid: s.id,
-      repetir: it.dias.length === 7 ? 'todo' : 'dias', data: '', prioridade: 'medium' };
+      repetir: it.dias.length === 7 ? 'todo' : 'dias', data: '', prioridade: 'medium', lembrete: it.lembreteMin ?? null };
   } else if(o.tipo === 'tarefa'){
     const t = tarefaPorId(o.id); if(!t) return;
     tipo = 'tarefa'; id = t.id;
     v = { nome: t.title, detalhe: '', notas: t.notes || '', horario: t.dueTime || '', dias: Regras.TODOS_OS_DIAS.slice(), sid: t.categoryId && secaoDe(t.categoryId) ? t.categoryId : null,
-      repetir: 'nao', data: t.dueDate || '', prioridade: t.priority || 'medium' };
+      repetir: 'nao', data: t.dueDate || '', prioridade: t.priority || 'medium', lembrete: t.reminderOffsetMin ?? null };
   } else {
     tipo = o.repetir === 'nao' ? 'tarefa' : 'item';
     const sid = o.sid && secaoDe(o.sid) ? o.sid : (tipo === 'item' && dados.secoes[0] ? dados.secoes[0].id : null);
-    v = { nome: '', detalhe: '', notas: '', horario: '', dias: Regras.TODOS_OS_DIAS.slice(), sid, repetir: o.repetir, data: o.data || '', prioridade: 'medium' };
+    v = { nome: '', detalhe: '', notas: '', horario: '', dias: Regras.TODOS_OS_DIAS.slice(), sid, repetir: o.repetir, data: o.data || '', prioridade: 'medium', lembrete: null };
   }
   ed = { tipo, id, sidOriginal: v.sid, v, inicial: JSON.stringify(v), tocouTitulo: false,
     notaAberta: !!v.notas, horaAberta: !!v.horario, novaSecao: false, ns: { nome: '', cor: 'green' }, erroSecao: '', erroDias: '' };
@@ -1285,11 +1296,12 @@ function desenharEditor(primeira){
       <input type="date" id="f-data" class="sr" tabindex="-1" aria-hidden="true" value="${esc(v.data)}" onchange="if(this.value)editorData(this.value)">
     </div>`}
     ${ed.horaAberta
-      ? `<div class="linha-campo"><label>Horário<input id="f-hora" name="hora" autocomplete="off" type="time" value="${esc(v.horario)}"></label>
-          <button class="btn text danger" onclick="lerEditor();ed.v.horario='';ed.horaAberta=false;desenharEditor(false)">Remover horário</button></div>`
+      ? `<div class="linha-campo"><label>Horário<input id="f-hora" name="hora" autocomplete="off" type="time" value="${esc(v.horario)}" onchange="lerEditor();desenharEditor(false)"></label>
+          <button class="btn text danger" onclick="lerEditor();ed.v.horario='';ed.v.lembrete=null;ed.horaAberta=false;desenharEditor(false)">Remover horário</button></div>`
       : (!rotina && !v.data
         ? `<div><button class="btn text inicio" disabled>${ic('add')} Adicionar horário</button><p class="dica">Escolha uma data para adicionar horário.</p></div>`
         : `<button class="btn text inicio" onclick="abrirHorario()">${ic('add')} Adicionar horário</button>`)}
+    ${NATIVO ? campoLembrete(v) : ''}
     ${rotina ? '' : `<div class="sheet-campo"><span class="rotulo" id="rot-prio">Prioridade</span>
       <div class="seg campo-seg" role="radiogroup" aria-labelledby="rot-prio">
         ${[['high','Alta'],['medium','Média'],['low','Baixa']].map(([p, r]) => `<button role="radio" aria-checked="${v.prioridade === p}" class="${v.prioridade === p ? 'on' : ''}" onclick="lerEditor();ed.v.prioridade='${p}';desenharEditor(false)">${r}</button>`).join('')}
@@ -1311,6 +1323,24 @@ function desenharEditor(primeira){
     </div>`;
   abrirSheetOuAtualizar(html, true);
   if(primeira && !ed.id) setTimeout(() => { const t = $('f-in'); if(t) t.focus(); }, 80);
+}
+const OPCOES_LEMBRETE = [[null, 'Sem lembrete'], [0, 'Na hora'], [10, '10 min antes'], [30, '30 min antes'], [60, '1 h antes']];
+function campoLembrete(v){
+  const comHora = !!v.horario && (ehRotina() || !!v.data);
+  return `<div class="sheet-campo"><span class="rotulo" id="rot-lemb">Lembrete</span>
+    <div class="chips" role="radiogroup" aria-labelledby="rot-lemb">
+      ${OPCOES_LEMBRETE.map(([m, r]) => chipEd(r, v.lembrete === m, `editorLembrete(${m})`, comHora || m === null ? '' : 'disabled')).join('')}
+    </div>
+    ${comHora ? '' : '<p class="dica">Adicione um horário para escolher um lembrete.</p>'}
+    ${ed.avisoNotif ? `<p class="erro" role="alert">Notificações desativadas. Ative nas configurações do Android.</p>
+      <button class="btn text inicio" onclick="abrirConfigNotif()">Abrir configurações</button>` : ''}
+  </div>`;
+}
+async function editorLembrete(min){
+  lerEditor(); ed.v.lembrete = min; ed.avisoNotif = false; desenharEditor(false);
+  if(min === null || !NATIVO) return;
+  const ok = await pedirPermissaoNotif();
+  if(!ok && ed){ ed.avisoNotif = true; lerEditor(); desenharEditor(false); }
 }
 function editorRepetir(r){
   lerEditor();
@@ -1401,7 +1431,7 @@ function salvarEditor(){
   if(erro || ed.erroSecao || ed.erroDias){ desenharEditor(false); if(erro) $('f-in').focus(); return; }
   const notas = v.notas.trim().slice(0, 1000) || null;
   if(rotina){
-    const campos = { nome: v.nome.trim(), detalhe: v.detalhe.trim(), notas, horario: v.horario || null, dias: v.repetir === 'todo' ? Regras.TODOS_OS_DIAS.slice() : v.dias };
+    const campos = { nome: v.nome.trim(), detalhe: v.detalhe.trim(), notas, horario: v.horario || null, lembreteMin: v.horario ? v.lembrete : null, dias: v.repetir === 'todo' ? Regras.TODOS_OS_DIAS.slice() : v.dias };
     const destino = secaoDe(v.sid);
     if(ed.id){
       const origem = secaoDe(ed.sidOriginal);
@@ -1413,7 +1443,7 @@ function salvarEditor(){
     }
   } else {
     const agora = new Date().toISOString();
-    const campos = { title: v.nome.trim(), notes: notas, dueDate: v.data || null, dueTime: v.data ? (v.horario || null) : null, priority: v.prioridade, categoryId: v.sid || null };
+    const campos = { title: v.nome.trim(), notes: notas, dueDate: v.data || null, dueTime: v.data ? (v.horario || null) : null, reminderOffsetMin: v.data && v.horario ? v.lembrete : null, priority: v.prioridade, categoryId: v.sid || null };
     if(ed.id) Object.assign(tarefaPorId(ed.id), campos, { updatedAt: agora });
     else dados.tarefas.push({ id: uid(), ...campos, completedAt: null, createdAt: agora, updatedAt: agora });
   }
@@ -1500,6 +1530,53 @@ function agendarMeiaNoite(){
 agendarMeiaNoite();
 document.addEventListener('visibilitychange', () => { if(!document.hidden) conferirDia(); });
 
+/* ---------- lembretes (só no APK) ---------- */
+let reconcTimer = null;
+function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
+async function permissaoNotif(){ try{ return (await plugin('LocalNotifications').checkPermissions()).display; }catch(e){ return 'denied'; } }
+async function pedirPermissaoNotif(){
+  const LN = plugin('LocalNotifications');
+  let p = await permissaoNotif();
+  if(p === 'prompt' || p === 'prompt-with-rationale'){ try{ p = (await LN.requestPermissions()).display; }catch(e){ p = 'denied'; } }
+  if(p === 'granted') agendarReconciliacao();
+  return p === 'granted';
+}
+async function atualizarEstadoNotif(){
+  if(!NATIVO) return;
+  const p = await permissaoNotif();
+  const el = document.getElementById('estado-notif');
+  if(el) el.textContent = p === 'granted' ? 'Ativadas' : 'Desativadas';
+}
+function abrirConfigNotif(){ plugin('Configuracoes').abrirNotificacoes().catch(() => toast('Abra as configurações do Android e ative as notificações do app.')); }
+async function reconciliarLembretes(){
+  const LN = plugin('LocalNotifications');
+  try{
+    if(await permissaoNotif() !== 'granted') return;
+    const pend = await LN.getPending();
+    if(pend.notifications.length) await LN.cancel({ notifications: pend.notifications.map(n => ({ id: n.id })) });
+    const lista = Regras.lembretesPendentes(dados, Date.now()).slice(0, 100);
+    if(!lista.length) return;
+    let exato = false;
+    try{ exato = (await LN.checkExactNotificationSetting()).exact_alarm === 'granted'; }catch(e){}
+    await LN.schedule({ notifications: lista.map(n => ({
+      id: n.id, title: n.title, body: n.body, channelId: 'lembretes', smallIcon: 'ic_stat_rotina',
+      schedule: { at: new Date(n.at), allowWhileIdle: true }, isExactNotification: exato, extra: { tipo: n.tipo, ref: n.ref },
+    })) });
+  }catch(e){ console.error('Falha ao agendar lembretes:', e && e.message); }
+}
+function iniciarLembretes(){
+  if(!NATIVO) return;
+  const LN = plugin('LocalNotifications');
+  LN.createChannel({ id: 'lembretes', name: 'Lembretes', description: 'Avisos das tarefas com horário', importance: 4, visibility: 1 }).catch(() => {});
+  LN.addListener('localNotificationActionPerformed', () => {
+    if(document.getElementById('overlay').classList.contains('show')) return;
+    diaSel = hoje();
+    if(tela !== 'rotina') irPara('rotina'); else render();
+  });
+  document.addEventListener('visibilitychange', () => { if(!document.hidden){ agendarReconciliacao(); if(tela === 'ajustes') atualizarEstadoNotif(); } });
+  agendarReconciliacao();
+}
+
 // faz funcionar offline e permite instalar como app (no APK os arquivos já estão no aparelho)
 if(!NATIVO && 'serviceWorker' in navigator){
   try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
@@ -1519,6 +1596,7 @@ function iniciar(){
   if(history.state) history.replaceState(null, '');
   if(NATIVO) document.getElementById('arquivo').removeAttribute('accept');
   aplicarTema(); montarNav(); render();
+  iniciarLembretes();
 }
 iniciar();
 </script>

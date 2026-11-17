@@ -147,7 +147,9 @@
     return null;
   }
 
-  const SCHEMA = 2;
+  const SCHEMA = 3;
+  const ANTECEDENCIAS = [0, 10, 30, 60];
+  const antecedencia = v => (ANTECEDENCIAS.includes(v) ? v : null);
   const TODOS_OS_DIAS = [1, 2, 3, 4, 5, 6, 7];
   const ehObjeto = x => x !== null && typeof x === 'object' && !Array.isArray(x);
   const vazio = () => ({ schemaVersion: SCHEMA, secoes: [], feitos: {}, tarefas: [], ajustes: { tema: 'system' } });
@@ -165,7 +167,7 @@
       ...d,
       schemaVersion: SCHEMA,
       feitos,
-      tarefas: Array.isArray(d.tarefas) ? d.tarefas : [],
+      tarefas: (Array.isArray(d.tarefas) ? d.tarefas : []).map(t => (ehObjeto(t) ? { ...t, reminderOffsetMin: antecedencia(t.reminderOffsetMin) } : t)),
       ajustes: { ...ajustes, tema: ['system', 'light', 'dark'].includes(ajustes.tema) ? ajustes.tema : 'system' },
       secoes: d.secoes.filter(ehObjeto).map(s => ({
         ...s,
@@ -175,6 +177,7 @@
           notas: typeof i.notas === 'string' ? i.notas : null,
           horario: typeof i.horario === 'string' && /^\d{2}:\d{2}$/.test(i.horario) ? i.horario : null,
           dias: diasValidos(i.dias) || TODOS_OS_DIAS.slice(),
+          lembreteMin: antecedencia(i.lembreteMin),
         })),
       })),
     };
@@ -202,7 +205,8 @@
       && (t.dueDate === null || t.dueDate === undefined || ehData(t.dueDate))
       && (t.dueTime === null || t.dueTime === undefined || (ehHora(t.dueTime) && ehData(t.dueDate)))
       && (t.priority === undefined || t.priority in PESO)
-      && (t.completedAt === null || t.completedAt === undefined || ehIso(t.completedAt));
+      && (t.completedAt === null || t.completedAt === undefined || ehIso(t.completedAt))
+      && (t.reminderOffsetMin === null || t.reminderOffsetMin === undefined || ANTECEDENCIAS.includes(t.reminderOffsetMin));
   }
   const itemValido = i => ehObjeto(i) && typeof i.id === 'string' && i.id && typeof i.nome === 'string' && i.nome.trim() && ehData(i.criadoEm);
   function lerBackup(texto) {
@@ -219,12 +223,41 @@
     r.dados.tarefas = r.dados.tarefas.map(t => ({ notes: null, dueDate: null, dueTime: null, priority: 'medium', categoryId: null, completedAt: null, ...t }));
     return r.dados;
   }
+  const LIMITE_LEMBRETE_MS = 30 * 864e5;
+  function idNotificacao(chave) {
+    let x = 2166136261;
+    for (const c of chave) { x ^= c.codePointAt(0); x = Math.imul(x, 16777619); }
+    return (x >>> 1) || 1;
+  }
+  const momento = (dia, hora) => { const [a, m, d] = dia.split('-').map(Number); const [hh, mm] = hora.split(':').map(Number); return new Date(a, m - 1, d, hh, mm, 0, 0).getTime(); };
+  const textoQuando = (dia, hora, hoje) => rotuloDia(dia, hoje) + ' às ' + hora;
+  function lembretesPendentes(dados, agoraMs) {
+    const hoje = fmt(new Date(agoraMs)), limite = agoraMs + LIMITE_LEMBRETE_MS, lista = [];
+    (dados.tarefas || []).forEach(t => {
+      if (t.completedAt || antecedencia(t.reminderOffsetMin) === null || !ehData(t.dueDate) || !ehHora(t.dueTime)) return;
+      const at = momento(t.dueDate, t.dueTime) - t.reminderOffsetMin * 60000;
+      if (at > agoraMs && at <= limite) lista.push({ id: idNotificacao('tarefa:' + t.id), tipo: 'tarefa', ref: t.id, title: t.title, body: textoQuando(t.dueDate, t.dueTime, hoje), at });
+    });
+    dados.secoes.forEach(s => s.itens.forEach(i => {
+      if (antecedencia(i.lembreteMin) === null || !ehHora(i.horario)) return;
+      for (let k = 0; k <= 31; k++) {
+        const dia = somaDias(hoje, k);
+        if (i.criadoEm > dia || !repeteNoDia(i, dia) || feito(dados, dia, i.id)) continue;
+        const at = momento(dia, i.horario) - i.lembreteMin * 60000;
+        if (at <= agoraMs) continue;
+        if (at <= limite) lista.push({ id: idNotificacao('item:' + i.id), tipo: 'item', ref: i.id, title: i.nome, body: textoQuando(dia, i.horario, hoje), at });
+        break;
+      }
+    }));
+    return lista.sort((a, b) => a.at - b.at);
+  }
   const contarTarefas = d => d.secoes.reduce((a, s) => a + s.itens.length, 0) + (d.tarefas || []).length;
 
   const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
-    APP, montarBackup, lerBackup, contarTarefas };
+    APP, montarBackup, lerBackup, contarTarefas,
+    ANTECEDENCIAS, idNotificacao, lembretesPendentes };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
