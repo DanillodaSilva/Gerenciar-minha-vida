@@ -199,3 +199,56 @@ describe('validação do editor', () => {
     assert.equal(R.semAcento('  Saúde e AÇÃO '), 'saude e acao');
   });
 });
+
+describe('tarefas avulsas', () => {
+  const t = (id, extra = {}) => ({ id, title: 'Tarefa ' + id, notes: null, dueDate: HOJE, dueTime: null, priority: 'medium', categoryId: null, completedAt: null, createdAt: '2026-11-10T12:00:00.000Z', updatedAt: '2026-11-10T12:00:00.000Z', ...extra });
+  test('ordem de "de hoje": horário crescente, depois prioridade, depois criação mais antiga', () => {
+    const ts = [t('baixa', { priority: 'low' }), t('h15', { dueTime: '15:00', priority: 'low' }), t('alta2', { priority: 'high', createdAt: '2026-11-12T00:00:00.000Z' }),
+      t('h08', { dueTime: '08:00' }), t('alta1', { priority: 'high', createdAt: '2026-11-11T00:00:00.000Z' }), t('media')];
+    assert.deepEqual(R.ordenarTarefasDia(ts).map(x => x.id), ['h08', 'h15', 'alta1', 'alta2', 'media', 'baixa']);
+  });
+  test('rotina e avulsas juntas: horários primeiro; sem horário, rotina antes das avulsas', () => {
+    const itens = [item('r1'), item('r9', HOJE, { horario: '09:00' })];
+    const ts = [t('a7', { dueTime: '07:00' }), t('aSem', { priority: 'high' })];
+    assert.deepEqual(R.ordenarDia(itens, ts).map(e => e.obj.id), ['a7', 'r9', 'r1', 'aSem']);
+  });
+  test('atrasadas: data mais antiga primeiro, depois prioridade', () => {
+    const ts = [t('d16', { dueDate: '2026-11-16' }), t('d15b', { dueDate: '2026-11-15', priority: 'low' }), t('d15a', { dueDate: '2026-11-15', priority: 'high' })];
+    assert.deepEqual(R.ordenarAtrasadas(ts).map(x => x.id), ['d15a', 'd15b', 'd16']);
+  });
+  test('tarefa de ontem não concluída = atrasada; concluída = não atrasada; de hoje nunca é atrasada', () => {
+    assert.equal(R.atrasada(t('a', { dueDate: '2026-11-16' }), HOJE), true);
+    assert.equal(R.atrasada(t('a', { dueDate: '2026-11-16', completedAt: '2026-11-17T10:00:00.000Z' }), HOJE), false);
+    assert.equal(R.atrasada(t('a', { dueTime: '00:00' }), HOJE), false);
+  });
+  test('concluídas: completedAt mais recente primeiro', () => {
+    const ts = [t('a', { completedAt: '2026-11-17T10:00:00.000Z' }), t('b', { completedAt: '2026-11-17T15:00:00.000Z' })];
+    assert.deepEqual(R.ordenarConcluidas(ts).map(x => x.id), ['b', 'a']);
+  });
+  test('progresso do dia soma rotina e avulsas; avulsa só conta como feita se concluída até o dia', () => {
+    const d = { ...base([item('r')], { [HOJE]: ['r'] }), tarefas: [t('a', { completedAt: '2026-11-17T13:00:00.000Z' }), t('b'), t('c', { dueDate: '2026-11-16', completedAt: '2026-11-17T13:00:00.000Z' })] };
+    assert.deepEqual(R.resumoDia(d, HOJE), { total: 3, feitas: 2, pct: 67 });
+    assert.deepEqual(R.resumoDia(d, '2026-11-16'), { total: 2, feitas: 0, pct: 0 });
+  });
+  test('tarefa do dia 15 concluída só no dia 16 não conta para o dia 15', () => {
+    const d = { secoes: [], feitos: {}, tarefas: [t('a', { dueDate: '2026-11-15', completedAt: '2026-11-16T15:00:00.000Z' })] };
+    assert.equal(R.resumoDia(d, '2026-11-15').feitas, 0);
+  });
+  test('Próximos: Amanhã, os 6 dias seguintes, Mais tarde e Sem data; concluídas ficam de fora', () => {
+    const ts = [t('am', { dueDate: '2026-11-18' }), t('d19', { dueDate: '2026-11-19' }), t('d24', { dueDate: '2026-11-24' }), t('tarde', { dueDate: '2026-11-25' }),
+      t('semVelha', { dueDate: null, createdAt: '2026-11-01T00:00:00.000Z' }), t('semNova', { dueDate: null, createdAt: '2026-11-15T00:00:00.000Z' }),
+      t('feita', { dueDate: '2026-11-18', completedAt: '2026-11-17T09:00:00.000Z' }), t('hoje')];
+    const g = R.gruposProximos(ts, HOJE);
+    assert.deepEqual(g.map(x => x.titulo), ['Amanhã', 'quinta-feira, 19 de nov.', 'terça-feira, 24 de nov.', 'Mais tarde', 'Sem data']);
+    assert.deepEqual(g[0].tarefas.map(x => x.id), ['am']);
+    assert.deepEqual(g[4].tarefas.map(x => x.id), ['semNova', 'semVelha']);
+  });
+  test('busca por título e notas, sem diferenciar maiúsculas nem acentos, só não concluídas', () => {
+    const ts = [t('a', { title: 'Consulta no médico' }), t('b', { title: 'Mercado', notes: 'Comprar AÇÚCAR' }), t('c', { title: 'Médico', completedAt: '2026-11-17T09:00:00.000Z' })];
+    assert.deepEqual(R.buscarTarefas(ts, 'medico').map(x => x.id), ['a']);
+    assert.deepEqual(R.buscarTarefas(ts, 'acucar').map(x => x.id), ['b']);
+  });
+  test('dataLocal converte o ISO em UTC para o dia do aparelho', () => {
+    assert.equal(R.dataLocal('2026-11-18T02:30:00.000Z'), '2026-11-17');
+  });
+});

@@ -47,10 +47,49 @@
     return secs.flatMap(s => s.itens.filter(i => i.criadoEm <= dia && repeteNoDia(i, dia)));
   }
   const feito = (dados, dia, id) => (dados.feitos[dia] || []).includes(id);
+
+  const PESO = { high: 0, medium: 1, low: 2 };
+  const peso = p => (p in PESO ? PESO[p] : 1);
+  const dataLocal = iso => (iso ? fmt(new Date(iso)) : null);
+  const tarefaFeitaAte = (t, dia) => !!t.completedAt && dataLocal(t.completedAt) <= dia;
+  const atrasada = (t, hoje) => !!t.dueDate && t.dueDate < hoje && !t.completedAt;
+  const cmpHora = (ha, hb) => (ha ? 0 : 1) - (hb ? 0 : 1) || (ha && hb ? ha.localeCompare(hb) : 0);
+  const cmpTarefaDia = (a, b) => cmpHora(a.dueTime, b.dueTime) || peso(a.priority) - peso(b.priority) || String(a.createdAt).localeCompare(String(b.createdAt));
+  const ordenarTarefasDia = ts => ts.slice().sort(cmpTarefaDia);
+  const ordenarAtrasadas = ts => ts.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate) || peso(a.priority) - peso(b.priority) || String(a.createdAt).localeCompare(String(b.createdAt)));
+  const ordenarConcluidas = ts => ts.slice().sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)));
+  function ordenarDia(itens, tarefas) {
+    const e = [
+      ...itens.map((obj, n) => ({ tipo: 'item', obj, hora: obj.horario, n })),
+      ...ordenarTarefasDia(tarefas).map((obj, n) => ({ tipo: 'tarefa', obj, hora: obj.dueTime, n: itens.length + n })),
+    ];
+    return e.sort((a, b) => cmpHora(a.hora, b.hora) || a.n - b.n);
+  }
+  const tarefasDoDia = (dados, dia, secao) => (dados.tarefas || []).filter(t => t.dueDate === dia && (!secao || t.categoryId === secao.id));
+
   function resumoDia(dados, dia, secao) {
     const itens = itensDoDia(dados, dia, secao);
-    const feitas = itens.filter(i => feito(dados, dia, i.id)).length;
-    return { total: itens.length, feitas, pct: itens.length ? Math.round(feitas / itens.length * 100) : 0 };
+    const ts = tarefasDoDia(dados, dia, secao);
+    const feitas = itens.filter(i => feito(dados, dia, i.id)).length + ts.filter(t => tarefaFeitaAte(t, dia)).length;
+    const total = itens.length + ts.length;
+    return { total, feitas, pct: total ? Math.round(feitas / total * 100) : 0 };
+  }
+
+  const cabecalhoProximo = iso => { const d = parseDia(iso); return DIAS_LONGOS[(d.getDay() + 6) % 7] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()].slice(0, 3) + '.'; };
+  function gruposProximos(tarefas, hoje) {
+    const pend = tarefas.filter(t => !t.completedAt);
+    const amanha = somaDias(hoje, 1), limite = somaDias(hoje, 7);
+    const grupos = [];
+    const add = (chave, titulo, ts) => { if (ts.length) grupos.push({ chave, titulo, tarefas: ts }); };
+    add(amanha, 'Amanhã', ordenarTarefasDia(pend.filter(t => t.dueDate === amanha)));
+    for (let i = 2; i <= 7; i++) { const d = somaDias(hoje, i); add(d, cabecalhoProximo(d), ordenarTarefasDia(pend.filter(t => t.dueDate === d))); }
+    add('depois', 'Mais tarde', pend.filter(t => t.dueDate && t.dueDate > limite).sort((a, b) => a.dueDate.localeCompare(b.dueDate) || cmpTarefaDia(a, b)));
+    add('sem', 'Sem data', pend.filter(t => !t.dueDate).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))));
+    return grupos;
+  }
+  function buscarTarefas(tarefas, termo) {
+    const q = semAcento(termo);
+    return tarefas.filter(t => !t.completedAt && (!q || semAcento((t.title || '') + ' ' + (t.notes || '')).includes(q)));
   }
 
   function sequencia(dados, hoje) {
@@ -127,7 +166,8 @@
     return { dados, migrou: JSON.stringify(dados) !== JSON.stringify(d), deVersao: versao };
   }
 
-  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento };
+  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
+    dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

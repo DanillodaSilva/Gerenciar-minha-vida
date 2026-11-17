@@ -319,6 +319,18 @@
   .dialogo h2{margin:0;font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold)}
   .dialogo p{margin:var(--space-2) 0 0;color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
   .dlg-acoes{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:0 var(--space-2);margin-top:var(--space-4)}
+  .item.alta::before{content:'';position:absolute;left:0;top:var(--space-2);bottom:var(--space-2);width:var(--space-1);
+    border-radius:0 var(--radius-full) var(--radius-full) 0;background:var(--priority-high)}
+  .item small .prio{color:var(--priority-high);font-weight:var(--w-medium)}
+  .item small .prio svg{vertical-align:text-bottom;margin-right:var(--space-1)}
+  h2.grupo-top{margin:0}
+  .busca{position:relative;margin-bottom:var(--space-1)}
+  .busca svg{position:absolute;left:var(--space-3);top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none}
+  .busca input{padding-left:calc(var(--space-3) + var(--icon) + var(--space-2))}
+  .chips.filtros{flex-wrap:nowrap;overflow-x:auto;margin:0 calc(var(--space-4) * -1) var(--space-2);padding:0 var(--space-4);scrollbar-width:none}
+  .chips.filtros .chip{flex:none}
+  .seg.campo-seg{margin:0}
+  .dica{color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
   .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--fab-h) + var(--space-5) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
@@ -379,10 +391,12 @@ const ICONES = {
   expandir:'M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z',
   repetir:'M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z',
   fechar:'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+  buscar:'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+  bandeira:'M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z',
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
-const ABAS = [['rotina','hoje','Hoje'], ['constancia','grafico','Constância'], ['ajustes','ajustes','Ajustes']];
+const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['constancia','grafico','Constância'], ['ajustes','ajustes','Ajustes']];
 function montarNav(){
   document.querySelector('nav.tabs').innerHTML = ABAS.map(([id, icone, rotulo]) =>
     `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone)}</span>${rotulo}</button>`).join('');
@@ -437,8 +451,21 @@ function marcarItem(idItem, dia, valor){
   dados.feitos[dia] = valor ? [...lista, idItem] : lista.filter(x => x !== idItem);
   if(!dados.feitos[dia].length) delete dados.feitos[dia];
 }
-function estaFeita(tipo, id){ return feito(diaSel, id); }
-function definirFeita(tipo, id, valor){ marcarItem(id, diaSel, valor); }
+const tarefaPorId = id => (dados.tarefas || []).find(t => t.id === id);
+const secaoDe = id => dados.secoes.find(s => s.id === id);
+function estaFeita(tipo, id){
+  if(tipo === 'tarefa'){ const t = tarefaPorId(id); return !!(t && t.completedAt); }
+  return feito(diaSel, id);
+}
+function definirFeita(tipo, id, valor){
+  if(tipo === 'tarefa'){
+    const t = tarefaPorId(id); if(!t) return;
+    const agora = new Date().toISOString();
+    t.completedAt = valor ? agora : null; t.updatedAt = agora;
+    return;
+  }
+  marcarItem(id, diaSel, valor);
+}
 function animarSaida(linha, fim){
   const dc = durMs('--dur-check'), dm = durMs('--dur-move');
   if(!linha || !dm){ fim(); return; }
@@ -466,6 +493,7 @@ function concluirEntrada(tipo, id){
   animarSaida(linha, render);
 }
 function apagarDeVez(tipo, id){
+  if(tipo === 'tarefa'){ dados.tarefas = dados.tarefas.filter(t => t.id !== id); return; }
   dados.secoes.forEach(s => { s.itens = s.itens.filter(i => i.id !== id); });
   Object.keys(dados.feitos).forEach(d => {
     dados.feitos[d] = dados.feitos[d].filter(x => x !== id);
@@ -568,11 +596,12 @@ document.addEventListener('contextmenu', e => { if(e.target.closest('.linha')) e
 function abrirMenu(d){
   menuAlvo = { ...d };
   const s = dados.secoes.find(x => x.id === d.sid);
-  const it = s && s.itens.find(i => i.id === d.id);
+  const it = d.tipo === 'tarefa' ? tarefaPorId(d.id) : s && s.itens.find(i => i.id === d.id);
   if(!it) return;
+  const nomeMenu = d.tipo === 'tarefa' ? it.title : it.nome;
   const concluir = d.concluivel === '1' ? `<button onclick="menuAcao('concluir')">${ic('check')}${estaFeita(d.tipo, d.id) ? 'Desmarcar' : 'Concluir'}</button>` : '';
   abrirSheetOuAtualizar(`
-    <h2 class="menu-tit">${esc(it.nome)}</h2>
+    <h2 class="menu-tit">${esc(nomeMenu)}</h2>
     <div class="menu">
       ${concluir}
       <button onclick="menuAcao('editar')">${ic('editar')}Editar</button>
@@ -581,7 +610,7 @@ function abrirMenu(d){
 }
 function menuAcao(acao){
   const d = menuAlvo;
-  if(acao === 'editar'){ sheetItem(d.id, d.sid); return; }
+  if(acao === 'editar'){ if(d.tipo === 'tarefa') editarTarefa(d.id); else sheetItem(d.id, d.sid); return; }
   fecharSheet();
   setTimeout(() => acao === 'concluir' ? concluirEntrada(d.tipo, d.id) : excluirEntrada(d.tipo, d.id), 60);
 }
@@ -617,8 +646,9 @@ function render(){
     if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   const app = document.getElementById('app');
-  app.classList.toggle('com-fab', tela === 'rotina');
+  app.classList.toggle('com-fab', tela === 'rotina' || tela === 'proximos');
   if(tela === 'rotina')     app.innerHTML = telaHoje();
+  if(tela === 'proximos')   app.innerHTML = telaProximos();
   if(tela === 'secao')      app.innerHTML = telaSecao();
   if(tela === 'constancia') app.innerHTML = telaConstancia();
   if(tela === 'ajustes')    app.innerHTML = telaAjustes();
@@ -654,10 +684,39 @@ function linhaHoje(s, i, comSecao){
   if(i.dias.length < 7) partes.push(`<span class="rep">${ic('repetir','sm')}${Regras.resumoDias(i.dias)}</span>`);
   return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
 }
+const fundoLinha = f => `<div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Concluir'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>`;
+function linhaTarefa(t, o){
+  const partes = [];
+  const s = secaoDe(t.categoryId);
+  if(o.data && t.dueDate) partes.push(`<span class="${Regras.atrasada(t, hoje()) ? 'passou' : ''}">${Regras.rotuloDia(t.dueDate, hoje())}</span>`);
+  if(t.dueTime){
+    const passou = t.dueDate === hoje() && !t.completedAt && t.dueTime < horaAgora();
+    partes.push(passou ? `<span class="passou">${esc(t.dueTime)}, já passou</span>` : esc(t.dueTime));
+  }
+  if(o.secao && s) partes.push(`<span class="cat"><i class="ponto"></i>${esc(s.nome)}</span>`);
+  if(t.priority === 'high') partes.push(`<span class="prio">${ic('bandeira','sm')}Alta</span>`);
+  return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
+}
+function itemTarefa(t, o = {}){
+  const s = secaoDe(t.categoryId);
+  const f = !!t.completedAt;
+  return `<div class="linha" data-tipo="tarefa" data-id="${t.id}" data-sid="${s ? s.id : ''}" data-concluivel="1">
+    ${fundoLinha(f)}
+    <div class="item ${f ? 'done' : ''} ${t.priority === 'high' ? 'alta' : ''}" style="--c:${s ? corDe(s) : 'var(--primary)'}">
+      <button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(t.title)}" onclick="concluirEntrada('tarefa','${t.id}')"><i>${ic('check')}</i></button>
+      <div class="info" role="button" tabindex="0" onclick="editarTarefa('${t.id}')" onkeydown="if(event.key==='Enter')this.click()">
+        <b>${esc(t.title)}</b>${linhaTarefa(t, o)}
+      </div>
+      <button class="sr" onclick="abrirMenu(this.closest('.linha').dataset)">Mais ações: ${esc(t.title)}</button>
+    </div>
+  </div>`;
+}
+const linhaEntrada = (e, s, comSecao) => e.tipo === 'item' ? itemHoje(s, e.obj, comSecao) : itemTarefa(e.obj, { secao: comSecao });
+const entradaFeita = e => e.tipo === 'item' ? feito(diaSel, e.obj.id) : !!e.obj.completedAt;
 function itemHoje(s, i, comSecao, concluivel = true){
   const f = feito(diaSel, i.id);
   return `<div class="linha" data-tipo="item" data-id="${i.id}" data-sid="${s.id}" data-concluivel="${concluivel ? 1 : 0}">
-    <div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Concluir'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>
+    ${fundoLinha(f)}
     <div class="item ${f ? 'done' : ''}" style="--c:${corDe(s)}">
       ${concluivel ? `<button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(i.nome)}" onclick="concluirEntrada('item','${i.id}')"><i>${ic('check')}</i></button>` : ''}
       <div class="info ${concluivel ? '' : 'sem-check'}" role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="if(event.key==='Enter')this.click()">
@@ -670,23 +729,40 @@ function itemHoje(s, i, comSecao, concluivel = true){
 function telaHoje(){
   const r = resumoDia(diaSel);
   const ehHoje = diaSel === hoje();
+  const vis = visao();
+  const tarefasDia = vis.tarefas.filter(t => t.dueDate === diaSel);
+  const atrasadas = ehHoje ? Regras.ordenarAtrasadas(vis.tarefas.filter(t => Regras.atrasada(t, diaSel))) : [];
   const grupos = [], concluidas = [];
+  const montarGrupo = (s, entradas, cabecalho) => {
+    const pendentes = entradas.filter(e => !entradaFeita(e));
+    entradas.filter(entradaFeita).forEach(e => concluidas.push([s, e]));
+    if(pendentes.length) grupos.push(cabecalho(pendentes));
+  };
   dados.secoes.forEach(s => {
-    const itens = Regras.ordenarItens(itensDoDia(diaSel, s));
-    const pendentes = itens.filter(i => !feito(diaSel, i.id));
-    itens.filter(i => feito(diaSel, i.id)).forEach(i => concluidas.push([s, i]));
-    if(!pendentes.length) return;
-    const rs = resumoDia(diaSel, s);
-    grupos.push(`<section class="grupo tinta" style="${tintaDe(s)}">
-      <button class="grupo-top" onclick="abrirSecao('${s.id}')" aria-label="Abrir ${esc(s.nome)}, ${rs.feitas} de ${rs.total} feitas">
-        <span class="emo" aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
-      </button>
-      <div class="lista">${pendentes.map(i => itemHoje(s, i, false)).join('')}</div>
-    </section>`);
+    const entradas = Regras.ordenarDia(Regras.ordenarItens(itensDoDia(diaSel, s)), tarefasDia.filter(t => t.categoryId === s.id));
+    montarGrupo(s, entradas, pendentes => {
+      const rs = resumoDia(diaSel, s);
+      return `<section class="grupo tinta" style="${tintaDe(s)}">
+        <button class="grupo-top" onclick="abrirSecao('${s.id}')" aria-label="Abrir ${esc(s.nome)}, ${rs.feitas} de ${rs.total} feitas">
+          <span class="emo" aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
+        </button>
+        <div class="lista">${pendentes.map(e => linhaEntrada(e, s, false)).join('')}</div>
+      </section>`;
+    });
   });
+  const semSecao = tarefasDia.filter(t => !secaoDe(t.categoryId));
+  montarGrupo(null, Regras.ordenarDia([], semSecao), pendentes => `<section class="grupo">
+      <h2 class="grupo-top"><span class="nm">Sem seção</span><span class="cont">${semSecao.filter(t => t.completedAt).length} de ${semSecao.length}</span></h2>
+      <div class="lista">${pendentes.map(e => linhaEntrada(e, null, false)).join('')}</div>
+    </section>`);
+  const blocoAtrasadas = atrasadas.length ? `<section class="grupo">
+      <h2 class="grupo-top"><span class="nm">Atrasadas</span><span class="cont">${atrasadas.length}</span></h2>
+      <div class="lista">${atrasadas.map(t => itemTarefa(t, { data: true, secao: true })).join('')}</div>
+    </section>` : '';
+  concluidas.sort(([, a], [, b]) => (a.tipo === 'tarefa') - (b.tipo === 'tarefa') || String(b.obj.completedAt || '').localeCompare(String(a.obj.completedAt || '')));
   let corpo;
   if(!r.total){
-    corpo = `<div class="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
+    corpo = blocoAtrasadas + `<div class="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
       <button class="btn" onclick="novaTarefa()">Adicionar tarefa</button></div>`;
   } else {
     const tudo = r.feitas === r.total ? `<div class="vazio tudo-feito" role="status">${ic('hoje','lg')}<p><b>${ehHoje ? 'Tudo feito por hoje' : 'Tudo feito neste dia'}</b><br><small>${r.feitas} de ${r.total} concluídas</small></p></div>` : '';
@@ -694,9 +770,9 @@ function telaHoje(){
       <button class="grupo-top" aria-expanded="${concluidasAbertas}" onclick="concluidasAbertas=!concluidasAbertas;render()">
         <span class="nm">Concluídas (${concluidas.length})</span>${ic('expandir','sm')}
       </button>
-      ${concluidasAbertas ? `<div class="lista">${concluidas.map(([s, i]) => itemHoje(s, i, true)).join('')}</div>` : ''}
+      ${concluidasAbertas ? `<div class="lista">${concluidas.map(([s, e]) => linhaEntrada(e, s, true)).join('')}</div>` : ''}
     </section>` : '';
-    corpo = tudo + grupos.join('') + listaConcl;
+    corpo = tudo + blocoAtrasadas + grupos.join('') + listaConcl;
   }
   return `
     <header class="hoje-top">
@@ -717,7 +793,40 @@ function telaHoje(){
     <button class="fab" onclick="novaTarefa()">${ic('add')}<span>Nova tarefa</span></button>
   `;
 }
-function novaTarefa(){ sheetItem(null, null); }
+function novaTarefa(){ abrirEditor({ novo: true, repetir: 'nao', data: hoje() }); }
+function novaTarefaSemData(){ abrirEditor({ novo: true, repetir: 'nao', data: '' }); }
+function editarTarefa(id){ abrirEditor({ tipo: 'tarefa', id }); }
+
+let busca = '', filtroProx = 'todas';
+function telaProximos(){
+  const chip = (id, rotulo) => `<button class="chip ${filtroProx === id ? 'on' : ''}" role="radio" aria-checked="${filtroProx === id}" onclick="filtroProx='${id}';render()"><span>${rotulo}</span></button>`;
+  return `
+    <header class="top"><h1>Próximos</h1></header>
+    <div class="busca">${ic('buscar')}<label class="sr" for="f-busca">Buscar tarefas</label>
+      <input id="f-busca" type="search" placeholder="Buscar tarefas" value="${esc(busca)}" autocomplete="off" oninput="busca=this.value;atualizarProximos()"></div>
+    <div class="chips filtros" role="radiogroup" aria-label="Filtrar tarefas">
+      ${chip('todas', 'Todas')}${dados.secoes.map(s => chip(s.id, esc(s.emoji) + ' ' + esc(s.nome))).join('')}${chip('alta', 'Alta prioridade')}
+    </div>
+    <div id="prox-lista">${listaProximos()}</div>
+    <button class="fab" onclick="novaTarefaSemData()">${ic('add')}<span>Nova tarefa</span></button>
+  `;
+}
+function listaProximos(){
+  let ts = visao().tarefas;
+  if(filtroProx === 'alta') ts = ts.filter(t => t.priority === 'high');
+  else if(filtroProx !== 'todas') ts = ts.filter(t => t.categoryId === filtroProx);
+  if(busca.trim()){
+    const r = Regras.buscarTarefas(ts, busca);
+    return r.length ? `<section class="grupo"><h2 class="grupo-top"><span class="nm">Resultados</span><span class="cont">${r.length}</span></h2>
+      <div class="lista">${r.map(t => itemTarefa(t, { data: true, secao: true })).join('')}</div></section>`
+      : '<div class="vazio"><p>Nenhuma tarefa encontrada.</p></div>';
+  }
+  const g = Regras.gruposProximos(ts, hoje());
+  if(!g.length) return `<div class="vazio">${ic('calendario','lg')}<p>Nada planejado para os próximos dias.</p></div>`;
+  return g.map(x => `<section class="grupo"><h2 class="grupo-top"><span class="nm">${esc(x.titulo)}</span></h2>
+    <div class="lista">${x.tarefas.map(t => itemTarefa(t, { data: x.chave === 'depois', secao: true })).join('')}</div></section>`).join('');
+}
+function atualizarProximos(){ const el = $('prox-lista'); if(el) el.innerHTML = listaProximos(); }
 
 function linhaItem(s, i){
   const partes = [];
@@ -907,6 +1016,7 @@ function excluirSecao(){
   const s = rascunho;
   sheetConfirmar(`Excluir "${s.nome}"?`, 'Os itens e o histórico dessa seção somem da constância.', () => {
     dados.secoes = dados.secoes.filter(x => x.id !== s.id);
+    dados.tarefas.forEach(t => { if(t.categoryId === s.id) t.categoryId = null; });
     salvar(); tela = 'rotina'; secaoAberta = null;
     history.back(); // sai da tela da seção
     render(); toast('Seção excluída');
@@ -918,16 +1028,30 @@ let ed = null;
 const $ = id => document.getElementById(id);
 const contador = t => { const n = Array.from(t || '').length; return n >= 100 ? n + '/120' : ''; };
 function sheetItem(idItem, secaoId){
-  abrirEditor({ id: idItem || null, sid: secaoId || secaoAberta || (dados.secoes[0] && dados.secoes[0].id) || null });
+  const sid = secaoId || secaoAberta || (dados.secoes[0] && dados.secoes[0].id) || null;
+  if(idItem) abrirEditor({ tipo: 'item', id: idItem, sid });
+  else abrirEditor({ novo: true, repetir: 'todo', sid });
 }
 function abrirEditor(o){
-  const s = dados.secoes.find(x => x.id === o.sid);
-  const it = o.id && s ? s.itens.find(i => i.id === o.id) : null;
-  const v = it
-    ? { nome: it.nome, detalhe: it.detalhe || '', notas: it.notas || '', horario: it.horario || '', dias: it.dias.slice(), sid: s.id }
-    : { nome: '', detalhe: '', notas: '', horario: '', dias: Regras.TODOS_OS_DIAS.slice(), sid: s ? s.id : null };
-  ed = { id: it ? it.id : null, sidOriginal: s ? s.id : null, v, inicial: JSON.stringify(v), tocouTitulo: false,
-    notaAberta: !!v.notas, horaAberta: !!v.horario, novaSecao: !dados.secoes.length, ns: { nome: '', cor: 'green' }, erroSecao: '', erroDias: '' };
+  let v, id = null, tipo;
+  if(o.tipo === 'item'){
+    const s = secaoDe(o.sid); const it = s && s.itens.find(i => i.id === o.id);
+    if(!it) return;
+    tipo = 'item'; id = it.id;
+    v = { nome: it.nome, detalhe: it.detalhe || '', notas: it.notas || '', horario: it.horario || '', dias: it.dias.slice(), sid: s.id,
+      repetir: it.dias.length === 7 ? 'todo' : 'dias', data: '', prioridade: 'medium' };
+  } else if(o.tipo === 'tarefa'){
+    const t = tarefaPorId(o.id); if(!t) return;
+    tipo = 'tarefa'; id = t.id;
+    v = { nome: t.title, detalhe: '', notas: t.notes || '', horario: t.dueTime || '', dias: Regras.TODOS_OS_DIAS.slice(), sid: t.categoryId && secaoDe(t.categoryId) ? t.categoryId : null,
+      repetir: 'nao', data: t.dueDate || '', prioridade: t.priority || 'medium' };
+  } else {
+    tipo = o.repetir === 'nao' ? 'tarefa' : 'item';
+    const sid = o.sid && secaoDe(o.sid) ? o.sid : (tipo === 'item' && dados.secoes[0] ? dados.secoes[0].id : null);
+    v = { nome: '', detalhe: '', notas: '', horario: '', dias: Regras.TODOS_OS_DIAS.slice(), sid, repetir: o.repetir, data: o.data || '', prioridade: 'medium' };
+  }
+  ed = { tipo, id, sidOriginal: v.sid, v, inicial: JSON.stringify(v), tocouTitulo: false,
+    notaAberta: !!v.notas, horaAberta: !!v.horario, novaSecao: false, ns: { nome: '', cor: 'green' }, erroSecao: '', erroDias: '' };
   desenharEditor(true);
 }
 function lerEditor(){
@@ -940,20 +1064,34 @@ function lerEditor(){
   if($('f-ns')) ed.ns.nome = $('f-ns').value;
 }
 function editorAlterado(){ lerEditor(); return !!ed && JSON.stringify(ed.v) !== ed.inicial; }
-function redesenharEditor(){ lerEditor(); desenharEditor(false); }
+const ehRotina = () => ed.v.repetir !== 'nao';
+function chipEd(rotulo, on, acao, extra = ''){
+  return `<button class="chip ${on ? 'on' : ''}" role="radio" aria-checked="${on}" onclick="${acao}" ${extra}><span>${rotulo}</span></button>`;
+}
 function desenharEditor(primeira){
   const v = ed.v;
-  const s = dados.secoes.find(x => x.id === v.sid);
+  const s = secaoDe(v.sid);
+  const rotina = ehRotina();
   const erro = ed.tocouTitulo ? Regras.validarTitulo(v.nome) : null;
-  const chipsSecao = dados.secoes.map(x => `<button class="chip ${x.id === v.sid ? 'on' : ''}" role="radio" aria-checked="${x.id === v.sid}" onclick="editorSecao('${x.id}')"><span>${esc(x.emoji)} ${esc(x.nome)}</span></button>`).join('');
+  const amanha = Regras.somaDias(hoje(), 1);
+  const dataOutra = v.data && v.data !== hoje() && v.data !== amanha;
   const podeNova = dados.secoes.length < Regras.LIMITE_SECOES;
+  const repetirChips = (!ed.id || ed.tipo === 'item') ? `<div class="sheet-campo"><span class="rotulo" id="rot-rep">Repetir</span>
+      <div class="chips" role="radiogroup" aria-labelledby="rot-rep">
+        ${!ed.id ? chipEd('Não repete', v.repetir === 'nao', "editorRepetir('nao')") : ''}
+        ${chipEd('Todo dia', v.repetir === 'todo', "editorRepetir('todo')")}
+        ${chipEd('Dias da semana', v.repetir === 'dias', "editorRepetir('dias')")}
+      </div>
+      ${v.repetir === 'dias' ? seletorDias(v.dias) : ''}
+      ${ed.erroDias ? `<span class="erro" role="alert">${esc(ed.erroDias)}</span>` : ''}
+    </div>` : '';
   const miniForm = ed.novaSecao ? `<div class="mini-form">
       <label>Nome da seção<input id="f-ns" maxlength="24" value="${esc(ed.ns.nome)}" aria-describedby="erro-ns"></label>
       <div class="colors" role="radiogroup" aria-label="Cor da seção">
         ${CORES.map(c => { const on = ed.ns.cor === c; return `<button role="radio" aria-checked="${on}" aria-label="${NOME_COR[c]}" style="--c:var(--cat-${c})" class="${on ? 'on' : ''}" onclick="lerEditor();ed.ns.cor='${c}';desenharEditor(false)"><i>${on ? ic('check','sm') : ''}</i></button>`; }).join('')}
       </div>
       <span class="erro" id="erro-ns" role="alert">${esc(ed.erroSecao)}</span>
-      <div class="row">${dados.secoes.length ? '<button class="btn ghost" onclick="lerEditor();ed.novaSecao=false;ed.erroSecao=\'\';desenharEditor(false)">Cancelar</button>' : ''}<button class="btn" onclick="criarSecaoEditor()">Criar seção</button></div>
+      <div class="row"><button class="btn ghost" onclick="lerEditor();ed.novaSecao=false;ed.erroSecao='';desenharEditor(false)">Cancelar</button><button class="btn" onclick="criarSecaoEditor()">Criar seção</button></div>
     </div>` : '';
   const html = `
     <div class="ed-topo">
@@ -966,31 +1104,64 @@ function desenharEditor(primeira){
         oninput="editorDigitou()" onblur="editorSaiuTitulo()" onkeydown="if(event.key==='Enter'){event.preventDefault();salvarEditor()}">${esc(v.nome)}</textarea>
       <div class="campo-rodape"><span class="erro" id="erro-titulo" role="alert">${erro || ''}</span><span class="contador" id="contador" aria-live="polite">${contador(v.nome)}</span></div>
     </div>
+    ${ed.notaAberta
+      ? `<label>Nota<textarea id="f-notas" maxlength="1000" rows="3">${esc(v.notas)}</textarea></label>`
+      : `<button class="btn text inicio" onclick="lerEditor();ed.notaAberta=true;desenharEditor(false);$('f-notas').focus()">${ic('add')} Adicionar nota</button>`}
+    ${repetirChips}
+    ${rotina ? '' : `<div class="sheet-campo"><span class="rotulo" id="rot-data">Data</span>
+      <div class="chips" role="radiogroup" aria-labelledby="rot-data">
+        ${chipEd('Hoje', v.data === hoje(), `editorData('${hoje()}')`)}
+        ${chipEd('Amanhã', v.data === amanha, `editorData('${amanha}')`)}
+        ${chipEd(dataOutra ? Regras.dataCurta(v.data) : 'Escolher data', dataOutra, "escolherData()")}
+        ${chipEd('Sem data', !v.data, "editorData('')")}
+      </div>
+      <input type="date" id="f-data" class="sr" tabindex="-1" aria-hidden="true" value="${esc(v.data)}" onchange="if(this.value)editorData(this.value)">
+    </div>`}
+    ${ed.horaAberta
+      ? `<div class="linha-campo"><label>Horário<input id="f-hora" type="time" value="${esc(v.horario)}"></label>
+          <button class="btn text danger" onclick="lerEditor();ed.v.horario='';ed.horaAberta=false;desenharEditor(false)">Remover horário</button></div>`
+      : (!rotina && !v.data
+        ? `<div><button class="btn text inicio" disabled>${ic('add')} Adicionar horário</button><p class="dica">Escolha uma data para adicionar horário.</p></div>`
+        : `<button class="btn text inicio" onclick="abrirHorario()">${ic('add')} Adicionar horário</button>`)}
+    ${rotina ? '' : `<div class="sheet-campo"><span class="rotulo" id="rot-prio">Prioridade</span>
+      <div class="seg campo-seg" role="radiogroup" aria-labelledby="rot-prio">
+        ${[['high','Alta'],['medium','Média'],['low','Baixa']].map(([p, r]) => `<button role="radio" aria-checked="${v.prioridade === p}" class="${v.prioridade === p ? 'on' : ''}" onclick="lerEditor();ed.v.prioridade='${p}';desenharEditor(false)">${r}</button>`).join('')}
+      </div></div>`}
     <div class="sheet-campo"><span class="rotulo" id="rot-sec">Seção</span>
       <div class="chips" role="radiogroup" aria-labelledby="rot-sec">
-        ${chipsSecao}
+        ${rotina ? '' : chipEd('Sem seção', !v.sid, "editorSecao('')")}
+        ${dados.secoes.map(x => chipEd(esc(x.emoji) + ' ' + esc(x.nome), x.id === v.sid, `editorSecao('${x.id}')`)).join('')}
         ${podeNova && !ed.novaSecao ? `<button class="chip" onclick="lerEditor();ed.novaSecao=true;desenharEditor(false)"><span>${ic('add','sm')} Nova seção</span></button>` : ''}
       </div>
       ${!ed.novaSecao && ed.erroSecao ? `<span class="erro" role="alert">${esc(ed.erroSecao)}</span>` : ''}
     </div>
     ${miniForm}
-    <label>${esc(s ? s.rotuloDetalhe : 'Detalhe')} (opcional)<input id="f-id" value="${esc(v.detalhe)}"></label>
-    ${ed.notaAberta
-      ? `<label>Nota<textarea id="f-notas" maxlength="1000" rows="3">${esc(v.notas)}</textarea></label>`
-      : `<button class="btn text inicio" onclick="lerEditor();ed.notaAberta=true;desenharEditor(false);$('f-notas').focus()">${ic('add')} Adicionar nota</button>`}
-    ${ed.horaAberta
-      ? `<div class="linha-campo"><label>Horário<input id="f-hora" type="time" value="${esc(v.horario)}"></label>
-          <button class="btn text danger" onclick="lerEditor();ed.v.horario='';ed.horaAberta=false;desenharEditor(false)">Remover horário</button></div>`
-      : `<button class="btn text inicio" onclick="abrirHorario()">${ic('add')} Adicionar horário</button>`}
-    ${seletorDias(v.dias)}
-    ${ed.erroDias ? `<span class="erro" role="alert">${esc(ed.erroDias)}</span>` : ''}
-    ${ed.id ? `<button class="btn text danger inicio" onclick="excluirItem('${ed.id}')">${ic('excluir')} Excluir tarefa</button>` : ''}
+    ${rotina ? `<label>${esc(s ? s.rotuloDetalhe : 'Detalhe')} (opcional)<input id="f-id" value="${esc(v.detalhe)}"></label>` : ''}
+    ${ed.id ? `<button class="btn text danger inicio" onclick="excluirDoEditor()">${ic('excluir')} Excluir tarefa</button>` : ''}
     <div class="ed-acoes">
       <button class="btn ghost" onclick="cancelarEditor()">Cancelar</button>
       <button class="btn" id="btn-salvar" onclick="salvarEditor()" ${Regras.validarTitulo(v.nome) ? 'disabled' : ''}>Salvar tarefa</button>
     </div>`;
   abrirSheetOuAtualizar(html, true);
-  if(primeira && !ed.id && !ed.novaSecao) setTimeout(() => { const t = $('f-in'); if(t) t.focus(); }, 80);
+  if(primeira && !ed.id) setTimeout(() => { const t = $('f-in'); if(t) t.focus(); }, 80);
+}
+function editorRepetir(r){
+  lerEditor();
+  ed.v.repetir = r; ed.erroDias = ''; ed.erroSecao = '';
+  if(r === 'todo') ed.v.dias = Regras.TODOS_OS_DIAS.slice();
+  if(r !== 'nao' && !ed.v.sid && dados.secoes[0]) ed.v.sid = dados.secoes[0].id;
+  desenharEditor(false);
+}
+function editorData(d){
+  lerEditor(); ed.v.data = d;
+  if(!d){ ed.v.horario = ''; ed.horaAberta = false; }
+  desenharEditor(false);
+}
+function escolherData(){
+  lerEditor();
+  const i = $('f-data');
+  try{ if(i.showPicker){ i.showPicker(); return; } }catch(e){}
+  i.classList.remove('sr'); i.removeAttribute('aria-hidden'); i.tabIndex = 0; i.focus();
 }
 function abrirHorario(){
   lerEditor(); ed.horaAberta = true; desenharEditor(false);
@@ -1011,7 +1182,7 @@ function mostrarErroTitulo(){
   $('erro-titulo').textContent = e || '';
   $('f-in').setAttribute('aria-invalid', !!e);
 }
-function editorSecao(id){ lerEditor(); ed.v.sid = id; ed.erroSecao = ''; desenharEditor(false); }
+function editorSecao(id){ lerEditor(); ed.v.sid = id || null; ed.erroSecao = ''; desenharEditor(false); }
 function criarSecaoEditor(){
   lerEditor();
   const nome = ed.ns.nome.trim();
@@ -1036,44 +1207,54 @@ function pedirDescartar(){
 function fecharDialogo(){ $('dialogo').classList.remove('show'); }
 function dialogoCancelar(){ fecharDialogo(); }
 function dialogoDescartar(){ fecharDialogo(); fecharEditor(); }
+function excluirDoEditor(){
+  const { tipo, id } = ed;
+  ed = null; fecharSheet();
+  setTimeout(() => excluirEntrada(tipo, id), 60);
+}
 function salvarEditor(){
   lerEditor();
   const v = ed.v;
+  const rotina = ehRotina();
   ed.tocouTitulo = true;
   const erro = Regras.validarTitulo(v.nome);
-  ed.erroSecao = v.sid ? '' : 'Escolha ou crie uma seção.';
-  ed.erroDias = v.dias.length ? '' : 'Escolha pelo menos um dia.';
+  ed.erroSecao = rotina && !v.sid ? 'Escolha ou crie uma seção.' : '';
+  ed.erroDias = rotina && !v.dias.length ? 'Escolha pelo menos um dia.' : '';
   if(erro || ed.erroSecao || ed.erroDias){ desenharEditor(false); if(erro) $('f-in').focus(); return; }
-  const campos = { nome: v.nome.trim(), detalhe: v.detalhe.trim(), notas: v.notas.trim().slice(0, 1000) || null, horario: v.horario || null, dias: v.dias };
-  const destino = dados.secoes.find(x => x.id === v.sid);
-  if(ed.id){
-    const origem = dados.secoes.find(x => x.id === ed.sidOriginal);
-    const it = origem.itens.find(i => i.id === ed.id);
-    Object.assign(it, campos);
-    if(origem !== destino){ origem.itens = origem.itens.filter(i => i !== it); destino.itens.push(it); }
+  const notas = v.notas.trim().slice(0, 1000) || null;
+  if(rotina){
+    const campos = { nome: v.nome.trim(), detalhe: v.detalhe.trim(), notas, horario: v.horario || null, dias: v.repetir === 'todo' ? Regras.TODOS_OS_DIAS.slice() : v.dias };
+    const destino = secaoDe(v.sid);
+    if(ed.id){
+      const origem = secaoDe(ed.sidOriginal);
+      const it = origem.itens.find(i => i.id === ed.id);
+      Object.assign(it, campos);
+      if(origem !== destino){ origem.itens = origem.itens.filter(i => i !== it); destino.itens.push(it); }
+    } else {
+      destino.itens.push({ id: uid(), ...campos, criadoEm: diaSel });
+    }
   } else {
-    destino.itens.push({ id: uid(), ...campos, criadoEm: diaSel });
+    const agora = new Date().toISOString();
+    const campos = { title: v.nome.trim(), notes: notas, dueDate: v.data || null, dueTime: v.data ? (v.horario || null) : null, priority: v.prioridade, categoryId: v.sid || null };
+    if(ed.id) Object.assign(tarefaPorId(ed.id), campos, { updatedAt: agora });
+    else dados.tarefas.push({ id: uid(), ...campos, completedAt: null, createdAt: agora, updatedAt: agora });
   }
   salvar(); fecharEditor(); render(); toast('Tarefa salva');
 }
 const NOMES_DIAS = ['segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado','domingo'];
 function seletorDias(dias){
-  return `<div class="sheet-campo"><span class="rotulo" id="rot-dias">Repetir</span>
-    <div class="chips dias" role="group" aria-labelledby="rot-dias">
+  return `
+    <div class="chips dias" role="group" aria-label="Dias da semana">
       ${['S','T','Q','Q','S','S','D'].map((l, i) => { const on = dias.includes(i + 1);
         return `<button class="chip ${on?'on':''}" data-dia="${i + 1}" aria-pressed="${on}" aria-label="${NOMES_DIAS[i]}" onclick="alternarDia(this)"><span>${l}</span></button>`; }).join('')}
-    </div></div>`;
+    </div>`;
 }
 function alternarDia(b){
   const on = b.getAttribute('aria-pressed') !== 'true';
   b.setAttribute('aria-pressed', on); b.classList.toggle('on', on);
 }
 const diasMarcados = () => [...document.querySelectorAll('#sheet .dias .chip[aria-pressed="true"]')].map(b => +b.dataset.dia);
-function excluirItem(idItem){
-  ed = null;
-  fecharSheet();
-  setTimeout(() => excluirEntrada('item', idItem), 60);
-}
+
 
 let acaoConfirmar = null;
 function sheetConfirmar(titulo, texto, acao){
