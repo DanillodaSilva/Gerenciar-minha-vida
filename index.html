@@ -248,7 +248,6 @@
   .linha[data-dir="esq"] .fundo{background:var(--danger-container);color:var(--danger);justify-content:flex-end}
   .linha[data-dir="dir"] .fundo .lado-dir,.linha[data-dir="esq"] .fundo .lado-esq{display:none}
   .linha .fundo span{display:inline-flex;align-items:center;gap:var(--space-2)}
-  .linha.saindo{transition:height var(--dur-move) var(--ease-out),opacity var(--dur-move) var(--ease-out);height:0 !important;opacity:0}
   .menu{display:flex;flex-direction:column}
   .menu button{display:flex;align-items:center;gap:var(--space-4);min-height:calc(var(--touch) + var(--space-2));padding:0 var(--space-2);border-radius:var(--radius-card);
     font-size:var(--fs-body);line-height:var(--lh-body);text-align:left}
@@ -405,6 +404,7 @@
 <input type="file" id="arquivo" accept="application/json" hidden>
 
 <script src="regras.js"></script>
+<script src="animacoes.js"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -543,31 +543,30 @@ function definirFeita(tipo, id, valor){
   }
   marcarItem(id, diaSel, valor);
 }
-function animarSaida(linha, fim){
-  const dc = durMs('--dur-check'), dm = durMs('--dur-move');
-  if(!linha || !dm){ fim(); return; }
-  setTimeout(() => {
-    linha.style.height = linha.offsetHeight + 'px';
-    void linha.offsetHeight;
-    linha.classList.add('saindo');
-    setTimeout(fim, dm);
-  }, dc);
-}
+const segurando = new Set();
+const timersMarcar = new Map();
+const ESPERA_CONCLUIDAS = 350;
 function concluirEntrada(tipo, id){
   const dia = diaSel;
   const valor = !estaFeita(tipo, id);
   definirFeita(tipo, id, valor);
   salvar();
-  const linha = document.querySelector(`.linha[data-id="${id}"]`);
-  if(linha){
-    linha.querySelector('.item').classList.toggle('done', valor);
-    const chk = linha.querySelector('.check'); if(chk) chk.setAttribute('aria-checked', valor);
-  }
+  clearTimeout(timersMarcar.get(id));
+  if(valor) segurando.add(id); else segurando.delete(id);
+  render();
   if(valor){
     vibrar();
-    snack('Tarefa concluída', () => { const d0 = diaSel; diaSel = dia; definirFeita(tipo, id, false); diaSel = d0; salvar(); render(); });
+    snack('Tarefa concluída', () => { segurando.delete(id); const d0 = diaSel; diaSel = dia; definirFeita(tipo, id, false); diaSel = d0; salvar(); render(); });
+    timersMarcar.set(id, setTimeout(() => {
+      timersMarcar.delete(id);
+      if(!segurando.has(id)) return;
+      segurando.delete(id);
+      const linha = document.querySelector(`#app .linha[data-id="${id}"]`);
+      const fica = tela === 'secao';
+      if(fica){ render(); return; }
+      Animacoes.sair(linha, () => render());
+    }, ESPERA_CONCLUIDAS));
   }
-  animarSaida(linha, render);
 }
 function apagarDeVez(tipo, id){
   if(tipo === 'tarefa'){ dados.tarefas = dados.tarefas.filter(t => t.id !== id); return; }
@@ -728,7 +727,8 @@ addEventListener('popstate', () => {
 });
 
 /* ---------- telas ---------- */
-function render(){
+let telaDesenhada = '';
+function render(refazer = false){
   if(!dados) return;
   ABAS.forEach(([t]) => {
     const on = t === tela || (t==='rotina' && tela==='secao');
@@ -738,11 +738,12 @@ function render(){
   });
   const app = document.getElementById('app');
   app.classList.toggle('com-fab', tela === 'rotina' || tela === 'proximos');
-  if(tela === 'rotina')     app.innerHTML = telaHoje();
-  if(tela === 'proximos')   app.innerHTML = telaProximos();
-  if(tela === 'secao')      app.innerHTML = telaSecao();
-  if(tela === 'constancia') app.innerHTML = telaProgresso();
-  if(tela === 'ajustes'){   app.innerHTML = telaAjustes(); atualizarEstadoNotif(); }
+  const html = tela === 'rotina' ? telaHoje() : tela === 'proximos' ? telaProximos() : tela === 'secao' ? telaSecao()
+    : tela === 'constancia' ? telaProgresso() : telaAjustes();
+  const chaveTela = tela + ':' + (secaoAberta || '') + ':' + diaSel;
+  if(!refazer && telaDesenhada === chaveTela) Animacoes.flip(app, () => Animacoes.mesclarHtml(app, html));
+  else { app.innerHTML = html; telaDesenhada = chaveTela; }
+  if(tela === 'ajustes') atualizarEstadoNotif();
 }
 
 function seletorDia(){
@@ -792,7 +793,7 @@ function linhaTarefa(t, o){
 }
 function itemTarefa(t, o = {}){
   const s = secaoDe(t.categoryId);
-  const f = !!t.completedAt;
+  const f = !!(tarefaPorId(t.id) || t).completedAt;
   return `<div class="linha" data-tipo="tarefa" data-id="${t.id}" data-sid="${s ? s.id : ''}" data-concluivel="1">
     ${fundoLinha(f)}
     <div class="item ${f ? 'done' : ''} ${t.priority === 'high' ? 'alta' : ''}" style="--c:${s ? corDe(s) : 'var(--primary)'}">
@@ -805,7 +806,7 @@ function itemTarefa(t, o = {}){
   </div>`;
 }
 const linhaEntrada = (e, s, comSecao) => e.tipo === 'item' ? itemHoje(s, e.obj, comSecao) : itemTarefa(e.obj, { secao: comSecao });
-const entradaFeita = e => e.tipo === 'item' ? feito(diaSel, e.obj.id) : !!e.obj.completedAt;
+const entradaFeita = e => !segurando.has(e.obj.id) && (e.tipo === 'item' ? feito(diaSel, e.obj.id) : !!e.obj.completedAt);
 function itemHoje(s, i, comSecao, concluivel = true){
   const f = feito(diaSel, i.id);
   return `<div class="linha" data-tipo="item" data-id="${i.id}" data-sid="${s.id}" data-concluivel="${concluivel ? 1 : 0}">
@@ -835,7 +836,7 @@ function telaHoje(){
     const entradas = Regras.ordenarDia(Regras.ordenarItens(itensDoDia(diaSel, s)), tarefasDia.filter(t => t.categoryId === s.id));
     montarGrupo(s, entradas, pendentes => {
       const rs = resumoDia(diaSel, s);
-      return `<section class="grupo tinta" style="${tintaDe(s)}">
+      return `<section class="grupo tinta" data-chave="g-${s.id}" style="${tintaDe(s)}">
         <button class="grupo-top" onclick="abrirSecao('${s.id}')" aria-label="Abrir ${esc(s.nome)}, ${rs.feitas} de ${rs.total} feitas">
           <span class="emo" aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
         </button>
@@ -844,27 +845,27 @@ function telaHoje(){
     });
   });
   const semSecao = tarefasDia.filter(t => !secaoDe(t.categoryId));
-  montarGrupo(null, Regras.ordenarDia([], semSecao), pendentes => `<section class="grupo">
+  montarGrupo(null, Regras.ordenarDia([], semSecao), pendentes => `<section class="grupo" data-chave="sem-secao">
       <h2 class="grupo-top"><span class="nm">Sem seção</span><span class="cont">${semSecao.filter(t => t.completedAt).length} de ${semSecao.length}</span></h2>
       <div class="lista">${pendentes.map(e => linhaEntrada(e, null, false)).join('')}</div>
     </section>`);
-  const blocoAtrasadas = atrasadas.length ? `<section class="grupo">
+  const blocoAtrasadas = atrasadas.length ? `<section class="grupo" data-chave="atrasadas">
       <h2 class="grupo-top"><span class="nm">Atrasadas</span><span class="cont">${atrasadas.length}</span></h2>
       <div class="lista">${atrasadas.map(t => itemTarefa(t, { data: true, secao: true })).join('')}</div>
     </section>` : '';
   concluidas.sort(([, a], [, b]) => (a.tipo === 'tarefa') - (b.tipo === 'tarefa') || String(b.obj.completedAt || '').localeCompare(String(a.obj.completedAt || '')));
   let corpo;
   if(!r.total){
-    const boasVindas = NATIVO && !dados.secoes.length && !dados.tarefas.length && !dados.ajustes.boasVindasOk ? `<div class="card boas-vindas">
+    const boasVindas = NATIVO && !dados.secoes.length && !dados.tarefas.length && !dados.ajustes.boasVindasOk ? `<div class="card boas-vindas" data-chave="boas-vindas">
       <h2>Já usava o Minha Rotina no navegador?</h2>
       <p class="hint">No app antigo, abra Ajustes e toque em Exportar tarefas. Depois importe o arquivo aqui para trazer tudo.</p>
       <div class="row mt"><button class="btn" onclick="importarBackup()">Importar backup</button><button class="btn ghost" onclick="dados.ajustes.boasVindasOk=true;salvar();render()">Começar do zero</button></div>
     </div>` : '';
-    corpo = boasVindas + blocoAtrasadas + `<div class="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
+    corpo = boasVindas + blocoAtrasadas + `<div class="vazio" data-chave="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
       <button class="btn" onclick="novaTarefa()">Adicionar tarefa</button></div>`;
   } else {
-    const tudo = r.feitas === r.total ? `<div class="vazio tudo-feito" role="status">${ic('hoje','lg')}<p><b>${ehHoje ? 'Tudo feito por hoje' : 'Tudo feito neste dia'}</b><br><small>${r.feitas} de ${r.total} concluídas</small></p></div>` : '';
-    const listaConcl = concluidas.length ? `<section class="grupo">
+    const tudo = r.feitas === r.total ? `<div class="vazio tudo-feito" data-chave="tudo-feito" role="status">${ic('hoje','lg')}<p><b>${ehHoje ? 'Tudo feito por hoje' : 'Tudo feito neste dia'}</b><br><small>${r.feitas} de ${r.total} concluídas</small></p></div>` : '';
+    const listaConcl = concluidas.length ? `<section class="grupo" data-chave="concluidas">
       <button class="grupo-top" aria-expanded="${concluidasAbertas}" onclick="concluidasAbertas=!concluidasAbertas;render()">
         <span class="nm">Concluídas (${concluidas.length})</span>${ic('expandir','sm')}
       </button>
@@ -910,18 +911,18 @@ function telaProximos(){
   `;
 }
 function listaProximos(){
-  let ts = visao().tarefas;
+  let ts = visao().tarefas.map(t => segurando.has(t.id) ? { ...t, completedAt: null } : t);
   if(filtroProx === 'alta') ts = ts.filter(t => t.priority === 'high');
   else if(filtroProx !== 'todas') ts = ts.filter(t => t.categoryId === filtroProx);
   if(busca.trim()){
     const r = Regras.buscarTarefas(ts, busca);
-    return r.length ? `<section class="grupo"><h2 class="grupo-top"><span class="nm">Resultados</span><span class="cont">${r.length}</span></h2>
+    return r.length ? `<section class="grupo" data-chave="resultados"><h2 class="grupo-top"><span class="nm">Resultados</span><span class="cont">${r.length}</span></h2>
       <div class="lista">${r.map(t => itemTarefa(t, { data: true, secao: true })).join('')}</div></section>`
       : '<div class="vazio"><p>Nenhuma tarefa encontrada.</p></div>';
   }
   const g = Regras.gruposProximos(ts, hoje());
   if(!g.length) return `<div class="vazio">${ic('calendario','lg')}<p>Nada planejado para os próximos dias.</p></div>`;
-  return g.map(x => `<section class="grupo"><h2 class="grupo-top"><span class="nm">${esc(x.titulo)}</span></h2>
+  return g.map(x => `<section class="grupo" data-chave="p-${x.chave}"><h2 class="grupo-top"><span class="nm">${esc(x.titulo)}</span></h2>
     <div class="lista">${x.tarefas.map(t => itemTarefa(t, { data: x.chave === 'depois', secao: true })).join('')}</div></section>`).join('');
 }
 function atualizarProximos(){ const el = $('prox-lista'); if(el) el.innerHTML = listaProximos(); }
@@ -1082,7 +1083,7 @@ function telaAjustes(){
     </div>
     ${NATIVO ? `<div class="card">
       <h2>Notificações</h2>
-      <p class="hint" id="estado-notif" aria-live="polite">Verificando…</p>
+      <p class="hint" id="estado-notif" aria-live="polite">${estadoNotifTexto}</p>
       <button class="btn ghost mt" onclick="abrirConfigNotif()">Abrir configurações</button>
     </div>` : ''}
     <div class="card sobre"><b>Minha Rotina</b><span>Versão ${VERSAO}</span></div>
@@ -1541,11 +1542,13 @@ async function pedirPermissaoNotif(){
   if(p === 'granted') agendarReconciliacao();
   return p === 'granted';
 }
+let estadoNotifTexto = 'Verificando…';
 async function atualizarEstadoNotif(){
   if(!NATIVO) return;
   const p = await permissaoNotif();
   const el = document.getElementById('estado-notif');
-  if(el) el.textContent = p === 'granted' ? 'Ativadas' : 'Desativadas';
+  estadoNotifTexto = p === 'granted' ? 'Ativadas' : 'Desativadas';
+  if(el) el.textContent = estadoNotifTexto;
 }
 function abrirConfigNotif(){ plugin('Configuracoes').abrirNotificacoes().catch(() => toast('Abra as configurações do Android e ative as notificações do app.')); }
 async function reconciliarLembretes(){
