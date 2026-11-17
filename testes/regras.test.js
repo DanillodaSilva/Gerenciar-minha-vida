@@ -444,3 +444,16 @@ describe('semana do dia exibido', () => {
     assert.deepEqual([R.semanaDe('2026-12-31')[0], R.semanaDe('2026-12-31')[6]], ['2026-12-28', '2027-01-03']);
   });
 });
+
+describe('comemoração do dia', () => {
+  const c = (data, percentual, ultimaComemoracao = null) => R.deveComemorarDia({ data, hoje: HOJE, percentual, ultimaComemoracao });
+  test('100% hoje sem comemoração anterior → true', () => assert.equal(c(HOJE, 100), true));
+  test('já comemorado hoje → false', () => assert.equal(c(HOJE, 100, HOJE), false));
+  test('comemorado ontem conta como nova → true', () => assert.equal(c(HOJE, 100, '2026-11-16'), true));
+  test('99% → false', () => assert.equal(c(HOJE, 99), false));
+  test('dia passado com 100% → false', () => assert.equal(c('2026-11-16', 100), false));
+  test('texto do cartão, com singular', () => {
+    assert.equal(R.textoComemoracao(7, 4), '7 de 7 feitos · sequência de 4 dias');
+    assert.equal(R.textoComemoracao(3, 1), '3 de 3 feitos · sequência de 1 dia');
+  });
+});

@@ -5,7 +5,7 @@
     entrada: 'cubic-bezier(0.4, 0, 1, 1)',
     movimento: 'cubic-bezier(0.65, 0, 0.35, 1)',
     mola: 'linear(0, 0.051 4.2%, 0.166 8.3%, 0.309 12.5%, 0.456 16.7%, 0.591 20.8%, 0.708 25%, 0.803 29.2%, 0.877 33.3%, 0.932 37.5%, 0.970 41.7%, 0.996 45.8%, 1.011 50%, 1.019 54.2%, 1.022 58.3%, 1.022 62.5%, 1.020 66.7%, 1.017 70.8%, 1.013 75%, 1.010 79.2%, 1.008 83.3%, 1.005 87.5%, 1.003 91.7%, 1.002 95.8%, 1)',
-    reduzida: 120, esperaConcluidas: 350, dicaAtraso: 800, dicaDuracao: 700, dicaDistancia: 28,
+    reduzida: 120, esperaConcluidas: 350, dicaAtraso: 800, dicaDuracao: 700, dicaDistancia: 28, brilho: 500, cartao: 2500, confetes: 80,
   };
 
   const GESTO = { trava: 8, limite: 0.4, minimoVeloz: 0.15, velocidade: 0.5, elastico: 0.6, resistencia: 0.3 };
@@ -114,6 +114,38 @@
     el._quadro = requestAnimationFrame(passo);
   }
 
+  function confete(x, y, cores) {
+    if (reduzido()) return;
+    const c = document.createElement('canvas');
+    c.className = 'confete';
+    c.setAttribute('aria-hidden', 'true');
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = innerWidth * dpr; c.height = innerHeight * dpr;
+    document.body.appendChild(c);
+    const ctx = c.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const ps = Array.from({ length: MOV.confetes }, (_, i) => {
+      const ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.1;
+      const vel = 0.35 + Math.random() * 0.55;
+      return { x, y, vx: Math.cos(ang) * vel, vy: Math.sin(ang) * vel, r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.02, w: 5 + Math.random() * 4, h: 8 + Math.random() * 6, cor: cores[i % cores.length] };
+    });
+    const t0 = performance.now();
+    let antes = t0;
+    const g = 0.0012;
+    const passo = agora => {
+      const dt = Math.min(32, agora - antes); antes = agora;
+      const p = (agora - t0) / MOV.comemoracao;
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      ctx.globalAlpha = p > 0.75 ? Math.max(0, (1 - p) / 0.25) : 1;
+      for (const q of ps) {
+        q.vy += g * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.r += q.vr * dt;
+        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r); ctx.fillStyle = q.cor; ctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h); ctx.restore();
+      }
+      if (p < 1) requestAnimationFrame(passo); else c.remove();
+    };
+    requestAnimationFrame(passo);
+  }
+
   function sair(el, depois) {
     if (!el || reduzido()) { depois(); return; }
     const a = el.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.98)' }], { duration: MOV.rapida, easing: MOV.entrada, fill: 'forwards' });
@@ -121,7 +153,7 @@
     a.oncancel = depois;
   }
 
-  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar };
+  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar, confete };
   if (typeof module !== 'undefined' && module.exports) module.exports = Animacoes;
   else raiz.Animacoes = Animacoes;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

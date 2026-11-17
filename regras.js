@@ -267,13 +267,15 @@
     if (feitos >= total) return 'Dia completo.';
     return feitos / total < 0.5 ? 'Bom começo. ' + faltam : 'Mais da metade feita. ' + faltam;
   }
+  const deveComemorarDia = ({ data, hoje, percentual, ultimaComemoracao }) => data === hoje && percentual >= 100 && ultimaComemoracao !== hoje;
+  const textoComemoracao = (feitos, sequencia) => feitos + ' de ' + feitos + ' feitos · sequência de ' + sequencia + (sequencia === 1 ? ' dia' : ' dias');
   const contarTarefas = d => d.secoes.reduce((a, s) => a + s.itens.length, 0) + (d.tarefas || []).length;
 
   const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
     APP, montarBackup, lerBackup, contarTarefas,
-    ANTECEDENCIAS, idNotificacao, lembretesPendentes, periodo, saudacao, fraseProgresso };
+    ANTECEDENCIAS, idNotificacao, lembretesPendentes, periodo, saudacao, fraseProgresso, deveComemorarDia, textoComemoracao };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

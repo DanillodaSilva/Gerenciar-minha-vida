@@ -261,6 +261,16 @@
   .dia.hoje::after{content:'';position:absolute;bottom:var(--space-1);width:var(--space-1);height:var(--space-1);border-radius:var(--radius-full);background:currentColor}
   .dia:disabled{opacity:.45;cursor:default}
   .dia:not(:disabled):active{transform:scale(var(--press))}
+  .brilho{position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .25) 50%, transparent 70%);transform:translateX(-100%)}
+  .grupo .lista{position:relative}
+  .grupo-top .emo{will-change:auto}
+  .comemoracao{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:var(--space-6);background:transparent}
+  .comemoracao .cartao{background:var(--surface);border-radius:var(--radius-sheet);box-shadow:var(--shadow-sheet);padding:var(--space-5);max-width:var(--dialog-max);width:100%;
+    text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--space-2)}
+  .comemoracao .cartao svg{width:var(--icon-lg);height:var(--icon-lg);color:var(--primary)}
+  .comemoracao h2{margin:0;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold)}
+  .comemoracao p{margin:0;color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .confete{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:39}
   .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
   .hoje-tit{flex:1;min-width:0}
   .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
@@ -603,6 +613,55 @@ function definirFeita(tipo, id, valor){
   }
   marcarItem(id, diaSel, valor);
 }
+function comemorarSecao(sid){
+  vibrar([12, 30, 12]);
+  if(Animacoes.reduzido()) return;
+  const grupo = document.querySelector(`#app [data-chave="g-${sid}"]`);
+  if(!grupo) return;
+  const M = Animacoes.MOV;
+  const emo = grupo.querySelector('.emo');
+  if(emo) emo.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)', offset: 0.4 }, { transform: 'scale(1)' }], { duration: M.lenta, easing: Animacoes.curvaMola() });
+  const lista = grupo.querySelector('.lista');
+  if(lista){
+    const b = document.createElement('span');
+    b.className = 'brilho';
+    lista.appendChild(b);
+    b.animate([{ transform: 'translateX(-100%)' }, { transform: 'translateX(100%)' }], { duration: M.brilho, easing: M.movimento }).onfinish = () => b.remove();
+  }
+}
+let cartaoAberto = null;
+function fecharCartao(){
+  const c = cartaoAberto; if(!c) return;
+  cartaoAberto = null; clearTimeout(c._timer);
+  const fim = () => { c.remove(); if(c._depois) c._depois(); };
+  if(Animacoes.reduzido()) return fim();
+  c.querySelector('.cartao').animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.96)' }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim;
+}
+function mostrarCartao(titulo, linha, icone, depois){
+  fecharCartao();
+  const c = document.createElement('div');
+  c.className = 'comemoracao';
+  c.setAttribute('role', 'status');
+  c.setAttribute('aria-live', 'polite');
+  c.innerHTML = `<div class="cartao">${icone}<h2>${esc(titulo)}</h2><p>${esc(linha)}</p></div>`;
+  c.addEventListener('pointerdown', fecharCartao);
+  document.body.appendChild(c);
+  cartaoAberto = c; c._depois = depois;
+  const M = Animacoes.MOV;
+  if(Animacoes.reduzido()) c.querySelector('.cartao').animate([{ opacity: 0 }, { opacity: 1 }], { duration: M.reduzida });
+  else c.querySelector('.cartao').animate([{ opacity: 0, transform: 'scale(0.9)' }, { opacity: 1, transform: 'scale(1)' }], { duration: M.lenta, easing: Animacoes.curvaMola() });
+  c._timer = setTimeout(fecharCartao, M.cartao);
+}
+function comemorarDiaCompleto(total){
+  vibrar([15, 40, 15, 40, 30]);
+  const anelEl = document.querySelector('#app .anel .circ');
+  if(anelEl && !Animacoes.reduzido()){
+    const r = anelEl.getBoundingClientRect();
+    const cor = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    Animacoes.confete(r.left + r.width / 2, r.top + r.height / 2, ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor));
+  }
+  mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), ic('hoje'));
+}
 let ultimoToque = null;
 document.addEventListener('pointerdown', e => { ultimoToque = { x: e.clientX, y: e.clientY, alvo: e.target }; }, true);
 function onda(item, x, y){
@@ -635,16 +694,30 @@ function marcarDuasLinhas(){
 const segurando = new Set();
 const timersMarcar = new Map();
 const ESPERA_CONCLUIDAS = Animacoes.MOV.esperaConcluidas;
+function secaoDaEntrada(tipo, id){
+  if(tipo === 'tarefa'){ const t = tarefaPorId(id); return t && secaoDe(t.categoryId); }
+  return dados.secoes.find(s => s.itens.some(i => i.id === id));
+}
 function concluirEntrada(tipo, id){
   const dia = diaSel;
   const valor = !estaFeita(tipo, id);
+  const s = secaoDaEntrada(tipo, id);
+  const antesSecao = s && resumoDia(dia, s);
+  const antesDia = resumoDia(dia);
   definirFeita(tipo, id, valor);
+  const depoisDia = resumoDia(dia);
+  const comemorarDia = valor && antesDia.feitas < antesDia.total && Regras.deveComemorarDia({ data: dia, hoje: hoje(), percentual: depoisDia.pct, ultimaComemoracao: dados.ajustes.ultimaComemoracao });
+  if(comemorarDia) dados.ajustes.ultimaComemoracao = dia;
   salvar();
+  const depoisSecao = s && resumoDia(dia, s);
+  const secaoCompletou = valor && s && antesSecao.total && antesSecao.feitas < antesSecao.total && depoisSecao.feitas === depoisSecao.total;
   clearTimeout(timersMarcar.get(id));
   if(valor) segurando.add(id); else segurando.delete(id);
   render();
+  if(secaoCompletou) comemorarSecao(s.id);
+  if(comemorarDia) setTimeout(() => comemorarDiaCompleto(depoisDia.total), Animacoes.MOV.rapida);
   if(valor){
-    vibrar();
+    if(!secaoCompletou && !comemorarDia) vibrar();
     snack('Tarefa concluída', () => { segurando.delete(id); const d0 = diaSel; diaSel = dia; definirFeita(tipo, id, false); diaSel = d0; salvar(); render(); });
     timersMarcar.set(id, setTimeout(() => {
       timersMarcar.delete(id);
@@ -1055,7 +1128,7 @@ function telaHoje(){
   const montarGrupo = (s, entradas, cabecalho) => {
     const pendentes = entradas.filter(e => !entradaFeita(e));
     entradas.filter(entradaFeita).forEach(e => concluidas.push([s, e]));
-    if(pendentes.length) grupos.push(cabecalho(pendentes));
+    if(pendentes.length || (s && entradas.length)) grupos.push(cabecalho(pendentes));
   };
   dados.secoes.forEach(s => {
     const entradas = Regras.ordenarDia(Regras.ordenarItens(itensDoDia(diaSel, s)), tarefasDia.filter(t => t.categoryId === s.id));
@@ -1065,7 +1138,7 @@ function telaHoje(){
         <button class="grupo-top" onclick="abrirSecao('${s.id}')" aria-label="Abrir ${esc(s.nome)}, ${rs.feitas} de ${rs.total} feitas">
           <span class="emo" aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
         </button>
-        <div class="lista">${pendentes.map(e => linhaEntrada(e, s, false)).join('')}</div>
+        ${pendentes.length ? `<div class="lista">${pendentes.map(e => linhaEntrada(e, s, false)).join('')}</div>` : ''}
       </section>`;
     });
   });
@@ -1116,7 +1189,7 @@ function telaHoje(){
     </header>
     ${faixaSemana()}
     ${corpo}
-    <button class="btn text nova-secao" onclick="sheetSecao()">${ic('add')} Nova seção</button>
+    <button class="btn text nova-secao" data-chave="nova-secao" onclick="sheetSecao()">${ic('add')} Nova seção</button>
     <button class="fab" onclick="novaTarefa()">${ic('add')}<span>Nova tarefa</span></button>
   `;
 }
