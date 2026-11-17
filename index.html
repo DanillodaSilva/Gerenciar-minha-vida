@@ -50,7 +50,7 @@
     --w-regular:400; --w-medium:500; --w-semibold:600;
 
     --content-max:560px; --dialog-max:400px; --nav-h:64px; --item-min-h:56px; --fab-h:56px; --chip-h:32px;
-    --check-size:24px; --check-border:2px; --ring-size:56px; --ring-stroke:5px; --dot:8px; --icon:24px; --icon-sm:16px; --icon-lg:48px;
+    --check-size:24px; --check-border:2px; --ring-size:56px; --mini-ring:24px; --mini-stroke:3px; --ring-stroke:5px; --dot:8px; --icon:24px; --icon-sm:16px; --icon-lg:48px;
     --chart-h:140px; --bar-max:28px; --bar-zero:2px; --emoji:1.5rem;
 
     --background:var(--p-sand-50); --surface:var(--p-white); --surface-variant:var(--p-sand-100);
@@ -241,6 +241,26 @@
   .hoje-top .ceu.tarde{background:linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--primary) 8%, var(--surface)))}
   .hoje-top .ceu.noite{background:linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--priority-low) 10%, var(--surface)))}
   .hoje-top[data-periodo="manha"] .ceu.manha,.hoje-top[data-periodo="tarde"] .ceu.tarde,.hoje-top[data-periodo="noite"] .ceu.noite{opacity:1}
+  .semana{margin:0 0 var(--space-4);touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  .semana-top{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);min-height:var(--touch)}
+  .semana-top span{font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary)}
+  .semana .dias{display:grid;grid-template-columns:repeat(7, minmax(0, 1fr));gap:var(--space-1)}
+  .dia{display:flex;flex-direction:column;align-items:center;gap:var(--space-1);min-height:calc(var(--touch) + var(--space-6));padding:var(--space-2) 0;
+    border-radius:var(--radius-card);color:var(--text-primary);position:relative;transition:transform var(--dur-toque) var(--ease-saida),background-color var(--dur-rapida) var(--ease-saida)}
+  .dia .letra{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary)}
+  .dia .num{font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-semibold);font-variant-numeric:tabular-nums}
+  .dia svg{width:var(--mini-ring);height:var(--mini-ring);transform:rotate(-90deg)}
+  .dia circle{fill:none;stroke-width:var(--mini-stroke)}
+  .dia .trilho{stroke:var(--surface-variant)}
+  .dia .arco{stroke:var(--primary);stroke-linecap:round;transition:stroke-dashoffset var(--dur-lenta) var(--ease-saida)}
+  .dia .arco.zero{stroke:none}
+  .dia.sel{background:var(--primary);color:var(--on-primary)}
+  .dia.sel .letra{color:var(--on-primary)}
+  .dia.sel .trilho{stroke:color-mix(in srgb, var(--on-primary) 30%, transparent)}
+  .dia.sel .arco{stroke:var(--on-primary)}
+  .dia.hoje::after{content:'';position:absolute;bottom:var(--space-1);width:var(--space-1);height:var(--space-1);border-radius:var(--radius-full);background:currentColor}
+  .dia:disabled{opacity:.45;cursor:default}
+  .dia:not(:disabled):active{transform:scale(var(--press))}
   .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
   .hoje-tit{flex:1;min-width:0}
   .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
@@ -680,6 +700,7 @@ const toast = msg => snack(msg);
 
 /* ---------- gestos: deslizar e toque longo ---------- */
 let gesto = null, suprimirClique = false, menuAlvo = null;
+function suprimirProximoClique(){ suprimirClique = true; setTimeout(() => { suprimirClique = false; }, Animacoes.MOV.toque); }
 function fimGesto(){
   if(!gesto) return;
   clearTimeout(gesto.timer);
@@ -737,8 +758,9 @@ function voltarItem(g){
 function soltar(e){
   if(!gesto || e.pointerId !== gesto.id) return;
   const g = gesto; fimGesto();
+  if(g.modo === 'longo'){ suprimirProximoClique(); return; }
   if(g.modo !== 'desliza') return;
-  suprimirClique = true;
+  suprimirProximoClique();
   const largura = g.linha.offsetWidth;
   const { tipo, id } = g.linha.dataset;
   const decisao = Animacoes.decidirGesto({ dx: g.dx, dy: 0, largura, velocidade: velocidadeGesto(g) });
@@ -783,7 +805,7 @@ function talvezMostrarDica(){
   }, Animacoes.MOV.dicaAtraso);
 }
 document.addEventListener('click', e => {
-  if(suprimirClique){ suprimirClique = false; if(e.target.closest('.linha')){ e.stopPropagation(); e.preventDefault(); } }
+  if(suprimirClique){ suprimirClique = false; if(e.target.closest('.linha, .semana')){ e.stopPropagation(); e.preventDefault(); } }
 }, true);
 document.addEventListener('keydown', e => {
   if(e.key !== 'Escape') return;
@@ -879,7 +901,82 @@ function seletorDia(){
     <button class="icon-btn" onclick="mudarDia(1)" ${diaSel >= hoje() ? 'disabled' : ''} aria-label="Próximo dia">${ic('proximo')}</button>
   </div>`;
 }
-function mudarDia(n){ const d = somaDias(diaSel, n); if(d <= hoje()){ diaSel = d; render(); } }
+function mudarDia(n){ irParaDia(somaDias(diaSel, n)); }
+function irParaDia(d, origem){
+  if(d > hoje()) d = hoje();
+  if(d === diaSel) return;
+  const dir = d > diaSel ? 1 : -1;
+  diaSel = d;
+  render(true);
+  entrarDia(dir, origem === 'semana');
+}
+function entrarDia(dir, comFaixa){
+  const M = Animacoes.MOV;
+  const alvos = [...document.querySelectorAll('#app > .grupo, #app > .vazio, #app > .card, #app > .nova-secao')];
+  if(comFaixa) alvos.unshift(document.querySelector('#app .semana .dias'));
+  alvos.filter(Boolean).forEach(el => {
+    if(Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: M.reduzida, easing: M.saida });
+    else el.animate([{ opacity: 0, transform: `translateX(${dir * 24}px)` }, { opacity: 1, transform: 'none' }], { duration: M.lenta, easing: M.movimento });
+  });
+}
+function faixaSemana(){
+  const hj = hoje();
+  const dias = Regras.semanaDe(diaSel);
+  const letras = ['S','T','Q','Q','S','S','D'];
+  const vis = visao();
+  const [a, b] = [Regras.parseDia(dias[0]), Regras.parseDia(dias[6])];
+  const mes = d => Regras.dataCurta(Regras.fmt(d)).split(' ').pop();
+  const rotulo = a.getMonth() === b.getMonth() ? `Semana de ${a.getDate()} a ${b.getDate()} de ${mes(b)}.` : `Semana de ${a.getDate()} de ${mes(a)}. a ${b.getDate()} de ${mes(b)}.`;
+  return `<nav class="semana" aria-label="Dias da semana" data-chave="semana">
+    <div class="semana-top"><span>${rotulo}</span>${diaSel !== hj ? `<button class="btn text" onclick="irParaDia(hoje())">Hoje</button>` : ''}</div>
+    <div class="dias">${dias.map((d, i) => {
+      const r = Regras.resumoDia(vis, d);
+      const futuro = d > hj;
+      const p = !r.total || futuro ? 0 : r.pct >= 50 ? 100 : r.pct;
+      return `<button class="dia ${d === diaSel ? 'sel' : ''} ${d === hj ? 'hoje' : ''}" ${futuro ? 'disabled' : ''} aria-pressed="${d === diaSel}"
+        aria-label="${Regras.dataExtenso(d)}${futuro ? '' : r.total ? ', ' + r.pct + '% feito' : ', sem tarefas'}${d === hj ? ', hoje' : ''}" onclick="irParaDia('${d}', 'semana')">
+        <span class="letra" aria-hidden="true">${letras[i]}</span><span class="num" aria-hidden="true">${Regras.parseDia(d).getDate()}</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="trilho" cx="12" cy="12" r="10"/><circle class="arco ${p ? '' : 'zero'}" cx="12" cy="12" r="10" pathLength="100" stroke-dasharray="100" style="stroke-dashoffset:${100 - p}"/></svg>
+      </button>`; }).join('')}</div>
+  </nav>`;
+}
+let gestoSemana = null;
+document.addEventListener('pointerdown', e => {
+  const faixa = e.target.closest('.semana .dias');
+  if(!faixa || e.button > 0) return;
+  gestoSemana = { faixa, x: e.clientX, y: e.clientY, dx: 0, ativo: false, id: e.pointerId, t: e.timeStamp };
+});
+document.addEventListener('pointermove', e => {
+  const g = gestoSemana;
+  if(!g || e.pointerId !== g.id) return;
+  const dx = e.clientX - g.x, dy = e.clientY - g.y;
+  if(!g.ativo){
+    if(Math.abs(dx) < Animacoes.GESTO.trava && Math.abs(dy) < Animacoes.GESTO.trava) return;
+    if(Math.abs(dy) > Math.abs(dx)){ gestoSemana = null; return; }
+    g.ativo = true;
+    try{ g.faixa.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  const proximaBloqueada = Regras.semanaDe(diaSel)[6] >= hoje();
+  g.dx = proximaBloqueada && dx < 0 ? dx * Animacoes.GESTO.resistencia : dx;
+  g.faixa.style.transform = `translateX(${g.dx}px)`;
+});
+document.addEventListener('pointerup', e => {
+  const g = gestoSemana;
+  if(!g || e.pointerId !== g.id) return;
+  gestoSemana = null;
+  if(!g.ativo) return;
+  suprimirProximoClique();
+  const largura = g.faixa.offsetWidth;
+  const velocidade = g.dx / Math.max(1, e.timeStamp - g.t);
+  const decisao = Animacoes.decidirGesto({ dx: g.dx, dy: 0, largura, velocidade });
+  const de = g.faixa.style.transform;
+  g.faixa.style.transform = '';
+  const proximaBloqueada = Regras.semanaDe(diaSel)[6] >= hoje();
+  if(decisao === 'marcar') return irParaDia(somaDias(diaSel, -7), 'semana');
+  if(decisao === 'excluir' && !proximaBloqueada) return irParaDia(somaDias(diaSel, 7), 'semana');
+  if(!Animacoes.reduzido() && de) g.faixa.animate([{ transform: de }, { transform: 'none' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() });
+});
+document.addEventListener('pointercancel', e => { if(gestoSemana && e.pointerId === gestoSemana.id){ gestoSemana.faixa.style.transform = ''; gestoSemana = null; } });
 
 let concluidasAbertas = false;
 const dois = n => String(n).padStart(2, '0');
@@ -1017,6 +1114,7 @@ function telaHoje(){
       </div>
       ${anel(r.feitas, r.total)}
     </header>
+    ${faixaSemana()}
     ${corpo}
     <button class="btn text nova-secao" onclick="sheetSecao()">${ic('add')} Nova seção</button>
     <button class="fab" onclick="novaTarefa()">${ic('add')}<span>Nova tarefa</span></button>

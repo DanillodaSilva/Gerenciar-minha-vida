@@ -436,3 +436,11 @@ describe('cabeçalho vivo', () => {
     assert.equal(f(1, 2), 'Mais da metade feita. Falta 1.');
   });
 });
+
+describe('semana do dia exibido', () => {
+  test('segunda, domingo e virada de ano', () => {
+    assert.deepEqual([R.semanaDe('2026-11-16')[0], R.semanaDe('2026-11-16')[6]], ['2026-11-16', '2026-11-22']);
+    assert.deepEqual([R.semanaDe('2026-11-22')[0], R.semanaDe('2026-11-22')[6]], ['2026-11-16', '2026-11-22']);
+    assert.deepEqual([R.semanaDe('2026-12-31')[0], R.semanaDe('2026-12-31')[6]], ['2026-12-28', '2027-01-03']);
+  });
+});
