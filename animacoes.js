@@ -96,6 +96,24 @@
     });
   }
 
+  function contar(el) {
+    const para = Number(el.getAttribute('data-contar'));
+    const sufixo = el.getAttribute('data-sufixo') || '';
+    const de = typeof el._mostrado === 'number' ? el._mostrado : para;
+    cancelAnimationFrame(el._quadro);
+    el._mostrado = para;
+    if (de === para || reduzido()) { el.textContent = para + sufixo; return; }
+    const t0 = performance.now();
+    const passo = agora => {
+      const p = Math.min(1, (agora - t0) / MOV.contagem);
+      const e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(de + (para - de) * e) + sufixo;
+      if (p < 1) el._quadro = requestAnimationFrame(passo);
+    };
+    el.textContent = de + sufixo;
+    el._quadro = requestAnimationFrame(passo);
+  }
+
   function sair(el, depois) {
     if (!el || reduzido()) { depois(); return; }
     const a = el.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(0.98)' }], { duration: MOV.rapida, easing: MOV.entrada, fill: 'forwards' });
@@ -103,7 +121,7 @@
     a.oncancel = depois;
   }
 
-  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair };
+  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar };
   if (typeof module !== 'undefined' && module.exports) module.exports = Animacoes;
   else raiz.Animacoes = Animacoes;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

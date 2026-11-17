@@ -34,7 +34,7 @@
     --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
     --radius-chip:8px; --radius-card:12px; --radius-sheet:16px; --radius-fab:16px; --radius-full:999px; --radius-check:6px; --radius-bar:4px;
     --border-width:1px; --border-focus:2px; --touch:48px;
-    --dur-toque:100ms; --dur-rapida:160ms; --dur-base:240ms; --dur-lenta:340ms; --dur-comemoracao:1100ms; --dur-reduzida:120ms; --dur-onda:400ms;
+    --dur-toque:100ms; --dur-rapida:160ms; --dur-base:240ms; --dur-lenta:340ms; --dur-comemoracao:1100ms; --dur-reduzida:120ms; --dur-onda:400ms; --dur-periodo:600ms;
     --ease-saida:cubic-bezier(0.22, 1, 0.36, 1); --ease-entrada:cubic-bezier(0.4, 0, 1, 1); --ease-movimento:cubic-bezier(0.65, 0, 0.35, 1);
     --ease-mola:var(--ease-saida); --teclado:0px; --press:0.97; --press-item:0.98; --risco:2px;
     --shadow-fab:0 3px 8px rgb(0 0 0 / .18), 0 1px 3px rgb(0 0 0 / .12);
@@ -50,7 +50,7 @@
     --w-regular:400; --w-medium:500; --w-semibold:600;
 
     --content-max:560px; --dialog-max:400px; --nav-h:64px; --item-min-h:56px; --fab-h:56px; --chip-h:32px;
-    --check-size:24px; --check-border:2px; --ring-size:48px; --ring-stroke:5px; --dot:8px; --icon:24px; --icon-sm:16px; --icon-lg:48px;
+    --check-size:24px; --check-border:2px; --ring-size:56px; --ring-stroke:5px; --dot:8px; --icon:24px; --icon-sm:16px; --icon-lg:48px;
     --chart-h:140px; --bar-max:28px; --bar-zero:2px; --emoji:1.5rem;
 
     --background:var(--p-sand-50); --surface:var(--p-white); --surface-variant:var(--p-sand-100);
@@ -234,13 +234,22 @@
   .chart .b.zero{background:var(--border-strong)}
   .chart .b span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);white-space:nowrap}
   .chart .lbl{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);margin-top:var(--space-1);white-space:nowrap}
-  .hoje-top{display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-2)}
+  .hoje-top{display:flex;align-items:flex-start;gap:var(--space-3);position:relative;isolation:isolate;overflow:hidden;
+    margin:calc(var(--space-4) * -1) calc(var(--space-4) * -1) var(--space-3);padding:var(--space-4);border-radius:0 0 var(--radius-sheet) var(--radius-sheet)}
+  .hoje-top .ceu{position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity var(--dur-periodo) var(--ease-saida)}
+  .hoje-top .ceu.manha{background:linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--priority-medium) 8%, var(--surface)))}
+  .hoje-top .ceu.tarde{background:linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--primary) 8%, var(--surface)))}
+  .hoje-top .ceu.noite{background:linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--priority-low) 10%, var(--surface)))}
+  .hoje-top[data-periodo="manha"] .ceu.manha,.hoje-top[data-periodo="tarde"] .ceu.tarde,.hoje-top[data-periodo="noite"] .ceu.noite{opacity:1}
+  .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
   .hoje-tit{flex:1;min-width:0}
   .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
   .hoje-data{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-1);color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
   .hoje-data .setas{display:flex}
   .hoje-data>span:first-child{flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
   .anel{display:flex;flex-direction:column;align-items:center;gap:var(--space-1);flex:none;padding-top:var(--space-1)}
+  .anel .circ{position:relative;width:var(--ring-size);height:var(--ring-size)}
+  .anel .pct{position:absolute;inset:0;display:grid;place-items:center;font-size:var(--fs-meta);line-height:1;font-weight:var(--w-semibold);color:var(--text-primary);font-variant-numeric:tabular-nums}
   .anel svg{width:var(--ring-size);height:var(--ring-size);transform:rotate(-90deg)}
   .anel circle{fill:none;stroke-width:var(--ring-stroke)}
   .anel .trilho{stroke:var(--primary-container)}
@@ -855,7 +864,13 @@ function render(refazer = false){
   if(tela === 'ajustes') atualizarEstadoNotif();
   marcarDuasLinhas();
   talvezMostrarDica();
+  document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
 }
+setInterval(() => {
+  const topo = document.querySelector('#app .hoje-top');
+  if(!topo || gesto || document.getElementById('overlay').classList.contains('show')) return;
+  if(topo.dataset.periodo !== Regras.periodo(horaAgora()) || !topo.querySelector('h1').textContent.startsWith(Regras.saudacao(horaAgora()))) render();
+}, 60000);
 
 function seletorDia(){
   return `<div class="day">
@@ -873,7 +888,8 @@ function anel(feitas, total){
   if(!total) return '';
   const pct = Math.round(feitas / total * 100);
   return `<div class="anel" role="img" aria-label="${feitas} de ${total} concluídas">
-    <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="trilho" cx="24" cy="24" r="21.5"/><circle class="arco ${pct ? '' : 'zero'}" cx="24" cy="24" r="21.5" pathLength="100" stroke-dasharray="100" style="stroke-dashoffset:${100 - pct}"/></svg>
+    <div class="circ"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="trilho" cx="24" cy="24" r="21.5"/><circle class="arco ${pct ? '' : 'zero'}" cx="24" cy="24" r="21.5" pathLength="100" stroke-dasharray="100" style="stroke-dashoffset:${100 - pct}"/></svg>
+    <b class="pct" aria-hidden="true" data-contar="${pct}" data-sufixo="%">${pct}%</b></div>
     <span aria-hidden="true">${feitas} de ${total}</span></div>`;
 }
 function linhaHoje(s, i, comSecao){
@@ -986,16 +1002,18 @@ function telaHoje(){
     corpo = tudo + blocoAtrasadas + grupos.join('') + listaConcl;
   }
   return `
-    <header class="hoje-top">
+    <header class="hoje-top" data-periodo="${Regras.periodo(horaAgora())}">
+      <span class="ceu manha" aria-hidden="true"></span><span class="ceu tarde" aria-hidden="true"></span><span class="ceu noite" aria-hidden="true"></span>
       <div class="hoje-tit">
-        <h1>${ehHoje ? 'Hoje' : Regras.rotuloDia(diaSel, hoje())}</h1>
         <div class="hoje-data">
-          <span>${Regras.dataExtenso(diaSel)}</span>
+          <span>${ehHoje ? Regras.dataExtenso(diaSel) : Regras.rotuloDia(diaSel, hoje()) === 'Ontem' ? 'Ontem · ' + Regras.dataExtenso(diaSel) : Regras.dataExtenso(diaSel)}</span>
           <span class="setas">
             <button class="icon-btn" onclick="mudarDia(-1)" aria-label="Dia anterior">${ic('anterior')}</button>
             <button class="icon-btn" onclick="mudarDia(1)" ${ehHoje ? 'disabled' : ''} aria-label="Próximo dia">${ic('proximo')}</button>
           </span>
         </div>
+        <h1>${esc(Regras.saudacao(horaAgora(), dados.ajustes.nome))}</h1>
+        <p class="frase" aria-live="polite">${Regras.fraseProgresso({ feitos: r.feitas, total: r.total, ehHoje })}</p>
       </div>
       ${anel(r.feitas, r.total)}
     </header>

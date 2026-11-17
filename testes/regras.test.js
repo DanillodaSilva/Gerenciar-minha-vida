@@ -408,3 +408,31 @@ describe('lembretes', () => {
     assert.throws(() => R.lerBackup(JSON.stringify(base)), { message: 'Arquivo de backup inválido.' });
   });
 });
+
+describe('cabeçalho vivo', () => {
+  test('saudação pelo horário', () => {
+    const casos = { '04:59': 'Boa noite', '05:00': 'Bom dia', '11:59': 'Bom dia', '12:00': 'Boa tarde', '17:59': 'Boa tarde', '18:00': 'Boa noite', '23:59': 'Boa noite' };
+    for (const [h, s] of Object.entries(casos)) assert.equal(R.saudacao(h), s, h);
+  });
+  test('saudação com nome; nome só com espaços fica sem nome', () => {
+    assert.equal(R.saudacao('05:00', 'Ana'), 'Bom dia, Ana');
+    assert.equal(R.saudacao('05:00', '   '), 'Bom dia');
+  });
+  test('período do dia', () => {
+    assert.equal(R.periodo('05:00'), 'manha');
+    assert.equal(R.periodo('12:00'), 'tarde');
+    assert.equal(R.periodo('18:00'), 'noite');
+    assert.equal(R.periodo('04:59'), 'noite');
+  });
+  test('frase de progresso', () => {
+    const f = (feitos, total, ehHoje = true) => R.fraseProgresso({ feitos, total, ehHoje });
+    assert.equal(f(0, 0), 'Nada programado para hoje.');
+    assert.equal(f(0, 5), 'Vamos começar? São 5 itens hoje.');
+    assert.equal(f(2, 5), 'Bom começo. Faltam 3.');
+    assert.equal(f(4, 5), 'Mais da metade feita. Falta 1.');
+    assert.equal(f(5, 5), 'Dia completo.');
+    assert.equal(f(3, 5, false), '3 de 5 feitos neste dia.');
+    assert.equal(f(0, 1), 'Vamos começar? É 1 item hoje.');
+    assert.equal(f(1, 2), 'Mais da metade feita. Falta 1.');
+  });
+});

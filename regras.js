@@ -251,13 +251,29 @@
     }));
     return lista.sort((a, b) => a.at - b.at);
   }
+  const horaDe = hora => Number(String(hora).split(':')[0]);
+  function periodo(hora) { const h = horaDe(hora); return h >= 5 && h < 12 ? 'manha' : h >= 12 && h < 18 ? 'tarde' : 'noite'; }
+  function saudacao(hora, nome) {
+    const base = { manha: 'Bom dia', tarde: 'Boa tarde', noite: 'Boa noite' }[periodo(hora)];
+    const n = String(nome || '').trim();
+    return n ? base + ', ' + n : base;
+  }
+  function fraseProgresso({ feitos, total, ehHoje }) {
+    if (!total) return ehHoje ? 'Nada programado para hoje.' : 'Nada programado neste dia.';
+    if (!ehHoje) return feitos + ' de ' + total + ' feitos neste dia.';
+    const falta = total - feitos;
+    const faltam = falta === 1 ? 'Falta 1.' : 'Faltam ' + falta + '.';
+    if (feitos === 0) return total === 1 ? 'Vamos começar? É 1 item hoje.' : 'Vamos começar? São ' + total + ' itens hoje.';
+    if (feitos >= total) return 'Dia completo.';
+    return feitos / total < 0.5 ? 'Bom começo. ' + faltam : 'Mais da metade feita. ' + faltam;
+  }
   const contarTarefas = d => d.secoes.reduce((a, s) => a + s.itens.length, 0) + (d.tarefas || []).length;
 
   const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
     APP, montarBackup, lerBackup, contarTarefas,
-    ANTECEDENCIAS, idNotificacao, lembretesPendentes };
+    ANTECEDENCIAS, idNotificacao, lembretesPendentes, periodo, saudacao, fraseProgresso };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
