@@ -129,6 +129,7 @@
   .menu button:active,.opcao:active,.grupo-top:active,.btn.text:not(:disabled):active{background-color:var(--surface-variant)}
   nav.tabs button:active span.ind{transform:scale(var(--press))}
   @media (hover: hover) and (pointer: fine){
+    .dia:not(:disabled):not(.sel):hover,.chart.semana .col:hover,.menu-pop button:hover,.interruptor:hover,.alca-item:hover,.add-item:hover{background-color:var(--surface-variant)}
     .btn:not(:disabled):hover{filter:brightness(.95)}
     .icon-btn:not(:disabled):hover,.menu button:hover,.opcao:hover,.grupo-top:hover,.btn.text:not(:disabled):hover{background:var(--surface-variant)}
     .chip:hover>span{border-color:var(--text-secondary)}
@@ -311,7 +312,7 @@
   .experiencia .rotulo-grupo{display:block;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary);margin:var(--space-2) 0 0}
   .reord-barra{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:0 0 var(--space-2)}
   .reord-barra span{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary)}
-  .linha-reord{position:relative}
+  .linha-reord{position:relative;user-select:none;-webkit-user-select:none}
   .linha-reord .item{background:var(--cc);border:0;border-radius:0;margin:0;padding:var(--space-1) var(--space-1) var(--space-1) var(--space-4)}
   .linha-reord+.linha-reord{border-top:var(--border-width) solid var(--divider-container)}
   .linha-reord .item .nm{flex:1;min-width:0;overflow-wrap:anywhere;padding:var(--space-3) 0}
@@ -1168,7 +1169,7 @@ function linhaAdicao(s){
   if(adicaoAberta !== s.id) return `<div class="add-linha" data-chave="add-${s.id}"><button class="btn text inicio add-item" onclick="abrirAdicao('${s.id}')">${ic('add')} Adicionar item</button></div>`;
   return `<div class="add-linha" data-chave="add-${s.id}">
     <label class="sr" for="add-${s.id}">Nome do novo item em ${esc(s.nome)}</label>
-    <input id="add-${s.id}" class="add-campo" name="novo-item" autocomplete="off" enterkeyhint="done" placeholder="Nome do item" aria-describedby="erro-add-${s.id}" aria-invalid="${!!erroAdicao}"
+    <input id="add-${s.id}" class="add-campo" name="novo-item" autocomplete="off" enterkeyhint="done" placeholder="Ex.: Beber água…" aria-describedby="erro-add-${s.id}" aria-invalid="${!!erroAdicao}"
       onkeydown="teclaAdicao(event, '${s.id}')" onblur="setTimeout(() => saiuAdicao('${s.id}'), 0)">
     <span class="erro" id="erro-add-${s.id}" role="alert">${esc(erroAdicao)}</span>
   </div>`;
@@ -1700,7 +1701,7 @@ function telaAjustes(){
     <header class="top"><h1>Ajustes</h1></header>
     <div class="card experiencia" data-chave="experiencia">
       <h2>Experiência</h2>
-      <label>Seu nome<input id="f-meu-nome" name="nome-usuario" autocomplete="given-name" maxlength="24" value="${esc(aj.nome)}" placeholder="Opcional" oninput="mudarNome(this.value)"></label>
+      <label>Seu nome<input id="f-meu-nome" name="nome-usuario" autocomplete="given-name" maxlength="24" value="${esc(aj.nome)}" placeholder="Ex.: Ana…" oninput="mudarNome(this.value)"></label>
       <span class="rotulo-grupo" id="rot-anim">Animações</span>
       <div class="opcoes" role="radiogroup" aria-labelledby="rot-anim">${opcaoAnim('auto', 'Automático (segue o sistema)')}${opcaoAnim('reduzidas', 'Reduzidas')}</div>
       ${temVibracao ? interruptor('vibracao', 'Vibração') : ''}
@@ -2359,6 +2360,8 @@ function mostrarBoasVindas(){
     <p class="sr" aria-live="polite" id="bv-status">Tela 1 de 3</p>
     <div class="bv-acoes"><button class="btn text" onclick="fecharBoasVindas()">Pular</button><button class="btn" id="bv-proximo" onclick="bvAvancar()">Próximo</button></div>`;
   document.body.appendChild(el);
+  ['app', 'toast'].forEach(id => $(id).setAttribute('inert', ''));
+  document.querySelector('nav.tabs').setAttribute('inert', '');
   bvTela = 0;
   if(!Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
   setTimeout(() => $('bv-proximo').focus(), 50);
@@ -2376,6 +2379,8 @@ function bvAvancar(){ if(bvTela === BV_TELAS.length - 1) fecharBoasVindas(); els
 function fecharBoasVindas(){
   const el = $('boas-vindas'); if(!el) return;
   dados.ajustes.boasVindasVista = true; salvar();
+  ['app', 'toast'].forEach(id => $(id).removeAttribute('inert'));
+  document.querySelector('nav.tabs').removeAttribute('inert');
   const fim = () => { el.remove(); escolherInicio(); };
   if(Animacoes.reduzido()) return fim();
   el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim;
