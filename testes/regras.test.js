@@ -70,3 +70,60 @@ describe('cores das seções', () => {
     assert.equal(R.corTokenDe({ cor: '#7c5cff', corToken: 'teal' }), 'teal');
   });
 });
+
+describe('migração v1 → v2', () => {
+  const v1 = {
+    secoes: [{ id: 'lx1abc', nome: 'Treino', emoji: '🏋️', cor: '#7c5cff', rotuloNome: 'Exercício', rotuloDetalhe: 'Carga', extraSecao: 1,
+      itens: [{ id: 'lx2def', nome: 'Supino', detalhe: '40 kg', criadoEm: '2026-11-10', extraItem: 'x' }] }],
+    feitos: { '2026-11-16': ['lx2def'] },
+    campoDesconhecido: { a: 1 },
+  };
+  const bruto = JSON.stringify(v1);
+
+  test('registro antigo vira o formato novo com os padrões', () => {
+    const { dados, migrou, deVersao } = R.migrar(bruto);
+    assert.equal(migrou, true);
+    assert.equal(deVersao, 1);
+    assert.equal(dados.schemaVersion, 2);
+    assert.deepEqual(dados.tarefas, []);
+    assert.deepEqual(dados.ajustes, { tema: 'system' });
+    assert.deepEqual(dados.feitos, v1.feitos);
+    const s = dados.secoes[0];
+    assert.equal(s.corToken, 'blue');
+    assert.equal(s.cor, '#7c5cff');
+    assert.deepEqual(s.itens[0], { ...v1.secoes[0].itens[0], notas: null, horario: null, dias: [1, 2, 3, 4, 5, 6, 7] });
+  });
+  test('rodar a migração duas vezes dá o mesmo resultado', () => {
+    const uma = R.migrar(bruto).dados;
+    const duas = R.migrar(JSON.stringify(uma));
+    assert.equal(duas.migrou, false);
+    assert.deepEqual(duas.dados, uma);
+  });
+  test('campo desconhecido é preservado na raiz, na seção e no item', () => {
+    const { dados } = R.migrar(bruto);
+    assert.deepEqual(dados.campoDesconhecido, { a: 1 });
+    assert.equal(dados.secoes[0].extraSecao, 1);
+    assert.equal(dados.secoes[0].itens[0].extraItem, 'x');
+  });
+  test('seção sem itens ganha lista vazia', () => {
+    const { dados } = R.migrar(JSON.stringify({ secoes: [{ id: 's', nome: 'X' }] }));
+    assert.deepEqual(dados.secoes[0].itens, []);
+  });
+  test('sem dados salvos começa vazio e não marca migração', () => {
+    const r = R.migrar(null);
+    assert.equal(r.migrou, false);
+    assert.deepEqual(r.dados, R.vazio());
+  });
+  test('JSON corrompido, formato desconhecido ou versão mais nova falham sem devolver dados', () => {
+    assert.throws(() => R.migrar('{"secoes":['));
+    assert.throws(() => R.migrar('{"itens":[]}'));
+    assert.throws(() => R.migrar('[]'));
+    assert.throws(() => R.migrar(JSON.stringify({ schemaVersion: 3, secoes: [] })));
+  });
+  test('dias inválidos voltam para todos os dias; dias válidos são ordenados sem repetição', () => {
+    const d = (dias) => R.migrar(JSON.stringify({ schemaVersion: 2, secoes: [{ id: 's', itens: [{ id: 'i', criadoEm: HOJE, dias }] }] })).dados.secoes[0].itens[0].dias;
+    assert.deepEqual(d([]), [1, 2, 3, 4, 5, 6, 7]);
+    assert.deepEqual(d([9, 'x']), [1, 2, 3, 4, 5, 6, 7]);
+    assert.deepEqual(d([5, 1, 3, 1]), [1, 3, 5]);
+  });
+});

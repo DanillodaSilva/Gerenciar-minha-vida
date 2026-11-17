@@ -40,7 +40,50 @@
     return seq;
   }
 
-  const Regras = { CORES, COR_ANTIGA, fmt, parseDia, somaDias, curto, nomeDia, corTokenDe, itensDoDia, feito, resumoDia, sequencia };
+  const SCHEMA = 2;
+  const TODOS_OS_DIAS = [1, 2, 3, 4, 5, 6, 7];
+  const ehObjeto = x => x !== null && typeof x === 'object' && !Array.isArray(x);
+  const vazio = () => ({ schemaVersion: SCHEMA, secoes: [], feitos: {}, tarefas: [], ajustes: { tema: 'system' } });
+
+  function diasValidos(dias) {
+    if (!Array.isArray(dias)) return null;
+    const v = [...new Set(dias.filter(n => Number.isInteger(n) && n >= 1 && n <= 7))].sort((a, b) => a - b);
+    return v.length ? v : null;
+  }
+
+  function normalizar(d) {
+    const feitos = ehObjeto(d.feitos) ? d.feitos : {};
+    const ajustes = ehObjeto(d.ajustes) ? d.ajustes : {};
+    return {
+      ...d,
+      schemaVersion: SCHEMA,
+      feitos,
+      tarefas: Array.isArray(d.tarefas) ? d.tarefas : [],
+      ajustes: { ...ajustes, tema: ['system', 'light', 'dark'].includes(ajustes.tema) ? ajustes.tema : 'system' },
+      secoes: d.secoes.filter(ehObjeto).map(s => ({
+        ...s,
+        corToken: corTokenDe(s),
+        itens: (Array.isArray(s.itens) ? s.itens : []).filter(ehObjeto).map(i => ({
+          ...i,
+          notas: typeof i.notas === 'string' ? i.notas : null,
+          horario: typeof i.horario === 'string' && /^\d{2}:\d{2}$/.test(i.horario) ? i.horario : null,
+          dias: diasValidos(i.dias) || TODOS_OS_DIAS.slice(),
+        })),
+      })),
+    };
+  }
+
+  function migrar(bruto) {
+    if (bruto === null || bruto === undefined || bruto === '') return { dados: vazio(), migrou: false, deVersao: SCHEMA };
+    const d = JSON.parse(bruto);
+    if (!ehObjeto(d) || !Array.isArray(d.secoes)) throw new Error('formato desconhecido');
+    const versao = Number.isInteger(d.schemaVersion) ? d.schemaVersion : 1;
+    if (versao > SCHEMA) throw new Error('versão ' + versao + ' é mais nova que a do app');
+    const dados = normalizar(d);
+    return { dados, migrou: JSON.stringify(dados) !== JSON.stringify(d), deVersao: versao };
+  }
+
+  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, corTokenDe, itensDoDia, feito, resumoDia, sequencia, vazio, migrar };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

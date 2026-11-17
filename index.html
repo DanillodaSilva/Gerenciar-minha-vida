@@ -230,12 +230,11 @@
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
-   estrutura:
-   {
-     secoes: [{ id, nome, emoji, cor, rotuloNome, rotuloDetalhe,
-                itens: [{ id, nome, detalhe, criadoEm:"AAAA-MM-DD" }] }],
-     feitos: { "AAAA-MM-DD": [idItem, idItem, ...] }
-   }
+   estrutura (schemaVersion 2, migração em regras.js):
+   { schemaVersion, ajustes: { tema }, tarefas: [],
+     secoes: [{ id, nome, emoji, cor, corToken, rotuloNome, rotuloDetalhe,
+                itens: [{ id, nome, detalhe, criadoEm, notas, horario, dias }] }],
+     feitos: { "AAAA-MM-DD": [idItem, ...] } }
    ========================================================= */
 const CHAVE = 'rotina-app-v1';
 const { CORES, corTokenDe } = Regras;
@@ -276,17 +275,24 @@ const itensDoDia = (dia, secao) => Regras.itensDoDia(dados, dia, secao);
 const feito = (dia, idItem) => Regras.feito(dados, dia, idItem);
 const resumoDia = (dia, secao) => Regras.resumoDia(dados, dia, secao);
 
-let dados = carregar();
+let dados = null;
 let tela = 'rotina';        // rotina | secao | constancia | ajustes
 let secaoAberta = null;     // id da seção aberta
 let diaSel = hoje();        // dia que está sendo marcado
 let periodo = 7;            // período do gráfico
 
 function carregar(){
-  try{ const d = JSON.parse(localStorage.getItem(CHAVE)); if(d && d.secoes) return d; }catch(e){}
-  return { secoes: [], feitos: {} };
+  const bruto = localStorage.getItem(CHAVE);
+  const { dados: d, migrou, deVersao } = Regras.migrar(bruto);
+  if(migrou){
+    const chaveBackup = 'backup_pre_v' + Regras.SCHEMA;
+    if(deVersao < Regras.SCHEMA && localStorage.getItem(chaveBackup) === null) localStorage.setItem(chaveBackup, bruto);
+    localStorage.setItem(CHAVE, JSON.stringify(d));
+  }
+  return d;
 }
 function salvar(){
+  if(!dados) return;
   try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); }
   catch(e){ toast('Não consegui salvar 😕'); }
 }
@@ -319,6 +325,7 @@ addEventListener('popstate', () => {
 
 /* ---------- telas ---------- */
 function render(){
+  if(!dados) return;
   ABAS.forEach(([t]) => {
     const on = t === tela || (t==='rotina' && tela==='secao');
     const b = document.getElementById('tab-'+t);
@@ -478,7 +485,7 @@ function telaAjustes(){
     <div class="card">
       <h3>Zerar tudo</h3>
       <p class="hint">Apaga todas as seções, itens e histórico.</p>
-      <button class="btn danger mt" onclick="sheetConfirmar('Apagar tudo?','Isso não dá pra desfazer.',()=>{dados={secoes:[],feitos:{}};salvar();render();toast('Tudo apagado')})">Apagar tudo</button>
+      <button class="btn danger mt" onclick="sheetConfirmar('Apagar tudo?','Isso não dá pra desfazer.',()=>{dados={...Regras.vazio(),ajustes:dados.ajustes};salvar();render();toast('Tudo apagado')})">Apagar tudo</button>
     </div>
   `;
 }
@@ -653,8 +660,20 @@ if('serviceWorker' in navigator){
   try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 }
 
-montarNav();
-render();
+function telaErro(){
+  document.querySelector('nav.tabs').innerHTML = '';
+  document.getElementById('app').innerHTML = `
+    <div class="empty" role="alert">
+      <p>Não foi possível carregar suas tarefas.</p>
+      <button class="btn" onclick="iniciar()">Tentar novamente</button>
+    </div>`;
+}
+function iniciar(){
+  try{ dados = carregar(); }
+  catch(e){ dados = null; console.error('Falha ao carregar os dados:', e && e.message); telaErro(); return; }
+  montarNav(); render();
+}
+iniciar();
 </script>
 </body>
 </html>
