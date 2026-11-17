@@ -65,6 +65,25 @@
     return seq;
   }
 
+  const LIMITE_SECOES = 20;
+  const tamanho = t => Array.from(String(t || '').trim()).length;
+  function validarTitulo(t) {
+    const n = tamanho(t);
+    if (!n) return 'Digite um título.';
+    if (n > 120) return 'Máximo de 120 caracteres.';
+    return null;
+  }
+  const semAcento = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  function validarNomeSecao(nome, secoes, ignorarId) {
+    const n = tamanho(nome);
+    if (!n) return 'Digite um nome.';
+    if (n > 24) return 'Máximo de 24 caracteres.';
+    const igual = secoes.some(s => s.id !== ignorarId && String(s.nome || '').trim().toLowerCase() === String(nome).trim().toLowerCase());
+    if (igual) return 'Já existe uma seção com esse nome.';
+    if (!ignorarId && secoes.length >= LIMITE_SECOES) return 'Máximo de 20 seções.';
+    return null;
+  }
+
   const SCHEMA = 2;
   const TODOS_OS_DIAS = [1, 2, 3, 4, 5, 6, 7];
   const ehObjeto = x => x !== null && typeof x === 'object' && !Array.isArray(x);
@@ -108,7 +127,7 @@
     return { dados, migrou: JSON.stringify(dados) !== JSON.stringify(d), deVersao: versao };
   }
 
-  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar };
+  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

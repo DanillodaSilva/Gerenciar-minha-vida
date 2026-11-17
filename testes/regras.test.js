@@ -170,3 +170,32 @@ describe('textos de data e ordem do dia', () => {
     assert.deepEqual(R.ordenarItens(itens).map(i => i.id), ['h00', 'h07', 'h14', 'sem1', 'sem2']);
   });
 });
+
+describe('validação do editor', () => {
+  test('título obrigatório, de 1 a 120 caracteres depois do trim', () => {
+    assert.equal(R.validarTitulo('   '), 'Digite um título.');
+    assert.equal(R.validarTitulo(''), 'Digite um título.');
+    assert.equal(R.validarTitulo('a'.repeat(120)), null);
+    assert.equal(R.validarTitulo('  ' + 'a'.repeat(120) + '  '), null);
+    assert.equal(R.validarTitulo('a'.repeat(121)), 'Máximo de 120 caracteres.');
+  });
+  test('título só com emoji conta caracteres, não unidades de código', () => {
+    assert.equal(R.validarTitulo('🏋️'), null);
+    assert.equal(R.validarTitulo('😀'.repeat(120)), null);
+    assert.equal(R.validarTitulo('😀'.repeat(121)), 'Máximo de 120 caracteres.');
+  });
+  test('nome da seção: 1 a 24 caracteres, único sem diferenciar maiúsculas, até 20 seções', () => {
+    const secoes = [{ id: 'a', nome: 'Trabalho' }];
+    assert.equal(R.validarNomeSecao('', secoes), 'Digite um nome.');
+    assert.equal(R.validarNomeSecao('x'.repeat(24), secoes), null);
+    assert.equal(R.validarNomeSecao('x'.repeat(25), secoes), 'Máximo de 24 caracteres.');
+    assert.equal(R.validarNomeSecao('TRABALHO', secoes), 'Já existe uma seção com esse nome.');
+    assert.equal(R.validarNomeSecao('Trabalho', secoes, 'a'), null);
+    const vinte = Array.from({ length: 20 }, (_, i) => ({ id: 's' + i, nome: 'S' + i }));
+    assert.equal(R.validarNomeSecao('Nova', vinte), 'Máximo de 20 seções.');
+    assert.equal(R.validarNomeSecao('S0 renomeada', vinte, 's0'), null);
+  });
+  test('busca ignora maiúsculas e acentos', () => {
+    assert.equal(R.semAcento('  Saúde e AÇÃO '), 'saude e acao');
+  });
+});

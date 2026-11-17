@@ -45,7 +45,7 @@
     --fs-number:2.125rem; --lh-number:2.5rem;
     --w-regular:400; --w-medium:500; --w-semibold:600;
 
-    --content-max:560px; --nav-h:64px; --item-min-h:56px; --fab-h:56px; --chip-h:32px;
+    --content-max:560px; --dialog-max:400px; --nav-h:64px; --item-min-h:56px; --fab-h:56px; --chip-h:32px;
     --check-size:24px; --check-border:2px; --ring-size:48px; --ring-stroke:5px; --dot:8px; --icon:24px; --icon-sm:16px; --icon-lg:48px;
     --chart-h:140px; --bar-max:28px; --bar-zero:2px; --emoji:1.5rem;
 
@@ -295,6 +295,30 @@
   .colors button i{width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--c);display:grid;place-items:center;color:var(--surface)}
   .colors button.on i{box-shadow:0 0 0 var(--border-focus) var(--surface),0 0 0 calc(var(--border-focus) * 2) var(--text-primary)}
 
+  .sheet.cheia{max-height:none;height:100%;border-radius:0;padding-top:calc(var(--space-2) + env(safe-area-inset-top))}
+  .ed-topo{display:flex;align-items:center;gap:var(--space-1);margin-left:calc(var(--space-2) * -1)}
+  .ed-topo h2{flex:1;min-width:0}
+  .titulo-campo{resize:none;min-height:calc(var(--touch) + var(--space-4))}
+  .campo-rodape{display:flex;justify-content:space-between;gap:var(--space-2);min-height:var(--lh-meta);margin-top:var(--space-1);
+    font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .erro{color:var(--danger);font-weight:var(--w-medium)}
+  .contador{color:var(--text-secondary);margin-left:auto;white-space:nowrap}
+  [aria-invalid="true"],[aria-invalid="true"]:focus{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger)}
+  .btn.text.inicio{justify-content:flex-start;padding-left:0;padding-right:var(--space-2)}
+  .linha-campo{display:flex;align-items:flex-end;gap:var(--space-2)}
+  .linha-campo>label{flex:1}
+  .mini-form{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4);border-radius:var(--radius-card);background:var(--surface-variant)}
+  .mini-form input{background:var(--surface)}
+  .ed-acoes{position:sticky;bottom:calc(var(--space-5) * -1 - env(safe-area-inset-bottom));display:flex;gap:var(--space-2);
+    margin:auto calc(var(--space-4) * -1) calc(var(--space-5) * -1 - env(safe-area-inset-bottom));
+    padding:var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));background:var(--surface);border-top:var(--border-width) solid var(--border)}
+  .ed-acoes .btn{flex:1}
+  .overlay.dialogo{align-items:center;z-index:30}
+  .dialogo .caixa{background:var(--surface);border-radius:var(--radius-sheet);padding:var(--space-5) var(--space-5) var(--space-3);
+    width:calc(100% - var(--space-6) * 2);max-width:var(--dialog-max);box-shadow:var(--shadow-sheet)}
+  .dialogo h2{margin:0;font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold)}
+  .dialogo p{margin:var(--space-2) 0 0;color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .dlg-acoes{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:0 var(--space-2);margin-top:var(--space-4)}
   .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--fab-h) + var(--space-5) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
@@ -310,8 +334,11 @@
 
 <nav class="tabs" aria-label="Navegação principal"></nav>
 
-<div class="overlay" id="overlay" onclick="if(event.target===this)fecharSheet()">
+<div class="overlay" id="overlay" onclick="if(event.target===this)pedirFechar()">
   <div class="sheet" id="sheet"></div>
+</div>
+<div class="overlay dialogo" id="dialogo" onclick="if(event.target===this)dialogoCancelar()">
+  <div class="caixa" role="alertdialog" aria-modal="true" aria-labelledby="dlg-tit" id="dlg-caixa"></div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="arquivo" accept="application/json" hidden>
@@ -351,6 +378,7 @@ const ICONES = {
   ajustes:'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z',
   expandir:'M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z',
   repetir:'M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z',
+  fechar:'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
@@ -396,7 +424,7 @@ function salvar(){
   try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); }
   catch(e){ toast('Não consegui salvar 😕'); }
 }
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const uid = () => (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------- concluir, excluir e desfazer ---------- */
@@ -571,7 +599,11 @@ function abrirSecao(id){
 let ignorarPop = false; // true quando nós mesmos chamamos history.back() pra fechar uma janela
 addEventListener('popstate', () => {
   if(ignorarPop){ ignorarPop = false; return; }
-  if(document.getElementById('overlay').classList.contains('show')){ fecharSheet(true); return; }
+  if(document.getElementById('dialogo').classList.contains('show')){ history.pushState({sheet:true}, ''); dialogoCancelar(); return; }
+  if(document.getElementById('overlay').classList.contains('show')){
+    if(ed && editorAlterado()){ history.pushState({sheet:true}, ''); pedirDescartar(); return; }
+    ed = null; fecharSheet(true); return;
+  }
   if(tela === 'secao'){ tela = 'rotina'; secaoAberta = null; render(); }
 });
 
@@ -685,10 +717,7 @@ function telaHoje(){
     <button class="fab" onclick="novaTarefa()">${ic('add')}<span>Nova tarefa</span></button>
   `;
 }
-function novaTarefa(){
-  if(!dados.secoes.length){ sheetSecao(); return; }
-  sheetItem(null, dados.secoes[0].id, true);
-}
+function novaTarefa(){ sheetItem(null, null); }
 
 function linhaItem(s, i){
   const partes = [];
@@ -806,7 +835,8 @@ function telaAjustes(){
 }
 
 /* ---------- janelas (bottom sheets) ---------- */
-function abrirSheet(html){
+function abrirSheet(html, cheia = false){
+  document.getElementById('sheet').classList.toggle('cheia', cheia);
   document.getElementById('sheet').innerHTML = html;
   document.getElementById('overlay').classList.add('show');
   history.pushState({sheet:true}, '');
@@ -815,6 +845,7 @@ function abrirSheet(html){
 }
 function fecharSheet(vindoDoVoltar){
   document.getElementById('overlay').classList.remove('show');
+  document.getElementById('sheet').classList.remove('cheia');
   if(!vindoDoVoltar){ ignorarPop = true; history.back(); }
 }
 
@@ -846,10 +877,13 @@ function desenharSheetSecao(editando){
     ${editando ? `<button class="btn danger" onclick="excluirSecao()">Excluir seção</button>` : ''}
   `);
 }
-function abrirSheetOuAtualizar(html){
-  if(document.getElementById('overlay').classList.contains('show')) document.getElementById('sheet').innerHTML = html;
-  else abrirSheet(html);
+function abrirSheetOuAtualizar(html, cheia = false){
+  if(document.getElementById('overlay').classList.contains('show')){
+    document.getElementById('sheet').classList.toggle('cheia', cheia);
+    document.getElementById('sheet').innerHTML = html;
+  } else abrirSheet(html, cheia);
 }
+function pedirFechar(){ if(ed) cancelarEditor(); else fecharSheet(); }
 function lerSecao(){
   rascunho.emoji = document.getElementById('f-emoji').value.trim() || '⭐';
   rascunho.nome = document.getElementById('f-nome').value.trim();
@@ -879,35 +913,149 @@ function excluirSecao(){
   });
 }
 
-let secaoEditor = null;
-function sheetItem(idItem, secaoId, escolher = false, valores = null){
-  secaoEditor = secaoId || secaoAberta;
-  const s = dados.secoes.find(x => x.id === secaoEditor);
-  const it = idItem ? s.itens.find(i => i.id === idItem) : null;
-  const v = valores || it || { dias: Regras.TODOS_OS_DIAS };
-  const html = `
-    <h2>${it ? 'Editar' : 'Adicionar'} ${esc(s.rotuloNome.toLowerCase())}</h2>
-    ${escolher ? `<div class="sheet-campo"><span class="rotulo" id="rot-sec">Seção</span>
-      <div class="chips" role="radiogroup" aria-labelledby="rot-sec">
-        ${dados.secoes.map(x => `<button class="chip ${x.id === s.id ? 'on' : ''}" role="radio" aria-checked="${x.id === s.id}" onclick="trocarSecaoEditor('${x.id}')"><span>${esc(x.emoji)} ${esc(x.nome)}</span></button>`).join('')}
-      </div></div>` : ''}
-    <label>${esc(s.rotuloNome)}<input id="f-in" value="${esc(v.nome)}" placeholder="${s.rotuloNome==='Exercício'?'Ex.: Supino reto':s.rotuloNome==='Matéria'?'Ex.: Spring Data':''}"></label>
-    <label>${esc(s.rotuloDetalhe)} (opcional)<input id="f-id" value="${esc(v.detalhe)}" placeholder="${s.rotuloDetalhe==='Carga'?'Ex.: 40 kg · 4x10':s.rotuloDetalhe==='Duração'?'Ex.: 1h':''}"></label>
-    <label>Notas (opcional)<textarea id="f-notas" maxlength="1000" rows="2">${esc(v.notas)}</textarea></label>
-    <label>Horário (opcional)<input id="f-hora" type="time" value="${esc(v.horario)}"></label>
-    ${seletorDias(v.dias)}
-    <button class="btn" onclick="salvarItem('${idItem||''}')">${it ? 'Salvar' : 'Adicionar'}</button>
-    ${it ? `<button class="btn danger" onclick="excluirItem('${it.id}')">Excluir</button>` : ''}
-  `;
-  abrirSheetOuAtualizar(html);
-  document.querySelectorAll('#sheet input:not([type=time])').forEach(inp =>
-    inp.addEventListener('keydown', e => { if(e.key === 'Enter') salvarItem(idItem||''); }));
+/* ---------- editor de tarefa ---------- */
+let ed = null;
+const $ = id => document.getElementById(id);
+const contador = t => { const n = Array.from(t || '').length; return n >= 100 ? n + '/120' : ''; };
+function sheetItem(idItem, secaoId){
+  abrirEditor({ id: idItem || null, sid: secaoId || secaoAberta || (dados.secoes[0] && dados.secoes[0].id) || null });
 }
-const lerCamposItem = () => ({
-  nome: document.getElementById('f-in').value, detalhe: document.getElementById('f-id').value,
-  notas: document.getElementById('f-notas').value, horario: document.getElementById('f-hora').value, dias: diasMarcados(),
-});
-function trocarSecaoEditor(id){ sheetItem(null, id, true, lerCamposItem()); }
+function abrirEditor(o){
+  const s = dados.secoes.find(x => x.id === o.sid);
+  const it = o.id && s ? s.itens.find(i => i.id === o.id) : null;
+  const v = it
+    ? { nome: it.nome, detalhe: it.detalhe || '', notas: it.notas || '', horario: it.horario || '', dias: it.dias.slice(), sid: s.id }
+    : { nome: '', detalhe: '', notas: '', horario: '', dias: Regras.TODOS_OS_DIAS.slice(), sid: s ? s.id : null };
+  ed = { id: it ? it.id : null, sidOriginal: s ? s.id : null, v, inicial: JSON.stringify(v), tocouTitulo: false,
+    notaAberta: !!v.notas, horaAberta: !!v.horario, novaSecao: !dados.secoes.length, ns: { nome: '', cor: 'green' }, erroSecao: '', erroDias: '' };
+  desenharEditor(true);
+}
+function lerEditor(){
+  if(!ed) return;
+  if($('f-in')) ed.v.nome = $('f-in').value;
+  if($('f-id')) ed.v.detalhe = $('f-id').value;
+  if($('f-notas')) ed.v.notas = $('f-notas').value;
+  if($('f-hora')) ed.v.horario = $('f-hora').value;
+  if(document.querySelector('#sheet .dias')) ed.v.dias = diasMarcados();
+  if($('f-ns')) ed.ns.nome = $('f-ns').value;
+}
+function editorAlterado(){ lerEditor(); return !!ed && JSON.stringify(ed.v) !== ed.inicial; }
+function redesenharEditor(){ lerEditor(); desenharEditor(false); }
+function desenharEditor(primeira){
+  const v = ed.v;
+  const s = dados.secoes.find(x => x.id === v.sid);
+  const erro = ed.tocouTitulo ? Regras.validarTitulo(v.nome) : null;
+  const chipsSecao = dados.secoes.map(x => `<button class="chip ${x.id === v.sid ? 'on' : ''}" role="radio" aria-checked="${x.id === v.sid}" onclick="editorSecao('${x.id}')"><span>${esc(x.emoji)} ${esc(x.nome)}</span></button>`).join('');
+  const podeNova = dados.secoes.length < Regras.LIMITE_SECOES;
+  const miniForm = ed.novaSecao ? `<div class="mini-form">
+      <label>Nome da seção<input id="f-ns" maxlength="24" value="${esc(ed.ns.nome)}" aria-describedby="erro-ns"></label>
+      <div class="colors" role="radiogroup" aria-label="Cor da seção">
+        ${CORES.map(c => { const on = ed.ns.cor === c; return `<button role="radio" aria-checked="${on}" aria-label="${NOME_COR[c]}" style="--c:var(--cat-${c})" class="${on ? 'on' : ''}" onclick="lerEditor();ed.ns.cor='${c}';desenharEditor(false)"><i>${on ? ic('check','sm') : ''}</i></button>`; }).join('')}
+      </div>
+      <span class="erro" id="erro-ns" role="alert">${esc(ed.erroSecao)}</span>
+      <div class="row">${dados.secoes.length ? '<button class="btn ghost" onclick="lerEditor();ed.novaSecao=false;ed.erroSecao=\'\';desenharEditor(false)">Cancelar</button>' : ''}<button class="btn" onclick="criarSecaoEditor()">Criar seção</button></div>
+    </div>` : '';
+  const html = `
+    <div class="ed-topo">
+      <button class="icon-btn" onclick="cancelarEditor()" aria-label="Cancelar">${ic('fechar')}</button>
+      <h2>${ed.id ? 'Editar tarefa' : 'Nova tarefa'}</h2>
+    </div>
+    <div>
+      <label class="sr" for="f-in">Título</label>
+      <textarea id="f-in" class="titulo-campo" rows="2" placeholder="O que você precisa fazer?" aria-invalid="${!!erro}" aria-describedby="erro-titulo"
+        oninput="editorDigitou()" onblur="editorSaiuTitulo()" onkeydown="if(event.key==='Enter'){event.preventDefault();salvarEditor()}">${esc(v.nome)}</textarea>
+      <div class="campo-rodape"><span class="erro" id="erro-titulo" role="alert">${erro || ''}</span><span class="contador" id="contador" aria-live="polite">${contador(v.nome)}</span></div>
+    </div>
+    <div class="sheet-campo"><span class="rotulo" id="rot-sec">Seção</span>
+      <div class="chips" role="radiogroup" aria-labelledby="rot-sec">
+        ${chipsSecao}
+        ${podeNova && !ed.novaSecao ? `<button class="chip" onclick="lerEditor();ed.novaSecao=true;desenharEditor(false)"><span>${ic('add','sm')} Nova seção</span></button>` : ''}
+      </div>
+      ${!ed.novaSecao && ed.erroSecao ? `<span class="erro" role="alert">${esc(ed.erroSecao)}</span>` : ''}
+    </div>
+    ${miniForm}
+    <label>${esc(s ? s.rotuloDetalhe : 'Detalhe')} (opcional)<input id="f-id" value="${esc(v.detalhe)}"></label>
+    ${ed.notaAberta
+      ? `<label>Nota<textarea id="f-notas" maxlength="1000" rows="3">${esc(v.notas)}</textarea></label>`
+      : `<button class="btn text inicio" onclick="lerEditor();ed.notaAberta=true;desenharEditor(false);$('f-notas').focus()">${ic('add')} Adicionar nota</button>`}
+    ${ed.horaAberta
+      ? `<div class="linha-campo"><label>Horário<input id="f-hora" type="time" value="${esc(v.horario)}"></label>
+          <button class="btn text danger" onclick="lerEditor();ed.v.horario='';ed.horaAberta=false;desenharEditor(false)">Remover horário</button></div>`
+      : `<button class="btn text inicio" onclick="abrirHorario()">${ic('add')} Adicionar horário</button>`}
+    ${seletorDias(v.dias)}
+    ${ed.erroDias ? `<span class="erro" role="alert">${esc(ed.erroDias)}</span>` : ''}
+    ${ed.id ? `<button class="btn text danger inicio" onclick="excluirItem('${ed.id}')">${ic('excluir')} Excluir tarefa</button>` : ''}
+    <div class="ed-acoes">
+      <button class="btn ghost" onclick="cancelarEditor()">Cancelar</button>
+      <button class="btn" id="btn-salvar" onclick="salvarEditor()" ${Regras.validarTitulo(v.nome) ? 'disabled' : ''}>Salvar tarefa</button>
+    </div>`;
+  abrirSheetOuAtualizar(html, true);
+  if(primeira && !ed.id && !ed.novaSecao) setTimeout(() => { const t = $('f-in'); if(t) t.focus(); }, 80);
+}
+function abrirHorario(){
+  lerEditor(); ed.horaAberta = true; desenharEditor(false);
+  const i = $('f-hora'); i.focus();
+  try{ if(i.showPicker) i.showPicker(); }catch(e){}
+}
+function editorDigitou(){
+  const el = $('f-in');
+  if(/\n/.test(el.value)) el.value = el.value.replace(/\n+/g, ' ');
+  ed.v.nome = el.value;
+  $('contador').textContent = contador(el.value);
+  $('btn-salvar').disabled = !!Regras.validarTitulo(el.value);
+  if(ed.tocouTitulo) mostrarErroTitulo();
+}
+function editorSaiuTitulo(){ if(!ed) return; ed.tocouTitulo = true; mostrarErroTitulo(); }
+function mostrarErroTitulo(){
+  const e = Regras.validarTitulo($('f-in').value);
+  $('erro-titulo').textContent = e || '';
+  $('f-in').setAttribute('aria-invalid', !!e);
+}
+function editorSecao(id){ lerEditor(); ed.v.sid = id; ed.erroSecao = ''; desenharEditor(false); }
+function criarSecaoEditor(){
+  lerEditor();
+  const nome = ed.ns.nome.trim();
+  const erro = Regras.validarNomeSecao(nome, dados.secoes);
+  if(erro){ ed.erroSecao = erro; desenharEditor(false); $('f-ns').focus(); return; }
+  const nova = { id: uid(), nome, emoji: '⭐', corToken: ed.ns.cor, rotuloNome: 'Tarefa', rotuloDetalhe: 'Detalhe', itens: [] };
+  dados.secoes.push(nova); salvar();
+  ed.v.sid = nova.id; ed.novaSecao = false; ed.erroSecao = ''; ed.ns = { nome: '', cor: 'green' };
+  desenharEditor(false);
+}
+function cancelarEditor(){ if(editorAlterado()) pedirDescartar(); else fecharEditor(); }
+function fecharEditor(){ ed = null; fecharSheet(); }
+function pedirDescartar(){
+  $('dlg-caixa').innerHTML = `<h2 id="dlg-tit">Descartar alterações?</h2>
+    <div class="dlg-acoes">
+      <button class="btn text" id="dlg-continuar" onclick="dialogoCancelar()">Continuar editando</button>
+      <button class="btn text danger" onclick="dialogoDescartar()">Descartar</button>
+    </div>`;
+  $('dialogo').classList.add('show');
+  setTimeout(() => $('dlg-continuar').focus(), 50);
+}
+function fecharDialogo(){ $('dialogo').classList.remove('show'); }
+function dialogoCancelar(){ fecharDialogo(); }
+function dialogoDescartar(){ fecharDialogo(); fecharEditor(); }
+function salvarEditor(){
+  lerEditor();
+  const v = ed.v;
+  ed.tocouTitulo = true;
+  const erro = Regras.validarTitulo(v.nome);
+  ed.erroSecao = v.sid ? '' : 'Escolha ou crie uma seção.';
+  ed.erroDias = v.dias.length ? '' : 'Escolha pelo menos um dia.';
+  if(erro || ed.erroSecao || ed.erroDias){ desenharEditor(false); if(erro) $('f-in').focus(); return; }
+  const campos = { nome: v.nome.trim(), detalhe: v.detalhe.trim(), notas: v.notas.trim().slice(0, 1000) || null, horario: v.horario || null, dias: v.dias };
+  const destino = dados.secoes.find(x => x.id === v.sid);
+  if(ed.id){
+    const origem = dados.secoes.find(x => x.id === ed.sidOriginal);
+    const it = origem.itens.find(i => i.id === ed.id);
+    Object.assign(it, campos);
+    if(origem !== destino){ origem.itens = origem.itens.filter(i => i !== it); destino.itens.push(it); }
+  } else {
+    destino.itens.push({ id: uid(), ...campos, criadoEm: diaSel });
+  }
+  salvar(); fecharEditor(); render(); toast('Tarefa salva');
+}
 const NOMES_DIAS = ['segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado','domingo'];
 function seletorDias(dias){
   return `<div class="sheet-campo"><span class="rotulo" id="rot-dias">Repetir</span>
@@ -921,24 +1069,8 @@ function alternarDia(b){
   b.setAttribute('aria-pressed', on); b.classList.toggle('on', on);
 }
 const diasMarcados = () => [...document.querySelectorAll('#sheet .dias .chip[aria-pressed="true"]')].map(b => +b.dataset.dia);
-function salvarItem(idItem){
-  const s = dados.secoes.find(x => x.id === secaoEditor);
-  const nome = document.getElementById('f-in').value.trim();
-  const detalhe = document.getElementById('f-id').value.trim();
-  if(!nome){ toast('Preenche o campo ' + s.rotuloNome.toLowerCase()); return; }
-  const notas = document.getElementById('f-notas').value.trim() || null;
-  const horario = document.getElementById('f-hora').value || null;
-  const dias = diasMarcados();
-  if(!dias.length){ toast('Escolha pelo menos um dia'); return; }
-  if(idItem){
-    Object.assign(s.itens.find(i => i.id === idItem), { nome, detalhe, notas, horario, dias });
-  } else {
-    // conta a partir do dia que você está vendo (permite cadastrar algo que fez ontem)
-    s.itens.push({ id: uid(), nome, detalhe, criadoEm: diaSel, notas, horario, dias });
-  }
-  salvar(); fecharSheet(); render(); toast('Tarefa salva');
-}
 function excluirItem(idItem){
+  ed = null;
   fecharSheet();
   setTimeout(() => excluirEntrada('item', idItem), 60);
 }
