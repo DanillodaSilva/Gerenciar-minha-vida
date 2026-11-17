@@ -15,6 +15,19 @@
     return parseDia(iso).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
   }
 
+  const DIAS_LONGOS = ['segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado', 'domingo'];
+  const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  const dataExtenso = iso => { const d = parseDia(iso); return DIAS_LONGOS[(d.getDay() + 6) % 7] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()]; };
+  const dataCurta = iso => { const d = parseDia(iso); return DIAS_LONGOS[(d.getDay() + 6) % 7].slice(0, 3) + ', ' + d.getDate() + ' ' + MESES[d.getMonth()].slice(0, 3); };
+  function rotuloDia(iso, hoje) {
+    if (iso === hoje) return 'Hoje';
+    if (iso === somaDias(hoje, 1)) return 'Amanhã';
+    if (iso === somaDias(hoje, -1)) return 'Ontem';
+    return dataCurta(iso);
+  }
+  const ordenarItens = itens => itens.map((i, n) => [i, n]).sort(([a, na], [b, nb]) =>
+    (a.horario ? 0 : 1) - (b.horario ? 0 : 1) || (a.horario && b.horario ? a.horario.localeCompare(b.horario) : 0) || na - nb).map(([i]) => i);
+
   const corTokenDe = s => CORES.includes(s.corToken) ? s.corToken : (COR_ANTIGA[String(s.cor || '').toLowerCase()] || 'gray');
 
   const DIAS_CURTOS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
@@ -95,7 +108,7 @@
     return { dados, migrou: JSON.stringify(dados) !== JSON.stringify(d), deVersao: versao };
   }
 
-  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar };
+  const Regras = { CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -188,6 +188,48 @@
   .chart .b.zero{background:var(--border-strong)}
   .chart .b span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);white-space:nowrap}
   .chart .lbl{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);margin-top:var(--space-1);white-space:nowrap}
+  .hoje-top{display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-2)}
+  .hoje-tit{flex:1;min-width:0}
+  .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
+  .hoje-data{display:flex;align-items:center;flex-wrap:wrap;gap:0 var(--space-1);color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .hoje-data .setas{display:flex}
+  .hoje-data>span:first-child{flex:0 1 auto;min-width:0;overflow-wrap:anywhere}
+  .anel{display:flex;flex-direction:column;align-items:center;gap:var(--space-1);flex:none;padding-top:var(--space-1)}
+  .anel svg{width:var(--ring-size);height:var(--ring-size);transform:rotate(-90deg)}
+  .anel circle{fill:none;stroke-width:var(--ring-stroke)}
+  .anel .trilho{stroke:var(--surface-variant)}
+  .anel .arco{stroke:var(--primary);stroke-linecap:round;transition:stroke-dasharray var(--dur-move) var(--ease-out)}
+  .anel .arco.zero{stroke:none}
+  .anel span{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);white-space:nowrap}
+  .grupo{margin-bottom:var(--space-3)}
+  .grupo-top{display:flex;align-items:center;gap:var(--space-2);width:100%;min-height:var(--touch);text-align:left;color:var(--text-secondary);
+    font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold)}
+  .grupo-top .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+  .grupo-top .cont{font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium)}
+  .grupo-top svg{transition:transform var(--dur-fast) var(--ease-out)}
+  .grupo-top[aria-expanded="true"] svg{transform:rotate(180deg)}
+  .lista{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);overflow:hidden}
+  .lista .item{border:0;border-radius:0;margin:0;background:none;padding-right:var(--space-4)}
+  .lista .item+.item{border-top:var(--border-width) solid var(--border)}
+  .item small .passou{color:var(--danger);font-weight:var(--w-medium)}
+  .item small .rep svg,.item small .cat .ponto{vertical-align:text-bottom;margin-right:var(--space-1)}
+  .ponto{display:inline-block;width:var(--dot);height:var(--dot);border-radius:var(--radius-full);background:var(--c)}
+  .vazio{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);text-align:center;padding:var(--space-6) var(--space-4);color:var(--text-secondary)}
+  .vazio p{margin:0}
+  .vazio .btn{width:auto}
+  svg.ic.lg{width:var(--icon-lg);height:var(--icon-lg)}
+  .tudo-feito{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);margin-bottom:var(--space-3);color:var(--text-primary)}
+  .tudo-feito svg{color:var(--primary)}
+  .tudo-feito small{color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .nova-secao{margin:var(--space-2) auto 0;display:flex}
+  .fab{position:fixed;right:calc(var(--space-4) + env(safe-area-inset-right));bottom:calc(var(--nav-h) + var(--space-4) + env(safe-area-inset-bottom));
+    display:inline-flex;align-items:center;gap:var(--space-2);min-height:var(--fab-h);padding:0 var(--space-5) 0 var(--space-4);border-radius:var(--radius-fab);
+    background:var(--fab-bg);color:var(--fab-fg);box-shadow:var(--shadow-fab);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);z-index:6}
+  .fab:active{box-shadow:none}
+  .wrap.com-fab{padding-bottom:calc(var(--fab-h) + var(--space-6))}
+  .esqueleto b,.esqueleto i{display:block;background:var(--surface-variant);border-radius:var(--radius-card)}
+  .esqueleto b{height:var(--lh-title);width:40%;margin:var(--space-1) 0 var(--space-6)}
+  .esqueleto i{height:var(--item-min-h);margin-bottom:var(--space-2)}
   .secstat{margin-bottom:var(--space-3)}
   .secao-titulo{font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--text-secondary);margin:var(--space-5) 0 var(--space-2)}
   .item .info.sem-check{padding-left:var(--space-4)}
@@ -215,7 +257,7 @@
   .colors button i{width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--c);display:grid;place-items:center;color:var(--surface)}
   .colors button.on i{box-shadow:0 0 0 var(--border-focus) var(--surface),0 0 0 calc(var(--border-focus) * 2) var(--text-primary)}
 
-  .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--space-4) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
+  .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--fab-h) + var(--space-5) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
     transition:opacity var(--dur-move) var(--ease-out),transform var(--dur-move) var(--ease-out);pointer-events:none;z-index:20}
@@ -223,7 +265,7 @@
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+<div class="wrap" id="app"><div class="esqueleto" aria-hidden="true"><b></b><i></i><i></i><i></i></div></div>
 
 <nav class="tabs" aria-label="Navegação principal"></nav>
 
@@ -265,10 +307,12 @@ const ICONES = {
   calendario:'M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z',
   grafico:'M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z',
   ajustes:'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z',
+  expandir:'M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z',
+  repetir:'M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z',
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
-const ABAS = [['rotina','hoje','Rotina'], ['constancia','grafico','Constância'], ['ajustes','ajustes','Ajustes']];
+const ABAS = [['rotina','hoje','Hoje'], ['constancia','grafico','Constância'], ['ajustes','ajustes','Ajustes']];
 function montarNav(){
   document.querySelector('nav.tabs').innerHTML = ABAS.map(([id, icone, rotulo]) =>
     `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone)}</span>${rotulo}</button>`).join('');
@@ -340,7 +384,8 @@ function render(){
     if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   const app = document.getElementById('app');
-  if(tela === 'rotina')     app.innerHTML = telaRotina();
+  app.classList.toggle('com-fab', tela === 'rotina');
+  if(tela === 'rotina')     app.innerHTML = telaHoje();
   if(tela === 'secao')      app.innerHTML = telaSecao();
   if(tela === 'constancia') app.innerHTML = telaConstancia();
   if(tela === 'ajustes')    app.innerHTML = telaAjustes();
@@ -355,32 +400,89 @@ function seletorDia(){
 }
 function mudarDia(n){ const d = somaDias(diaSel, n); if(d <= hoje()){ diaSel = d; render(); } }
 
-function telaRotina(){
+let concluidasAbertas = false;
+const dois = n => String(n).padStart(2, '0');
+const horaAgora = () => { const d = new Date(); return dois(d.getHours()) + ':' + dois(d.getMinutes()); };
+function anel(feitas, total){
+  if(!total) return '';
+  const pct = Math.round(feitas / total * 100);
+  return `<div class="anel" role="img" aria-label="${feitas} de ${total} concluídas">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="trilho" cx="24" cy="24" r="21.5"/><circle class="arco ${pct ? '' : 'zero'}" cx="24" cy="24" r="21.5" pathLength="100" stroke-dasharray="${pct} 100"/></svg>
+    <span aria-hidden="true">${feitas} de ${total}</span></div>`;
+}
+function linhaHoje(s, i, comSecao){
+  const partes = [];
+  if(i.horario){
+    const passou = diaSel === hoje() && !feito(diaSel, i.id) && i.horario < horaAgora();
+    partes.push(passou ? `<span class="passou">${esc(i.horario)}, já passou</span>` : esc(i.horario));
+  }
+  if(comSecao) partes.push(`<span class="cat"><i class="ponto"></i>${esc(s.nome)}</span>`);
+  if(i.detalhe) partes.push(esc(s.rotuloDetalhe) + ': ' + esc(i.detalhe));
+  if(i.dias.length < 7) partes.push(`<span class="rep">${ic('repetir','sm')}${Regras.resumoDias(i.dias)}</span>`);
+  return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
+}
+function itemHoje(s, i, comSecao){
+  const f = feito(diaSel, i.id);
+  return `<div class="item ${f ? 'done' : ''}" style="--c:${corDe(s)}">
+    <button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(i.nome)}" onclick="alternar('${i.id}')"><i>${ic('check')}</i></button>
+    <div class="info" role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="if(event.key==='Enter')this.click()">
+      <b>${esc(i.nome)}</b>${linhaHoje(s, i, comSecao)}
+    </div>
+  </div>`;
+}
+function telaHoje(){
   const r = resumoDia(diaSel);
-  const cards = dados.secoes.map(s => {
+  const ehHoje = diaSel === hoje();
+  const grupos = [], concluidas = [];
+  dados.secoes.forEach(s => {
+    const itens = Regras.ordenarItens(itensDoDia(diaSel, s));
+    const pendentes = itens.filter(i => !feito(diaSel, i.id));
+    itens.filter(i => feito(diaSel, i.id)).forEach(i => concluidas.push([s, i]));
+    if(!pendentes.length) return;
     const rs = resumoDia(diaSel, s);
-    return `<button class="sec" style="--c:${corDe(s)}" onclick="abrirSecao('${s.id}')">
-      <span class="emo">${esc(s.emoji)}</span>
-      <span class="nm">${esc(s.nome)}</span>
-      <small>${rs.total ? rs.feitas+' de '+rs.total+' feitas' : 'Sem itens ainda'}</small>
-      <div class="bar"><i style="width:${rs.pct}%"></i></div>
-    </button>`;
-  }).join('');
+    grupos.push(`<section class="grupo">
+      <button class="grupo-top" onclick="abrirSecao('${s.id}')" aria-label="Abrir ${esc(s.nome)}, ${rs.feitas} de ${rs.total} feitas">
+        <span aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
+      </button>
+      <div class="lista">${pendentes.map(i => itemHoje(s, i, false)).join('')}</div>
+    </section>`);
+  });
+  let corpo;
+  if(!r.total){
+    corpo = `<div class="vazio">${ic('calendario','lg')}<p>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</p>
+      <button class="btn" onclick="novaTarefa()">Adicionar tarefa</button></div>`;
+  } else {
+    const tudo = r.feitas === r.total ? `<div class="vazio tudo-feito" role="status">${ic('hoje','lg')}<p><b>${ehHoje ? 'Tudo feito por hoje' : 'Tudo feito neste dia'}</b><br><small>${r.feitas} de ${r.total} concluídas</small></p></div>` : '';
+    const listaConcl = concluidas.length ? `<section class="grupo">
+      <button class="grupo-top" aria-expanded="${concluidasAbertas}" onclick="concluidasAbertas=!concluidasAbertas;render()">
+        <span class="nm">Concluídas (${concluidas.length})</span>${ic('expandir','sm')}
+      </button>
+      ${concluidasAbertas ? `<div class="lista">${concluidas.map(([s, i]) => itemHoje(s, i, true)).join('')}</div>` : ''}
+    </section>` : '';
+    corpo = tudo + grupos.join('') + listaConcl;
+  }
   return `
-    <header class="top"><h1>Minha rotina</h1></header>
-    ${seletorDia()}
-    <div class="summary">
-      <small>${nomeDia(diaSel)} você fez</small>
-      <div class="big">${r.pct}%</div>
-      <small>${r.feitas} de ${r.total} tarefas</small>
-      <div class="bar"><i style="width:${r.pct}%"></i></div>
-    </div>
-    <div class="grid">
-      ${cards}
-      <button class="sec add-sec" onclick="sheetSecao()">${ic('add')} Nova seção</button>
-    </div>
-    ${dados.secoes.length ? '' : '<p class="empty">Comece criando uma seção, tipo <b>Treino</b> ou <b>Estudo</b>.</p>'}
+    <header class="hoje-top">
+      <div class="hoje-tit">
+        <h1>${ehHoje ? 'Hoje' : Regras.rotuloDia(diaSel, hoje())}</h1>
+        <div class="hoje-data">
+          <span>${Regras.dataExtenso(diaSel)}</span>
+          <span class="setas">
+            <button class="icon-btn" onclick="mudarDia(-1)" aria-label="Dia anterior">${ic('anterior')}</button>
+            <button class="icon-btn" onclick="mudarDia(1)" ${ehHoje ? 'disabled' : ''} aria-label="Próximo dia">${ic('proximo')}</button>
+          </span>
+        </div>
+      </div>
+      ${anel(r.feitas, r.total)}
+    </header>
+    ${corpo}
+    <button class="btn text nova-secao" onclick="sheetSecao()">${ic('add')} Nova seção</button>
+    <button class="fab" onclick="novaTarefa()">${ic('add')}<span>Nova tarefa</span></button>
   `;
+}
+function novaTarefa(){
+  if(!dados.secoes.length){ sheetSecao(); return; }
+  sheetItem(null, dados.secoes[0].id, true);
 }
 
 function linhaItem(s, i){
@@ -392,7 +494,7 @@ function linhaItem(s, i){
 }
 function telaSecao(){
   const s = dados.secoes.find(x => x.id === secaoAberta);
-  if(!s){ tela = 'rotina'; return telaRotina(); }
+  if(!s){ tela = 'rotina'; return telaHoje(); }
   const r = resumoDia(diaSel, s);
   const itens = s.itens.filter(i => i.criadoEm <= diaSel && Regras.repeteNoDia(i, diaSel));
   const outros = s.itens.filter(i => !itens.includes(i));
@@ -585,22 +687,35 @@ function excluirSecao(){
   });
 }
 
-function sheetItem(idItem){
-  const s = dados.secoes.find(x => x.id === secaoAberta);
+let secaoEditor = null;
+function sheetItem(idItem, secaoId, escolher = false, valores = null){
+  secaoEditor = secaoId || secaoAberta;
+  const s = dados.secoes.find(x => x.id === secaoEditor);
   const it = idItem ? s.itens.find(i => i.id === idItem) : null;
-  abrirSheet(`
+  const v = valores || it || { dias: Regras.TODOS_OS_DIAS };
+  const html = `
     <h2>${it ? 'Editar' : 'Adicionar'} ${esc(s.rotuloNome.toLowerCase())}</h2>
-    <label>${esc(s.rotuloNome)}<input id="f-in" value="${esc(it?.nome)}" placeholder="${s.rotuloNome==='Exercício'?'Ex.: Supino reto':s.rotuloNome==='Matéria'?'Ex.: Spring Data':''}"></label>
-    <label>${esc(s.rotuloDetalhe)} (opcional)<input id="f-id" value="${esc(it?.detalhe)}" placeholder="${s.rotuloDetalhe==='Carga'?'Ex.: 40 kg · 4x10':s.rotuloDetalhe==='Duração'?'Ex.: 1h':''}"></label>
-    <label>Notas (opcional)<textarea id="f-notas" maxlength="1000" rows="2">${esc(it?.notas)}</textarea></label>
-    <label>Horário (opcional)<input id="f-hora" type="time" value="${esc(it?.horario)}"></label>
-    ${seletorDias(it ? it.dias : Regras.TODOS_OS_DIAS)}
+    ${escolher ? `<div class="sheet-campo"><span class="rotulo" id="rot-sec">Seção</span>
+      <div class="chips" role="radiogroup" aria-labelledby="rot-sec">
+        ${dados.secoes.map(x => `<button class="chip ${x.id === s.id ? 'on' : ''}" role="radio" aria-checked="${x.id === s.id}" onclick="trocarSecaoEditor('${x.id}')"><span>${esc(x.emoji)} ${esc(x.nome)}</span></button>`).join('')}
+      </div></div>` : ''}
+    <label>${esc(s.rotuloNome)}<input id="f-in" value="${esc(v.nome)}" placeholder="${s.rotuloNome==='Exercício'?'Ex.: Supino reto':s.rotuloNome==='Matéria'?'Ex.: Spring Data':''}"></label>
+    <label>${esc(s.rotuloDetalhe)} (opcional)<input id="f-id" value="${esc(v.detalhe)}" placeholder="${s.rotuloDetalhe==='Carga'?'Ex.: 40 kg · 4x10':s.rotuloDetalhe==='Duração'?'Ex.: 1h':''}"></label>
+    <label>Notas (opcional)<textarea id="f-notas" maxlength="1000" rows="2">${esc(v.notas)}</textarea></label>
+    <label>Horário (opcional)<input id="f-hora" type="time" value="${esc(v.horario)}"></label>
+    ${seletorDias(v.dias)}
     <button class="btn" onclick="salvarItem('${idItem||''}')">${it ? 'Salvar' : 'Adicionar'}</button>
     ${it ? `<button class="btn danger" onclick="excluirItem('${it.id}')">Excluir</button>` : ''}
-  `);
+  `;
+  if(valores) abrirSheetOuAtualizar(html); else abrirSheet(html);
   document.querySelectorAll('#sheet input:not([type=time])').forEach(inp =>
     inp.addEventListener('keydown', e => { if(e.key === 'Enter') salvarItem(idItem||''); }));
 }
+const lerCamposItem = () => ({
+  nome: document.getElementById('f-in').value, detalhe: document.getElementById('f-id').value,
+  notas: document.getElementById('f-notas').value, horario: document.getElementById('f-hora').value, dias: diasMarcados(),
+});
+function trocarSecaoEditor(id){ sheetItem(null, id, true, lerCamposItem()); }
 const NOMES_DIAS = ['segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado','domingo'];
 function seletorDias(dias){
   return `<div class="sheet-campo"><span class="rotulo" id="rot-dias">Repetir</span>
@@ -615,7 +730,7 @@ function alternarDia(b){
 }
 const diasMarcados = () => [...document.querySelectorAll('#sheet .dias .chip[aria-pressed="true"]')].map(b => +b.dataset.dia);
 function salvarItem(idItem){
-  const s = dados.secoes.find(x => x.id === secaoAberta);
+  const s = dados.secoes.find(x => x.id === secaoEditor);
   const nome = document.getElementById('f-in').value.trim();
   const detalhe = document.getElementById('f-id').value.trim();
   if(!nome){ toast('Preenche o campo ' + s.rotuloNome.toLowerCase()); return; }
@@ -629,10 +744,10 @@ function salvarItem(idItem){
     // conta a partir do dia que você está vendo (permite cadastrar algo que fez ontem)
     s.itens.push({ id: uid(), nome, detalhe, criadoEm: diaSel, notas, horario, dias });
   }
-  salvar(); fecharSheet(); render();
+  salvar(); fecharSheet(); render(); toast('Tarefa salva');
 }
 function excluirItem(idItem){
-  const s = dados.secoes.find(x => x.id === secaoAberta);
+  const s = dados.secoes.find(x => x.id === secaoEditor);
   s.itens = s.itens.filter(i => i.id !== idItem);
   Object.keys(dados.feitos).forEach(d => {
     dados.feitos[d] = dados.feitos[d].filter(x => x !== idItem);

@@ -151,3 +151,22 @@ describe('dias da semana dos itens', () => {
     assert.equal(R.resumoDias([5, 1, 3]), 'Seg, qua, sex');
   });
 });
+
+describe('textos de data e ordem do dia', () => {
+  test('cabeçalho por extenso e formato curto dos itens', () => {
+    assert.equal(R.dataExtenso('2026-11-17'), 'terça-feira, 17 de novembro');
+    assert.equal(R.dataExtenso('2026-11-16'), 'segunda-feira, 16 de novembro');
+    assert.equal(R.dataCurta('2026-11-17'), 'ter, 17 nov');
+    assert.equal(R.dataCurta('2026-11-22'), 'dom, 22 nov');
+  });
+  test('Hoje, Amanhã e Ontem quando couber', () => {
+    assert.equal(R.rotuloDia(HOJE, HOJE), 'Hoje');
+    assert.equal(R.rotuloDia('2026-11-18', HOJE), 'Amanhã');
+    assert.equal(R.rotuloDia('2026-11-16', HOJE), 'Ontem');
+    assert.equal(R.rotuloDia('2026-11-20', HOJE), 'sex, 20 nov');
+  });
+  test('itens com horário primeiro, em ordem crescente; sem horário mantêm a ordem de criação', () => {
+    const itens = [item('sem1'), item('h14', HOJE, { horario: '14:30' }), item('sem2'), item('h07', HOJE, { horario: '07:00' }), item('h00', HOJE, { horario: '00:00' })];
+    assert.deepEqual(R.ordenarItens(itens).map(i => i.id), ['h00', 'h07', 'h14', 'sem1', 'sem2']);
+  });
+});
