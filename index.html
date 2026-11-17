@@ -217,7 +217,20 @@
   nav.tabs button{min-width:0}
   nav.tabs .rot{font-size:min(var(--fs-meta), 3.3vw);max-width:100%;overflow-wrap:anywhere;text-align:center}
   nav.tabs button.on{color:var(--text-primary)}
-  nav.tabs button.on span.ind{background:var(--primary-container)}
+  nav.tabs{isolation:isolate}
+  nav.tabs .pilula{position:absolute;left:0;top:calc((var(--nav-h) - var(--space-6) - var(--lh-meta) - var(--space-1)) / 2);width:calc(var(--space-6) * 2);height:var(--space-6);
+    border-radius:var(--radius-full);background:var(--primary-container);z-index:-1;transition:transform var(--dur-lenta) var(--ease-mola);pointer-events:none}
+  nav.tabs svg.cheio,nav.tabs button.on svg.vazio{display:none}
+  nav.tabs button.on svg.cheio{display:block}
+  #app{view-transition-name:conteudo}
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+  ::view-transition-old(conteudo){animation:var(--dur-base) var(--ease-entrada) both sai-aba}
+  ::view-transition-new(conteudo){animation:var(--dur-base) var(--ease-saida) both entra-aba}
+  @keyframes sai-aba{to{opacity:0;transform:translateX(calc(var(--dir-aba, 1) * -8px))}}
+  @keyframes entra-aba{from{opacity:0;transform:translateX(calc(var(--dir-aba, 1) * 8px))}}
+  :root[data-animacoes="reduzidas"]::view-transition-old(conteudo),:root[data-animacoes="reduzidas"]::view-transition-new(conteudo){animation-name:esmaece}
+  @media (prefers-reduced-motion: reduce){ ::view-transition-old(conteudo),::view-transition-new(conteudo){animation-name:esmaece;animation-duration:var(--dur-reduzida)} }
+  @keyframes esmaece{from{opacity:0}}
 
   .seg{display:flex;background:var(--surface-variant);border-radius:var(--radius-card);padding:var(--space-1);margin-bottom:var(--space-4)}
   .seg button{flex:1;min-height:calc(var(--touch) - var(--space-2));border-radius:var(--radius-chip);color:var(--text-secondary);
@@ -533,14 +546,40 @@ const ICONES = {
   buscar:'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
   bandeira:'M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z',
   sino:'M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z',
+  hojeCheio:'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z',
+  hojeVazio:'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z',
+  calendarioCheio:'M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z',
+  calendarioVazio:'M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z',
+  graficoCheio:'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z',
+  graficoVazio:'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z',
+  ajustesCheio:'M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z',
+  ajustesVazio:'M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.09-.16-.26-.25-.44-.25-.06 0-.12.01-.17.03l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.06-.02-.12-.03-.18-.03-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.09.16.26.25.44.25.06 0 .12-.01.17-.03l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-1.98-1.71c.04.31.05.52.05.73 0 .21-.02.43-.05.73l-.14 1.13.89.7 1.08.84-.7 1.21-1.27-.51-1.04-.42-.9.68c-.43.32-.84.56-1.25.73l-1.06.43-.16 1.13-.2 1.35h-1.4l-.19-1.35-.16-1.13-1.06-.43c-.43-.18-.83-.41-1.23-.71l-.91-.7-1.06.43-1.27.51-.7-1.21 1.08-.84.89-.7-.14-1.13c-.03-.31-.05-.54-.05-.74s.02-.43.05-.73l.14-1.13-.89-.7-1.08-.84.7-1.21 1.27.51 1.04.42.9-.68c.43-.32.84-.56 1.25-.73l1.06-.43.16-1.13.2-1.35h1.39l.19 1.35.16 1.13 1.06.43c.43.18.83.41 1.23.71l.91.7 1.06-.43 1.27-.51.7 1.21-1.07.85-.89.7.14 1.13zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z',
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
 const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['constancia','grafico','Progresso'], ['ajustes','ajustes','Ajustes']];
+const ORDEM_ABA = { rotina: 0, secao: 0, proximos: 1, constancia: 2, ajustes: 3 };
+const rolagemAba = {};
+const abasVistas = new Set();
 function montarNav(){
-  document.querySelector('nav.tabs').innerHTML = ABAS.map(([id, icone, rotulo]) =>
-    `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone)}</span><span class="rot">${rotulo}</span></button>`).join('');
+  document.querySelector('nav.tabs').innerHTML = '<span class="pilula" aria-hidden="true"></span>' + ABAS.map(([id, icone, rotulo]) =>
+    `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone + 'Vazio', 'vazio')}${ic(icone + 'Cheio', 'cheio')}</span><span class="rot">${rotulo}</span></button>`).join('');
 }
+function cascata(container){
+  if(Animacoes.reduzido()) return;
+  const M = Animacoes.MOV;
+  const els = [...container.querySelectorAll(':scope > header, :scope > .semana, :scope > .grupo, :scope > .card, :scope > .cartoes, :scope > .vazio, :scope > .busca, :scope > .chips, :scope > .seg, :scope > .summary, :scope > .stats, :scope > h2')];
+  els.forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+    { duration: M.base, delay: Math.min(i, M.cascataMax - 1) * M.cascata, easing: M.saida, fill: 'backwards' }));
+}
+function moverPilula(){
+  const nav = document.querySelector('nav.tabs'), pil = nav && nav.querySelector('.pilula'), ativo = nav && nav.querySelector('button.on .ind');
+  if(!pil || !ativo) return;
+  const x = ativo.getBoundingClientRect().left - nav.getBoundingClientRect().left;
+  if(!pil.dataset.pronta){ pil.style.transition = 'none'; pil.style.transform = `translateX(${x}px)`; void pil.offsetWidth; pil.style.transition = ''; pil.dataset.pronta = '1'; return; }
+  pil.style.transform = `translateX(${x}px)`;
+}
+addEventListener('resize', () => { const p = document.querySelector('nav.tabs .pilula'); if(p) delete p.dataset.pronta; moverPilula(); });
 
 /* ---------- datas e constância: regras.js ---------- */
 const { fmt, somaDias, curto } = Regras;
@@ -917,10 +956,17 @@ function menuAcao(acao){
 
 /* ---------- navegação (botão voltar do Android funciona) ---------- */
 function irPara(t){
-  if(t === tela){ scrollTo(0,0); return; }
+  if(t === tela){ scrollTo({ top: 0, behavior: Animacoes.reduzido() ? 'auto' : 'smooth' }); return; }
   const deHoje = tela === 'rotina';
   const volta = tela === 'secao' || t === 'rotina';
-  tela = t; secaoAberta = null; render(); scrollTo(0,0);
+  rolagemAba[tela === 'secao' ? 'rotina' : tela] = scrollY;
+  const dir = ORDEM_ABA[t] >= ORDEM_ABA[tela] ? 1 : -1;
+  const primeira = !abasVistas.has(t);
+  const trocar = () => { tela = t; secaoAberta = null; render(); scrollTo(0, rolagemAba[t] || 0); };
+  if(!primeira && document.startViewTransition){
+    document.documentElement.style.setProperty('--dir-aba', dir);
+    document.startViewTransition(trocar);
+  } else trocar();
   if(volta){
     ignorarPop = true; history.back();
     if(t !== 'rotina') setTimeout(() => history.pushState({aba:t}, ''), 60);
@@ -955,13 +1001,17 @@ function render(refazer = false){
     b.classList.toggle('on', on);
     if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
+  requestAnimationFrame(moverPilula);
   const app = document.getElementById('app');
   app.classList.toggle('com-fab', tela === 'rotina' || tela === 'proximos');
   const html = tela === 'rotina' ? telaHoje() : tela === 'proximos' ? telaProximos() : tela === 'secao' ? telaSecao()
     : tela === 'constancia' ? telaProgresso() : telaAjustes();
   const chaveTela = tela + ':' + (secaoAberta || '') + ':' + diaSel;
   if(!refazer && telaDesenhada === chaveTela) Animacoes.flip(app, () => Animacoes.mesclarHtml(app, html));
-  else { app.innerHTML = html; telaDesenhada = chaveTela; }
+  else {
+    app.innerHTML = html; telaDesenhada = chaveTela;
+    if(!abasVistas.has(tela)){ abasVistas.add(tela); cascata(app); }
+  }
   if(tela === 'ajustes') atualizarEstadoNotif();
   marcarDuasLinhas();
   talvezMostrarDica();
