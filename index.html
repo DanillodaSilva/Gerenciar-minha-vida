@@ -226,6 +226,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="arquivo" accept="application/json" hidden>
 
+<script src="regras.js"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -237,10 +238,8 @@
    }
    ========================================================= */
 const CHAVE = 'rotina-app-v1';
-const CORES = ['green','blue','teal','orange','red','yellow','brown','gray'];
+const { CORES, corTokenDe } = Regras;
 const NOME_COR = { green:'Verde', blue:'Azul', teal:'Verde-azulado', orange:'Laranja', red:'Vermelho', yellow:'Amarelo', brown:'Marrom', gray:'Cinza' };
-const COR_ANTIGA = { '#2ecc71':'green', '#ff5c6c':'red', '#ff9f43':'orange', '#28c2ff':'teal', '#feca57':'yellow', '#9aa5b1':'gray', '#7c5cff':'blue', '#f368e0':'red' };
-const corTokenDe = s => CORES.includes(s.corToken) ? s.corToken : (COR_ANTIGA[String(s.cor || '').toLowerCase()] || 'gray');
 const corDe = s => `var(--cat-${corTokenDe(s)})`;
 const MODELOS = [
   { nome:'Treino', emoji:'🏋️', corToken:'red',   rotuloNome:'Exercício', rotuloDetalhe:'Carga' },
@@ -269,6 +268,14 @@ function montarNav(){
     `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone)}</span>${rotulo}</button>`).join('');
 }
 
+/* ---------- datas e constância: regras.js ---------- */
+const { fmt, somaDias, curto } = Regras;
+const hoje = () => fmt(new Date());
+const nomeDia = iso => Regras.nomeDia(iso, hoje());
+const itensDoDia = (dia, secao) => Regras.itensDoDia(dados, dia, secao);
+const feito = (dia, idItem) => Regras.feito(dados, dia, idItem);
+const resumoDia = (dia, secao) => Regras.resumoDia(dados, dia, secao);
+
 let dados = carregar();
 let tela = 'rotina';        // rotina | secao | constancia | ajustes
 let secaoAberta = null;     // id da seção aberta
@@ -286,30 +293,6 @@ function salvar(){
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-/* ---------- datas (sempre no fuso do celular) ---------- */
-function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function hoje(){ return fmt(new Date()); }
-function somaDias(iso, n){ const [a,m,d] = iso.split('-').map(Number); const x = new Date(a, m-1, d); x.setDate(x.getDate()+n); return fmt(x); }
-function nomeDia(iso){
-  if(iso === hoje()) return 'Hoje';
-  if(iso === somaDias(hoje(), -1)) return 'Ontem';
-  const [a,m,d] = iso.split('-').map(Number);
-  return new Date(a,m-1,d).toLocaleDateString('pt-BR',{weekday:'short', day:'2-digit', month:'2-digit'});
-}
-function curto(iso){ const [,m,d] = iso.split('-'); return d+'/'+m; }
-
-/* ---------- regras da constância ---------- */
-// itens que "existiam" num dia (criados até aquele dia)
-function itensDoDia(dia, secao){
-  const secs = secao ? [secao] : dados.secoes;
-  return secs.flatMap(s => s.itens.filter(i => i.criadoEm <= dia));
-}
-function feito(dia, idItem){ return (dados.feitos[dia] || []).includes(idItem); }
-function resumoDia(dia, secao){
-  const itens = itensDoDia(dia, secao);
-  const feitas = itens.filter(i => feito(dia, i.id)).length;
-  return { total: itens.length, feitas, pct: itens.length ? Math.round(feitas / itens.length * 100) : 0 };
-}
 function alternar(idItem){
   const lista = dados.feitos[diaSel] || [];
   dados.feitos[diaSel] = lista.includes(idItem) ? lista.filter(x => x !== idItem) : [...lista, idItem];
@@ -432,14 +415,7 @@ function telaConstancia(){
   const fei = comTarefa.reduce((a,r) => a + r.feitas, 0);
   const media = tot ? Math.round(fei / tot * 100) : 0;
 
-  // sequência: dias seguidos (até hoje) com pelo menos metade feita
-  let seq = 0;
-  for(let d = hoje(), i = 0; i < 400; i++, d = somaDias(d, -1)){
-    const r = resumoDia(d);
-    if(r.total && r.pct >= 50) seq++;
-    else if(d === hoje()) continue;   // hoje ainda pode estar em andamento
-    else break;
-  }
+  const seq = Regras.sequencia(dados, hoje());
   const melhor = comTarefa.length ? Math.max(...comTarefa.map(r => r.pct)) : 0;
 
   const passo = periodo > 14 ? 5 : 1;
