@@ -113,12 +113,20 @@
     font-size:var(--fs-body);line-height:var(--lh-body)}
   body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(var(--nav-h) + env(safe-area-inset-bottom)) env(safe-area-inset-left);
     overflow-x:hidden;overscroll-behavior-y:contain}
-  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0;user-select:none;-webkit-user-select:none}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  @media (hover: hover){
+    .btn:not(:disabled):hover{filter:brightness(.95)}
+    .icon-btn:not(:disabled):hover,.menu button:hover,.opcao:hover,.grupo-top:hover,.btn.text:not(:disabled):hover{background:var(--surface-variant)}
+    .chip:hover>span{border-color:var(--text-secondary)}
+    nav.tabs button:hover{color:var(--text-primary)}
+    .item .info:hover b{text-decoration:underline;text-decoration-color:var(--border-strong)}
+  }
+  .anel span,.grupo-top .cont,.chart .b span,.chart .lbl,.contador,.summary .big,.stat b,.cartao-num b,.total-card b,.hoje-data{font-variant-numeric:tabular-nums}
   button:focus-visible,input:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:var(--border-focus) solid var(--primary);outline-offset:var(--border-focus)}
   input,select,textarea{font:inherit;font-size:var(--fs-body);color:var(--text-primary);background:var(--field-bg);
     border:var(--border-width) solid var(--field-border);border-radius:var(--radius-card);
     min-height:var(--touch);padding:var(--space-3) var(--space-4);width:100%;outline:none}
-  input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+  input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:inset 0 0 0 var(--border-width) var(--primary)}
   textarea{resize:vertical;min-height:calc(var(--touch) * 2)}
   svg.ic{width:var(--icon);height:var(--icon);fill:currentColor;flex:none}
   svg.ic.sm{width:var(--icon-sm);height:var(--icon-sm)}
@@ -137,11 +145,11 @@
 
   .card,.summary{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);
     padding:var(--space-4);margin-bottom:var(--space-4)}
-  .card h3{margin:0 0 var(--space-3);font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--text-secondary)}
+  .card h2{margin:0 0 var(--space-3);font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--text-secondary)}
   .summary .big{font-size:var(--fs-number);line-height:var(--lh-number);font-weight:var(--w-semibold)}
   .summary small,.hint{color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
   .bar{height:var(--space-2);background:var(--surface-variant);border-radius:var(--radius-full);overflow:hidden;margin-top:var(--space-3)}
-  .bar i{display:block;height:100%;background:var(--c);border-radius:var(--radius-full);transition:width var(--dur-move) var(--ease-out)}
+  .bar i{display:block;height:100%;width:100%;background:var(--c);border-radius:var(--radius-full);transform:scaleX(var(--p, 0));transform-origin:left center;transition:transform var(--dur-move) var(--ease-out)}
 
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
   .sec{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);padding:var(--space-4);
@@ -185,6 +193,8 @@
   nav.tabs button{flex:1;min-height:var(--nav-h);padding:var(--space-2) 0;color:var(--text-secondary);font-size:var(--fs-meta);
     line-height:var(--lh-meta);font-weight:var(--w-medium);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-1)}
   nav.tabs button span.ind{display:grid;place-items:center;width:calc(var(--space-6) * 2);height:var(--space-6);border-radius:var(--radius-full);transition:background var(--dur-fast) var(--ease-out)}
+  nav.tabs button{min-width:0}
+  nav.tabs .rot{font-size:min(var(--fs-meta), 3.3vw);max-width:100%;overflow-wrap:anywhere;text-align:center}
   nav.tabs button.on{color:var(--text-primary)}
   nav.tabs button.on span.ind{background:var(--primary-container)}
 
@@ -227,7 +237,7 @@
   .lista .item{border:0;border-radius:0;margin:0;background:var(--cc-item, var(--surface));padding-right:var(--space-4)}
   .lista .linha+.linha{border-top:var(--border-width) solid var(--divider-container)}
   .grupo.tinta .lista,.lista.tinta{background:var(--cc);border:0;--cc-item:var(--cc)}
-  .linha{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden}
+  .linha{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden;content-visibility:auto;contain-intrinsic-size:auto var(--item-min-h)}
   .linha .item{position:relative;transition:transform var(--dur-move) var(--ease-out)}
   .linha.arrastando .item{transition:none}
   .linha .fundo{position:absolute;inset:0;display:none;align-items:center;gap:var(--space-2);padding:0 var(--space-5);
@@ -304,7 +314,7 @@
     font-size:var(--fs-meta);line-height:var(--lh-meta)}
   .erro{color:var(--danger);font-weight:var(--w-medium)}
   .contador{color:var(--text-secondary);margin-left:auto;white-space:nowrap}
-  [aria-invalid="true"],[aria-invalid="true"]:focus{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger)}
+  [aria-invalid="true"],[aria-invalid="true"]:focus{border-color:var(--danger);box-shadow:inset 0 0 0 var(--border-width) var(--danger)}
   .btn.text.inicio{justify-content:flex-start;padding-left:0;padding-right:var(--space-2)}
   .linha-campo{display:flex;align-items:flex-end;gap:var(--space-2)}
   .linha-campo>label{flex:1}
@@ -380,7 +390,7 @@
 <nav class="tabs" aria-label="Navegação principal"></nav>
 
 <div class="overlay" id="overlay" onclick="if(event.target===this)pedirFechar()">
-  <div class="sheet" id="sheet"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
 </div>
 <div class="overlay dialogo" id="dialogo" onclick="if(event.target===this)dialogoCancelar()">
   <div class="caixa" role="alertdialog" aria-modal="true" aria-labelledby="dlg-tit" id="dlg-caixa"></div>
@@ -400,7 +410,8 @@
    ========================================================= */
 const CHAVE = 'rotina-app-v1';
 const VERSAO = '1.0.0';
-const CORES_TEMA = { light: '#F7F6F3', dark: '#141413' };
+const tokenCss = nome => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+const CORES_TEMA = { get light(){ return tokenCss('--p-sand-50'); }, get dark(){ return tokenCss('--p-night-950'); } };
 function aplicarTema(){
   const t = dados && dados.ajustes ? dados.ajustes.tema : 'system';
   const raiz = document.documentElement;
@@ -444,7 +455,7 @@ const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" a
 const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['constancia','grafico','Progresso'], ['ajustes','ajustes','Ajustes']];
 function montarNav(){
   document.querySelector('nav.tabs').innerHTML = ABAS.map(([id, icone, rotulo]) =>
-    `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone)}</span>${rotulo}</button>`).join('');
+    `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone)}</span><span class="rot">${rotulo}</span></button>`).join('');
 }
 
 /* ---------- datas e constância: regras.js ---------- */
@@ -487,6 +498,7 @@ const uid = () => (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID()
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------- concluir, excluir e desfazer ---------- */
+function teclaBotao(e, el){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); el.click(); } }
 const durMs = nome => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(nome)) || 0;
 const vibrar = () => { try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){} };
 function marcarItem(idItem, dia, valor){
@@ -636,6 +648,11 @@ document.addEventListener('pointercancel', e => {
 document.addEventListener('click', e => {
   if(suprimirClique){ suprimirClique = false; if(e.target.closest('.linha')){ e.stopPropagation(); e.preventDefault(); } }
 }, true);
+document.addEventListener('keydown', e => {
+  if(e.key !== 'Escape') return;
+  if(document.getElementById('dialogo').classList.contains('show')){ dialogoCancelar(); return; }
+  if(document.getElementById('overlay').classList.contains('show')) pedirFechar();
+});
 document.addEventListener('contextmenu', e => { if(e.target.closest('.linha')) e.preventDefault(); });
 
 function abrirMenu(d){
@@ -758,7 +775,7 @@ function itemTarefa(t, o = {}){
     ${fundoLinha(f)}
     <div class="item ${f ? 'done' : ''} ${t.priority === 'high' ? 'alta' : ''}" style="--c:${s ? corDe(s) : 'var(--primary)'}">
       <button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(t.title)}" onclick="concluirEntrada('tarefa','${t.id}')"><i>${ic('check')}</i></button>
-      <div class="info" role="button" tabindex="0" onclick="editarTarefa('${t.id}')" onkeydown="if(event.key==='Enter')this.click()">
+      <div class="info" role="button" tabindex="0" onclick="editarTarefa('${t.id}')" onkeydown="teclaBotao(event, this)">
         <b>${esc(t.title)}</b>${linhaTarefa(t, o)}
       </div>
       <button class="sr" onclick="abrirMenu(this.closest('.linha').dataset)">Mais ações: ${esc(t.title)}</button>
@@ -773,7 +790,7 @@ function itemHoje(s, i, comSecao, concluivel = true){
     ${fundoLinha(f)}
     <div class="item ${f ? 'done' : ''}" style="--c:${corDe(s)}">
       ${concluivel ? `<button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(i.nome)}" onclick="concluirEntrada('item','${i.id}')"><i>${ic('check')}</i></button>` : ''}
-      <div class="info ${concluivel ? '' : 'sem-check'}" role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="if(event.key==='Enter')this.click()">
+      <div class="info ${concluivel ? '' : 'sem-check'}" role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="teclaBotao(event, this)">
         <b>${esc(i.nome)}</b>${linhaHoje(s, i, comSecao)}
       </div>
       <button class="sr" onclick="abrirMenu(this.closest('.linha').dataset)">Mais ações: ${esc(i.nome)}</button>
@@ -908,10 +925,10 @@ function telaSecao(){
     <div class="summary tinta" style="${tintaDe(s)}">
       <div class="big">${r.pct}%</div>
       <small>${r.feitas} de ${r.total} feitas · ${nomeDia(diaSel).toLowerCase()}</small>
-      <div class="bar"><i style="width:${r.pct}%"></i></div>
+      <div class="bar"><i style="--p:${r.pct / 100}"></i></div>
     </div>
     ${lista || `<p class="empty">${visiveis.length ? 'Nada desta seção para ' + nomeDia(diaSel).toLowerCase() + '.' : 'Nenhum item. Adicione o primeiro ' + esc(s.rotuloNome.toLowerCase()) + '.'}</p>`}
-    ${listaOutros ? `<h3 class="secao-titulo">Outros dias</h3>${listaOutros}` : ''}
+    ${listaOutros ? `<h2 class="secao-titulo">Outros dias</h2>${listaOutros}` : ''}
     <button class="btn mt" onclick="sheetItem()">${ic('add')} Adicionar ${esc(s.rotuloNome.toLowerCase())}</button>
   `;
 }
@@ -955,7 +972,7 @@ function telaProgresso(){
     const p = t ? Math.round(fe / t * 100) : 0;
     return `<div class="secstat" style="--c:${corDe(s)}">
       <div class="top"><span>${esc(s.emoji)} ${esc(s.nome)}</span><b>${p}%</b></div>
-      <div class="bar"><i style="width:${p}%"></i></div>
+      <div class="bar"><i style="--p:${p / 100}"></i></div>
     </div>`;
   }).join('');
 
@@ -966,7 +983,7 @@ function telaProgresso(){
       <div class="cartao-num">${ic('grafico')}<b>${taxa.pct === null ? '—' : taxa.pct + '%'}</b><span>${Regras.textoTaxa(taxa.pct)}</span></div>
     </div>
     <div class="card">
-      <h3>Concluídas por dia nesta semana</h3>
+      <h2>Concluídas por dia nesta semana</h2>
       <div class="chart semana">${barrasSemana}</div>
     </div>
     <div class="card total-card"><span>Concluídas no total:</span><b>${total}</b></div>
@@ -979,18 +996,18 @@ function telaProgresso(){
       <small>Nos últimos ${periodo} dias você cumpriu</small>
       <div class="big">${media}%</div>
       <small>${fei} de ${tot} tarefas</small>
-      <div class="bar"><i style="width:${media}%"></i></div>
+      <div class="bar"><i style="--p:${media / 100}"></i></div>
     </div>
     <div class="stats dois">
       <div class="stat"><b>${resumoDia(hoje()).pct}%</b><small>hoje</small></div>
       <div class="stat"><b>${melhor}%</b><small>melhor dia</small></div>
     </div>
     <div class="card">
-      <h3>Dia a dia</h3>
+      <h2>Dia a dia</h2>
       <div class="chart">${barras}</div>
     </div>
     <div class="card">
-      <h3>Por seção</h3>
+      <h2>Por seção</h2>
       ${porSecao}
     </div>
   `;
@@ -1012,18 +1029,18 @@ function telaAjustes(){
   return `
     <header class="top"><h1>Ajustes</h1></header>
     <div class="card">
-      <h3 id="rot-tema">Tema</h3>
+      <h2 id="rot-tema">Tema</h2>
       <div class="opcoes" role="radiogroup" aria-labelledby="rot-tema">
         ${opcao('system', 'Automático (sistema)')}${opcao('light', 'Claro')}${opcao('dark', 'Escuro')}
       </div>
     </div>
     <div class="card">
-      <h3>Seções</h3>
+      <h2>Seções</h2>
       ${secoes || '<p class="hint">Nenhuma seção ainda.</p>'}
       ${dados.secoes.length < Regras.LIMITE_SECOES ? `<button class="btn text inicio mt" onclick="sheetSecao()">${ic('add')} Nova seção</button>` : '<p class="hint mt">Máximo de 20 seções.</p>'}
     </div>
     <div class="card">
-      <h3>Backup</h3>
+      <h2>Backup</h2>
       <p class="hint">Seus dados ficam só neste celular. Se limpar os dados do navegador ou trocar de celular, eles somem. Faça um backup de vez em quando.</p>
       <div class="row mt">
         <button class="btn" onclick="exportar()">Exportar tarefas</button>
@@ -1032,7 +1049,7 @@ function telaAjustes(){
       ${podeCompartilhar() ? '<button class="btn text mt" onclick="compartilharBackup()">Compartilhar backup</button>' : ''}
     </div>
     <div class="card">
-      <h3>Zerar tudo</h3>
+      <h2>Zerar tudo</h2>
       <p class="hint">Apaga todas as seções, tarefas e o histórico.</p>
       <button class="btn danger mt" onclick="pedirApagarTudo()">Apagar tudo</button>
     </div>
@@ -1077,6 +1094,7 @@ function abrirSheet(html, cheia = false){
   history.pushState({sheet:true}, '');
   const primeiro = document.querySelector('#sheet input');
   if(primeiro && !primeiro.value) setTimeout(() => primeiro.focus(), 80);
+  else setTimeout(() => { if(!document.getElementById('sheet').contains(document.activeElement)){ const b = document.querySelector('#sheet button, #sheet input, #sheet textarea'); if(b) b.focus({ preventScroll: true }); } }, 80);
 }
 function fecharSheet(vindoDoVoltar){
   document.getElementById('overlay').classList.remove('show');
@@ -1098,12 +1116,12 @@ function desenharSheetSecao(editando){
       ${MODELOS.map((m,i) => `<button class="chip ${r.modelo===i?'on':''}" aria-pressed="${r.modelo===i}" onclick="usarModelo(${i})"><span>${m.emoji} ${m.nome || 'Personalizada'}</span></button>`).join('')}
     </div>`}
     <div class="row">
-      <label class="emoji-field">Emoji<input id="f-emoji" value="${esc(r.emoji)}" maxlength="4"></label>
-      <label>Nome da seção<input id="f-nome" maxlength="24" value="${esc(r.nome)}" placeholder="Ex.: Treino"></label>
+      <label class="emoji-field">Emoji<input id="f-emoji" name="emoji" autocomplete="off" value="${esc(r.emoji)}" maxlength="4"></label>
+      <label>Nome da seção<input id="f-nome" name="nome" autocomplete="off" maxlength="24" value="${esc(r.nome)}" placeholder="Ex.: Treino"></label>
     </div>
     <div class="row">
-      <label>Cada item é um(a)…<input id="f-rn" value="${esc(r.rotuloNome)}" placeholder="Ex.: Exercício"></label>
-      <label>E tem…<input id="f-rd" value="${esc(r.rotuloDetalhe)}" placeholder="Ex.: Carga"></label>
+      <label>Cada item é um(a)…<input id="f-rn" name="rn" autocomplete="off" value="${esc(r.rotuloNome)}" placeholder="Ex.: Exercício"></label>
+      <label>E tem…<input id="f-rd" name="rd" autocomplete="off" value="${esc(r.rotuloDetalhe)}" placeholder="Ex.: Carga"></label>
     </div>
     <label>Cor<div class="colors" role="radiogroup" aria-label="Cor da seção">
       ${CORES.map(c => { const on = corTokenDe(r) === c; return `<button role="radio" aria-checked="${on}" aria-label="${NOME_COR[c]}" style="--c:var(--cat-${c})" class="${on?'on':''}" onclick="lerSecao();rascunho.corToken='${c}';desenharSheetSecao(${editando})"><i>${on ? ic('check','sm') : ''}</i></button>`; }).join('')}
@@ -1214,7 +1232,7 @@ function desenharEditor(primeira){
       ${ed.erroDias ? `<span class="erro" role="alert">${esc(ed.erroDias)}</span>` : ''}
     </div>` : '';
   const miniForm = ed.novaSecao ? `<div class="mini-form">
-      <label>Nome da seção<input id="f-ns" maxlength="24" value="${esc(ed.ns.nome)}" aria-describedby="erro-ns"></label>
+      <label>Nome da seção<input id="f-ns" name="ns" autocomplete="off" maxlength="24" value="${esc(ed.ns.nome)}" aria-describedby="erro-ns"></label>
       <div class="colors" role="radiogroup" aria-label="Cor da seção">
         ${CORES.map(c => { const on = ed.ns.cor === c; return `<button role="radio" aria-checked="${on}" aria-label="${NOME_COR[c]}" style="--c:var(--cat-${c})" class="${on ? 'on' : ''}" onclick="lerEditor();ed.ns.cor='${c}';desenharEditor(false)"><i>${on ? ic('check','sm') : ''}</i></button>`; }).join('')}
       </div>
@@ -1228,12 +1246,12 @@ function desenharEditor(primeira){
     </div>
     <div>
       <label class="sr" for="f-in">Título</label>
-      <textarea id="f-in" class="titulo-campo" rows="2" placeholder="O que você precisa fazer?" aria-invalid="${!!erro}" aria-describedby="erro-titulo"
+      <textarea id="f-in" name="in" autocomplete="off" class="titulo-campo" rows="2" placeholder="O que você precisa fazer?" aria-invalid="${!!erro}" aria-describedby="erro-titulo"
         oninput="editorDigitou()" onblur="editorSaiuTitulo()" onkeydown="if(event.key==='Enter'){event.preventDefault();salvarEditor()}">${esc(v.nome)}</textarea>
       <div class="campo-rodape"><span class="erro" id="erro-titulo" role="alert">${erro || ''}</span><span class="contador" id="contador" aria-live="polite">${contador(v.nome)}</span></div>
     </div>
     ${ed.notaAberta
-      ? `<label>Nota<textarea id="f-notas" maxlength="1000" rows="3">${esc(v.notas)}</textarea></label>`
+      ? `<label>Nota<textarea id="f-notas" name="notas" autocomplete="off" maxlength="1000" rows="3">${esc(v.notas)}</textarea></label>`
       : `<button class="btn text inicio" onclick="lerEditor();ed.notaAberta=true;desenharEditor(false);$('f-notas').focus()">${ic('add')} Adicionar nota</button>`}
     ${repetirChips}
     ${rotina ? '' : `<div class="sheet-campo"><span class="rotulo" id="rot-data">Data</span>
@@ -1246,7 +1264,7 @@ function desenharEditor(primeira){
       <input type="date" id="f-data" class="sr" tabindex="-1" aria-hidden="true" value="${esc(v.data)}" onchange="if(this.value)editorData(this.value)">
     </div>`}
     ${ed.horaAberta
-      ? `<div class="linha-campo"><label>Horário<input id="f-hora" type="time" value="${esc(v.horario)}"></label>
+      ? `<div class="linha-campo"><label>Horário<input id="f-hora" name="hora" autocomplete="off" type="time" value="${esc(v.horario)}"></label>
           <button class="btn text danger" onclick="lerEditor();ed.v.horario='';ed.horaAberta=false;desenharEditor(false)">Remover horário</button></div>`
       : (!rotina && !v.data
         ? `<div><button class="btn text inicio" disabled>${ic('add')} Adicionar horário</button><p class="dica">Escolha uma data para adicionar horário.</p></div>`
@@ -1264,7 +1282,7 @@ function desenharEditor(primeira){
       ${!ed.novaSecao && ed.erroSecao ? `<span class="erro" role="alert">${esc(ed.erroSecao)}</span>` : ''}
     </div>
     ${miniForm}
-    ${rotina ? `<label>${esc(s ? s.rotuloDetalhe : 'Detalhe')} (opcional)<input id="f-id" value="${esc(v.detalhe)}"></label>` : ''}
+    ${rotina ? `<label>${esc(s ? s.rotuloDetalhe : 'Detalhe')} (opcional)<input id="f-id" name="id" autocomplete="off" value="${esc(v.detalhe)}"></label>` : ''}
     ${ed.id ? `<button class="btn text danger inicio" onclick="excluirDoEditor()">${ic('excluir')} Excluir tarefa</button>` : ''}
     <div class="ed-acoes">
       <button class="btn ghost" onclick="cancelarEditor()">Cancelar</button>
