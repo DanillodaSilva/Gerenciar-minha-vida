@@ -318,6 +318,21 @@
   .linha-reord.arrastando{z-index:2}
   .linha-reord.arrastando .item{box-shadow:var(--shadow-fab);border-radius:var(--radius-card)}
   .alca-item{width:var(--touch);height:var(--touch);display:grid;place-items:center;color:var(--text-secondary);touch-action:none;cursor:grab;border-radius:var(--radius-full)}
+  .bv{position:fixed;inset:0;z-index:50;background:var(--background);display:flex;flex-direction:column;
+    padding:calc(var(--space-4) + env(safe-area-inset-top)) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));overflow:hidden}
+  .bv-trilho{flex:1;display:flex;transition:transform var(--dur-lenta) var(--ease-movimento);touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  .bv-trilho.arrastando{transition:none}
+  .bv-tela{flex:0 0 100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:var(--space-4);padding:0 var(--space-4);max-width:var(--content-max);margin:0 auto}
+  .bv-tela svg{width:calc(var(--touch) * 4);height:calc(var(--touch) * 4)}
+  .bv-tela h2{margin:0;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold)}
+  .bv-tela p{margin:0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body);max-width:calc(var(--touch) * 7)}
+  .bv-pontos{display:flex;justify-content:center;gap:var(--space-2);padding:var(--space-4) 0}
+  .bv-pontos i{width:var(--space-2);height:var(--space-2);border-radius:var(--radius-full);background:var(--border-strong);transition:transform var(--dur-rapida) var(--ease-saida),background-color var(--dur-rapida) var(--ease-saida)}
+  .bv-pontos i.on{background:var(--primary);transform:scale(1.5)}
+  .bv-acoes{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);max-width:var(--content-max);width:100%;margin:0 auto}
+  .bv-acoes .btn{width:auto;min-width:calc(var(--touch) * 3)}
+  .il-fundo{fill:var(--primary-container)} .il-bloco{fill:var(--surface)} .il-traco{fill:none;stroke:var(--primary);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+  .il-a{fill:var(--cat-teal)} .il-b{fill:var(--cat-orange)} .il-c{fill:var(--cat-blue)} .il-chama{fill:var(--priority-high)}
   .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
   .hoje-tit{flex:1;min-width:0}
   .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
@@ -1446,12 +1461,7 @@ function telaHoje(){
   concluidas.sort(([, a], [, b]) => (a.tipo === 'tarefa') - (b.tipo === 'tarefa') || String(b.obj.completedAt || '').localeCompare(String(a.obj.completedAt || '')));
   let corpo;
   if(!r.total){
-    const boasVindas = NATIVO && !dados.secoes.length && !dados.tarefas.length && !dados.ajustes.boasVindasOk ? `<div class="card boas-vindas" data-chave="boas-vindas">
-      <h2>Já usava o Minha Rotina no navegador?</h2>
-      <p class="hint">No app antigo, abra Ajustes e toque em Exportar tarefas. Depois importe o arquivo aqui para trazer tudo.</p>
-      <div class="row mt"><button class="btn" onclick="importarBackup()">Importar backup</button><button class="btn ghost" onclick="dados.ajustes.boasVindasOk=true;salvar();render()">Começar do zero</button></div>
-    </div>` : '';
-    corpo = boasVindas + blocoAtrasadas + `<div class="vazio" data-chave="vazio">${ILUSTRA.dia}<h2>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</h2><p>Adicione o que você quer fazer e acompanhe aqui.</p>
+    corpo = blocoAtrasadas + `<div class="vazio" data-chave="vazio">${ILUSTRA.dia}<h2>${ehHoje ? 'Nenhuma tarefa para hoje.' : 'Nenhuma tarefa neste dia.'}</h2><p>Adicione o que você quer fazer e acompanhe aqui.</p>
       <button class="btn" onclick="novaTarefa()">Adicionar tarefa</button></div>`;
   } else {
     const tudo = r.feitas === r.total ? `<div class="vazio tudo-feito" data-chave="tudo-feito" role="status">${ic('hoje','lg')}<p><b>${ehHoje ? 'Tudo feito por hoje' : 'Tudo feito neste dia'}</b><br><small>${r.feitas} de ${r.total} concluídas</small></p></div>` : '';
@@ -2295,6 +2305,82 @@ if(!NATIVO && 'serviceWorker' in navigator){
   try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 }
 
+const BV_TELAS = [
+  ['Sua rotina em seções', 'Agrupe o que você faz todo dia: treino, estudo, casa.',
+    '<svg viewBox="0 0 160 160" aria-hidden="true"><circle class="il-fundo" cx="80" cy="80" r="72"/><rect class="il-bloco" x="34" y="40" width="92" height="22" rx="8"/><rect class="il-bloco" x="34" y="69" width="92" height="22" rx="8"/><rect class="il-bloco" x="34" y="98" width="92" height="22" rx="8"/><circle class="il-a" cx="48" cy="51" r="6"/><circle class="il-b" cx="48" cy="80" r="6"/><circle class="il-c" cx="48" cy="109" r="6"/><path class="il-traco" d="M62 51h46M62 80h34M62 109h40"/></svg>'],
+  ['Marque com um toque', 'Toque para marcar. Deslize para a direita para marcar e para a esquerda para excluir.',
+    '<svg viewBox="0 0 160 160" aria-hidden="true"><circle class="il-fundo" cx="80" cy="80" r="72"/><rect class="il-bloco" x="26" y="58" width="108" height="44" rx="12"/><rect x="38" y="70" width="20" height="20" rx="6" fill="var(--primary)"/><path d="M42 80l4 4 8-8" fill="none" stroke="var(--on-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path class="il-traco" d="M68 80h50"/><path class="il-traco" d="M60 122h40M90 114l10 8-10 8"/></svg>'],
+  ['Acompanhe sua constância', 'Veja sua sequência e sua semana na aba Progresso.',
+    '<svg viewBox="0 0 160 160" aria-hidden="true"><circle class="il-fundo" cx="80" cy="80" r="72"/><rect class="il-bloco" x="38" y="88" width="16" height="30" rx="5"/><rect class="il-bloco" x="62" y="70" width="16" height="48" rx="5"/><rect class="il-bloco" x="86" y="56" width="16" height="62" rx="5"/><path class="il-chama" d="M118 34c2 6 8 10 8 18a9 9 0 0 1-18 0c0-4 2-7 4-9 0 3 2 5 4 6-1-5 0-10 2-15z"/></svg>'],
+];
+let bvTela = 0;
+const deveMostrarBoasVindas = () => !dados.ajustes.boasVindasVista && !dados.secoes.length && !dados.tarefas.length && !Object.keys(dados.feitos).length;
+function mostrarBoasVindas(){
+  const el = document.createElement('div');
+  el.className = 'bv'; el.id = 'boas-vindas';
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Boas-vindas');
+  el.innerHTML = `<div class="bv-trilho" id="bv-trilho">${BV_TELAS.map(([t, p, il], i) => `<section class="bv-tela" aria-hidden="${i !== 0}">${il}<h2>${t}</h2><p>${p}</p></section>`).join('')}</div>
+    <div class="bv-pontos" aria-hidden="true">${BV_TELAS.map((_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('')}</div>
+    <p class="sr" aria-live="polite" id="bv-status">Tela 1 de 3</p>
+    <div class="bv-acoes"><button class="btn text" onclick="fecharBoasVindas()">Pular</button><button class="btn" id="bv-proximo" onclick="bvAvancar()">Próximo</button></div>`;
+  document.body.appendChild(el);
+  bvTela = 0;
+  if(!Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
+  setTimeout(() => $('bv-proximo').focus(), 50);
+}
+function bvIr(i){
+  bvTela = Math.max(0, Math.min(BV_TELAS.length - 1, i));
+  const tr = $('bv-trilho'); if(!tr) return;
+  tr.style.transform = `translateX(${-bvTela * 100}%)`;
+  tr.querySelectorAll('.bv-tela').forEach((s, k) => s.setAttribute('aria-hidden', k !== bvTela));
+  document.querySelectorAll('.bv-pontos i').forEach((p, k) => p.classList.toggle('on', k === bvTela));
+  $('bv-status').textContent = `Tela ${bvTela + 1} de ${BV_TELAS.length}: ${BV_TELAS[bvTela][0]}`;
+  $('bv-proximo').textContent = bvTela === BV_TELAS.length - 1 ? 'Começar' : 'Próximo';
+}
+function bvAvancar(){ if(bvTela === BV_TELAS.length - 1) fecharBoasVindas(); else bvIr(bvTela + 1); }
+function fecharBoasVindas(){
+  const el = $('boas-vindas'); if(!el) return;
+  dados.ajustes.boasVindasVista = true; salvar();
+  const fim = () => { el.remove(); escolherInicio(); };
+  if(Animacoes.reduzido()) return fim();
+  el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim;
+}
+function escolherInicio(){
+  abrirSheet(`<h2>Escolha por onde começar</h2>
+    <p class="hint">Comece com um modelo de seção. Dá para mudar tudo depois.</p>
+    <div class="chips">${MODELOS.map((m, i) => `<button class="chip" onclick="usarModelo(${i})"><span>${m.emoji} ${m.nome || 'Personalizada'}</span></button>`).join('')}</div>
+    ${NATIVO ? '<button class="btn ghost" onclick="fecharSheet();setTimeout(importarBackup, 60)">Importar backup do navegador</button>' : ''}
+    <button class="btn text" onclick="fecharSheet()">Começar do zero</button>`);
+}
+let bvArraste = null;
+document.addEventListener('pointerdown', e => {
+  const tr = e.target.closest('#bv-trilho');
+  if(!tr || e.button > 0) return;
+  bvArraste = { tr, x: e.clientX, y: e.clientY, dx: 0, ativo: false, id: e.pointerId, t: e.timeStamp };
+});
+document.addEventListener('pointermove', e => {
+  const a = bvArraste;
+  if(!a || e.pointerId !== a.id) return;
+  const dx = e.clientX - a.x, dy = e.clientY - a.y;
+  if(!a.ativo){
+    if(Math.abs(dx) < Animacoes.GESTO.trava && Math.abs(dy) < Animacoes.GESTO.trava) return;
+    if(Math.abs(dy) > Math.abs(dx)){ bvArraste = null; return; }
+    a.ativo = true; a.tr.classList.add('arrastando');
+    try{ a.tr.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  const naBorda = (bvTela === 0 && dx > 0) || (bvTela === BV_TELAS.length - 1 && dx < 0);
+  a.dx = naBorda ? dx * Animacoes.GESTO.resistencia : dx;
+  a.tr.style.transform = `translateX(calc(${-bvTela * 100}% + ${a.dx}px))`;
+});
+document.addEventListener('pointerup', e => {
+  const a = bvArraste;
+  if(!a || e.pointerId !== a.id) return;
+  bvArraste = null;
+  a.tr.classList.remove('arrastando');
+  if(!a.ativo) return;
+  const decisao = Animacoes.decidirGesto({ dx: a.dx, dy: 0, largura: a.tr.offsetWidth, velocidade: a.dx / Math.max(1, e.timeStamp - a.t) });
+  bvIr(decisao === 'excluir' ? bvTela + 1 : decisao === 'marcar' ? bvTela - 1 : bvTela);
+});
 function telaErro(){
   document.querySelector('nav.tabs').innerHTML = '';
   document.getElementById('app').innerHTML = `
@@ -2310,6 +2396,7 @@ function iniciar(){
   if(NATIVO) document.getElementById('arquivo').removeAttribute('accept');
   aplicarTema(); montarNav(); render();
   iniciarLembretes();
+  if(deveMostrarBoasVindas()) mostrarBoasVindas();
 }
 iniciar();
 </script>
