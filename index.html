@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
 <title>Rotina</title>
 <link rel="manifest" href="manifest.webmanifest">
+<script>try{var a=JSON.parse(localStorage.getItem('rotina-app-v1')||'{}').ajustes;if(a&&(a.tema==='light'||a.tema==='dark'))document.documentElement.setAttribute('data-theme',a.tema)}catch(e){}</script>
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
@@ -349,6 +350,20 @@
   .total-card b{font-size:var(--fs-number);line-height:var(--lh-number);font-weight:var(--w-semibold)}
   .stats.dois{grid-template-columns:1fr 1fr}
   h2.titulo-bloco{font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);color:var(--text-secondary);margin:var(--space-5) 0 var(--space-3)}
+  .opcoes{display:flex;flex-direction:column}
+  .opcao{display:flex;align-items:center;gap:var(--space-3);min-height:var(--touch);text-align:left;border-radius:var(--radius-chip);padding:0 var(--space-1)}
+  .opcao .radio{width:var(--check-size);height:var(--check-size);border-radius:var(--radius-full);border:var(--check-border) solid var(--border-strong);display:grid;place-items:center;flex:none}
+  .opcao[aria-checked="true"] .radio{border-color:var(--primary)}
+  .opcao[aria-checked="true"] .radio::after{content:'';width:calc(var(--check-size) / 2);height:calc(var(--check-size) / 2);border-radius:var(--radius-full);background:var(--primary)}
+  .secao-linha{display:flex;align-items:center;gap:var(--space-2);min-height:var(--item-min-h)}
+  .secao-linha+.secao-linha{border-top:var(--border-width) solid var(--border)}
+  .secao-linha .emo{display:grid;place-items:center;width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--cc);flex:none}
+  .secao-linha .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+  .secao-linha small{display:block;color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .secao-linha .icon-btn{color:var(--text-secondary)}
+  .secao-linha .icon-btn.perigo{color:var(--danger)}
+  .sobre{display:flex;justify-content:space-between;gap:var(--space-2);flex-wrap:wrap}
+  .sobre span{color:var(--text-secondary)}
   .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--fab-h) + var(--space-5) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
@@ -384,6 +399,18 @@
      feitos: { "AAAA-MM-DD": [idItem, ...] } }
    ========================================================= */
 const CHAVE = 'rotina-app-v1';
+const VERSAO = '1.0.0';
+const CORES_TEMA = { light: '#F7F6F3', dark: '#141413' };
+function aplicarTema(){
+  const t = dados && dados.ajustes ? dados.ajustes.tema : 'system';
+  const raiz = document.documentElement;
+  if(t === 'light' || t === 'dark') raiz.setAttribute('data-theme', t); else raiz.removeAttribute('data-theme');
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+    const doSistema = m.media.includes('dark') ? CORES_TEMA.dark : CORES_TEMA.light;
+    m.content = t === 'light' || t === 'dark' ? CORES_TEMA[t] : doSistema;
+  });
+}
+function mudarTema(t){ dados.ajustes.tema = t; salvar(); aplicarTema(); render(); }
 const { CORES, corTokenDe } = Regras;
 const NOME_COR = { green:'Verde', blue:'Azul', teal:'Verde-azulado', orange:'Laranja', red:'Vermelho', yellow:'Amarelo', brown:'Marrom', gray:'Cinza' };
 const corDe = s => `var(--cat-${corTokenDe(s)})`;
@@ -964,8 +991,31 @@ function telaProgresso(){
 }
 
 function telaAjustes(){
+  const tema = dados.ajustes.tema;
+  const opcao = (id, rotulo) => `<button class="opcao" role="radio" aria-checked="${tema === id}" onclick="mudarTema('${id}')"><span class="radio"></span>${rotulo}</button>`;
+  const secoes = dados.secoes.map(s => {
+    const n = s.itens.length, m = dados.tarefas.filter(t => t.categoryId === s.id).length;
+    const resumo = [n ? n + (n === 1 ? ' item da rotina' : ' itens da rotina') : '', m ? m + (m === 1 ? ' tarefa avulsa' : ' tarefas avulsas') : ''].filter(Boolean).join(' · ') || 'Vazia';
+    return `<div class="secao-linha" style="${tintaDe(s)}">
+      <span class="emo" aria-hidden="true">${esc(s.emoji)}</span>
+      <span class="nm">${esc(s.nome)}<small>${resumo}</small></span>
+      <button class="icon-btn" onclick="sheetSecao('${s.id}')" aria-label="Renomear ${esc(s.nome)}">${ic('editar')}</button>
+      <button class="icon-btn perigo" onclick="pedirExcluirSecao('${s.id}')" aria-label="Excluir ${esc(s.nome)}">${ic('excluir')}</button>
+    </div>`;
+  }).join('');
   return `
     <header class="top"><h1>Ajustes</h1></header>
+    <div class="card">
+      <h3 id="rot-tema">Tema</h3>
+      <div class="opcoes" role="radiogroup" aria-labelledby="rot-tema">
+        ${opcao('system', 'Automático (sistema)')}${opcao('light', 'Claro')}${opcao('dark', 'Escuro')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Seções</h3>
+      ${secoes || '<p class="hint">Nenhuma seção ainda.</p>'}
+      ${dados.secoes.length < Regras.LIMITE_SECOES ? `<button class="btn text inicio mt" onclick="sheetSecao()">${ic('add')} Nova seção</button>` : '<p class="hint mt">Máximo de 20 seções.</p>'}
+    </div>
     <div class="card">
       <h3>Backup</h3>
       <p class="hint">Seus dados ficam só neste celular. Se limpar os dados do navegador ou trocar de celular, eles somem. Faça um backup de vez em quando.</p>
@@ -977,10 +1027,40 @@ function telaAjustes(){
     </div>
     <div class="card">
       <h3>Zerar tudo</h3>
-      <p class="hint">Apaga todas as seções, itens e histórico.</p>
-      <button class="btn danger mt" onclick="sheetConfirmar('Apagar tudo?','Isso não dá pra desfazer.',()=>{dados={...Regras.vazio(),ajustes:dados.ajustes};salvar();render();toast('Tudo apagado')})">Apagar tudo</button>
+      <p class="hint">Apaga todas as seções, tarefas e o histórico.</p>
+      <button class="btn danger mt" onclick="pedirApagarTudo()">Apagar tudo</button>
     </div>
+    <div class="card sobre"><b>Minha Rotina</b><span>Versão ${VERSAO}</span></div>
   `;
+}
+function pedirApagarTudo(){
+  mostrarDialogo({ titulo: 'Apagar tudo?', texto: 'Apaga todas as seções, tarefas e o histórico. Não dá para desfazer.', cancelar: 'Cancelar', ok: 'Apagar tudo', perigo: true,
+    acao: () => { finalizarSnack(); dados = { ...Regras.vazio(), ajustes: dados.ajustes }; salvar(); render(); toast('Tudo apagado'); } });
+}
+function textoExcluirSecao(s){
+  const n = s.itens.length, m = dados.tarefas.filter(t => t.categoryId === s.id).length;
+  const partes = [];
+  if(n) partes.push(n === 1 ? 'O item da rotina dela e o histórico serão apagados.' : `Os ${n} itens da rotina dela e o histórico serão apagados.`);
+  if(m) partes.push(m === 1 ? 'A tarefa avulsa dela ficará sem seção.' : `As ${m} tarefas avulsas dela ficarão sem seção.`);
+  return partes.join(' ');
+}
+function apagarSecao(id){
+  finalizarSnack();
+  const s = secaoDe(id); if(!s) return;
+  const ids = new Set(s.itens.map(i => i.id));
+  dados.secoes = dados.secoes.filter(x => x.id !== id);
+  dados.tarefas.forEach(t => { if(t.categoryId === id) t.categoryId = null; });
+  Object.keys(dados.feitos).forEach(d => {
+    dados.feitos[d] = dados.feitos[d].filter(x => !ids.has(x));
+    if(!dados.feitos[d].length) delete dados.feitos[d];
+  });
+  if(filtroProx === id) filtroProx = 'todas';
+  salvar();
+}
+function pedirExcluirSecao(id){
+  const s = secaoDe(id);
+  mostrarDialogo({ titulo: `Excluir a seção ${s.nome}?`, texto: textoExcluirSecao(s), cancelar: 'Cancelar', ok: 'Excluir', perigo: true,
+    acao: () => { apagarSecao(id); render(); toast('Seção excluída'); } });
 }
 
 /* ---------- janelas (bottom sheets) ---------- */
@@ -1013,7 +1093,7 @@ function desenharSheetSecao(editando){
     </div>`}
     <div class="row">
       <label class="emoji-field">Emoji<input id="f-emoji" value="${esc(r.emoji)}" maxlength="4"></label>
-      <label>Nome da seção<input id="f-nome" value="${esc(r.nome)}" placeholder="Ex.: Treino"></label>
+      <label>Nome da seção<input id="f-nome" maxlength="24" value="${esc(r.nome)}" placeholder="Ex.: Treino"></label>
     </div>
     <div class="row">
       <label>Cada item é um(a)…<input id="f-rn" value="${esc(r.rotuloNome)}" placeholder="Ex.: Exercício"></label>
@@ -1042,7 +1122,8 @@ function lerSecao(){
 function usarModelo(i){ rascunho = {...MODELOS[i], modelo:i}; desenharSheetSecao(false); }
 function salvarSecao(editando){
   lerSecao();
-  if(!rascunho.nome){ toast('Dá um nome pra seção'); return; }
+  const erroNome = Regras.validarNomeSecao(rascunho.nome, dados.secoes, editando ? rascunho.id : undefined);
+  if(erroNome){ toast(erroNome); return; }
   const { modelo, ...s } = rascunho;
   if(editando){
     const i = dados.secoes.findIndex(x => x.id === s.id);
@@ -1053,14 +1134,15 @@ function salvarSecao(editando){
   salvar(); fecharSheet(); render(); toast(editando ? 'Seção salva' : 'Seção criada');
 }
 function excluirSecao(){
-  const s = rascunho;
-  sheetConfirmar(`Excluir "${s.nome}"?`, 'Os itens e o histórico dessa seção somem da constância.', () => {
-    dados.secoes = dados.secoes.filter(x => x.id !== s.id);
-    dados.tarefas.forEach(t => { if(t.categoryId === s.id) t.categoryId = null; });
-    salvar(); tela = 'rotina'; secaoAberta = null;
-    history.back(); // sai da tela da seção
-    render(); toast('Seção excluída');
-  });
+  const s = secaoDe(rascunho.id);
+  if(!s) return;
+  mostrarDialogo({ titulo: `Excluir a seção ${s.nome}?`, texto: textoExcluirSecao(s), cancelar: 'Cancelar', ok: 'Excluir', perigo: true,
+    acao: () => {
+      apagarSecao(s.id);
+      fecharSheet();
+      if(tela === 'secao'){ tela = 'rotina'; secaoAberta = null; setTimeout(() => { ignorarPop = true; history.back(); }, 60); }
+      render(); toast('Seção excluída');
+    } });
 }
 
 /* ---------- editor de tarefa ---------- */
@@ -1307,26 +1389,6 @@ function alternarDia(b){
 const diasMarcados = () => [...document.querySelectorAll('#sheet .dias .chip[aria-pressed="true"]')].map(b => +b.dataset.dia);
 
 
-let acaoConfirmar = null;
-function sheetConfirmar(titulo, texto, acao){
-  acaoConfirmar = acao;
-  abrirSheetOuAtualizar(`
-    <h2>${esc(titulo)}</h2>
-    <p class="hint">${esc(texto)}</p>
-    <div class="row">
-      <button class="btn ghost" onclick="fecharSheet()">Cancelar</button>
-      <button class="btn danger" onclick="confirmarAgora()">Confirmar</button>
-    </div>
-  `);
-}
-function confirmarAgora(){
-  const acao = acaoConfirmar; acaoConfirmar = null;
-  document.getElementById('overlay').classList.remove('show');
-  ignorarPop = true; history.back();
-  // espera o "voltar" do sheet terminar antes de executar
-  setTimeout(acao, 60);
-}
-
 /* ---------- backup ---------- */
 function arquivoBackup(){
   const texto = JSON.stringify(Regras.montarBackup(dados, new Date().toISOString()), null, 2);
@@ -1392,7 +1454,7 @@ function telaErro(){
 function iniciar(){
   try{ dados = carregar(); }
   catch(e){ dados = null; console.error('Falha ao carregar os dados:', e && e.message); telaErro(); return; }
-  montarNav(); render();
+  aplicarTema(); montarNav(); render();
 }
 iniciar();
 </script>
