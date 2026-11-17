@@ -57,7 +57,7 @@
     --scrim:rgb(28 27 25 / .45);
     --cat-green:var(--p-green-600); --cat-blue:var(--p-blue-600); --cat-teal:var(--p-teal-700); --cat-orange:var(--p-orange-700);
     --cat-red:var(--p-red-700); --cat-yellow:var(--p-yellow-700); --cat-brown:var(--p-brown-600); --cat-gray:var(--p-gray-600);
-    --primary-container:var(--p-green-100);
+    --primary-container:var(--p-green-100); --danger-container:var(--p-red-50); --snack-action:var(--p-green-300);
     --cat-green-container:var(--p-green-50); --cat-blue-container:var(--p-blue-50); --cat-teal-container:var(--p-teal-50); --cat-orange-container:var(--p-orange-50);
     --cat-red-container:var(--p-red-50); --cat-yellow-container:var(--p-yellow-50); --cat-brown-container:var(--p-brown-50); --cat-gray-container:var(--p-gray-50);
     color-scheme:light;
@@ -72,7 +72,7 @@
       --scrim:rgb(0 0 0 / .6);
       --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
       --cat-red:var(--p-red-400); --cat-yellow:var(--p-yellow-400); --cat-brown:var(--p-brown-300); --cat-gray:var(--p-gray-400);
-      --primary-container:var(--p-green-800);
+      --primary-container:var(--p-green-800); --danger-container:var(--p-red-850); --snack-action:var(--p-green-600);
       --cat-green-container:var(--p-green-850); --cat-blue-container:var(--p-blue-850); --cat-teal-container:var(--p-teal-850); --cat-orange-container:var(--p-orange-850);
       --cat-red-container:var(--p-red-850); --cat-yellow-container:var(--p-yellow-850); --cat-brown-container:var(--p-brown-850); --cat-gray-container:var(--p-gray-850);
       color-scheme:dark;
@@ -87,7 +87,7 @@
     --scrim:rgb(0 0 0 / .6);
     --cat-green:var(--p-green-300); --cat-blue:var(--p-blue-300); --cat-teal:var(--p-teal-300); --cat-orange:var(--p-orange-400);
     --cat-red:var(--p-red-400); --cat-yellow:var(--p-yellow-400); --cat-brown:var(--p-brown-300); --cat-gray:var(--p-gray-400);
-    --primary-container:var(--p-green-800);
+    --primary-container:var(--p-green-800); --danger-container:var(--p-red-850); --snack-action:var(--p-green-600);
     --cat-green-container:var(--p-green-850); --cat-blue-container:var(--p-blue-850); --cat-teal-container:var(--p-teal-850); --cat-orange-container:var(--p-orange-850);
     --cat-red-container:var(--p-red-850); --cat-yellow-container:var(--p-yellow-850); --cat-brown-container:var(--p-brown-850); --cat-gray-container:var(--p-gray-850);
     color-scheme:dark;
@@ -223,9 +223,27 @@
   .grupo-top svg{transition:transform var(--dur-fast) var(--ease-out)}
   .grupo-top[aria-expanded="true"] svg{transform:rotate(180deg)}
   .lista{background:var(--surface);border:var(--border-width) solid var(--border);border-radius:var(--radius-card);overflow:hidden}
-  .lista .item{border:0;border-radius:0;margin:0;background:none;padding-right:var(--space-4)}
-  .lista .item+.item{border-top:var(--border-width) solid var(--divider-container)}
-  .grupo.tinta .lista{background:var(--cc);border:0}
+  .lista .item{border:0;border-radius:0;margin:0;background:var(--cc-item, var(--surface));padding-right:var(--space-4)}
+  .lista .linha+.linha{border-top:var(--border-width) solid var(--divider-container)}
+  .grupo.tinta .lista,.lista.tinta{background:var(--cc);border:0;--cc-item:var(--cc)}
+  .linha{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden}
+  .linha .item{position:relative;transition:transform var(--dur-move) var(--ease-out)}
+  .linha.arrastando .item{transition:none}
+  .linha .fundo{position:absolute;inset:0;display:none;align-items:center;gap:var(--space-2);padding:0 var(--space-5);
+    font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium)}
+  .linha[data-dir] .fundo{display:flex}
+  .linha[data-dir="dir"] .fundo{background:var(--primary-container);color:var(--on-container)}
+  .linha[data-dir="esq"] .fundo{background:var(--danger-container);color:var(--danger);justify-content:flex-end}
+  .linha[data-dir="dir"] .fundo .lado-dir,.linha[data-dir="esq"] .fundo .lado-esq{display:none}
+  .linha .fundo span{display:inline-flex;align-items:center;gap:var(--space-2)}
+  .linha.saindo{transition:height var(--dur-move) var(--ease-out),opacity var(--dur-move) var(--ease-out);height:0 !important;opacity:0}
+  .menu{display:flex;flex-direction:column}
+  .menu button{display:flex;align-items:center;gap:var(--space-4);min-height:calc(var(--touch) + var(--space-2));padding:0 var(--space-2);border-radius:var(--radius-card);
+    font-size:var(--fs-body);line-height:var(--lh-body);text-align:left}
+  .menu button:active{background:var(--surface-variant)}
+  .menu button.perigo{color:var(--danger)}
+  .sheet h2.menu-tit{font-size:var(--fs-section);line-height:var(--lh-section);color:var(--text-secondary);overflow-wrap:anywhere}
+  .sr:focus{position:static;width:auto;height:auto;clip:auto;white-space:normal}
   .grupo-top .emo{display:grid;place-items:center;width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);background:var(--cc);flex:none}
   .summary.tinta{background:var(--cc);border:0}
   .summary.tinta small{color:var(--on-container)}
@@ -280,8 +298,11 @@
   .toast{position:fixed;left:var(--space-4);right:var(--space-4);bottom:calc(var(--nav-h) + var(--fab-h) + var(--space-5) + env(safe-area-inset-bottom));max-width:var(--content-max);margin:0 auto;
     background:var(--snack-bg);color:var(--snack-fg);min-height:var(--touch);padding:var(--space-3) var(--space-4);border-radius:var(--radius-card);
     font-size:var(--fs-label);line-height:var(--lh-label);opacity:0;transform:translateY(var(--space-2));
-    transition:opacity var(--dur-move) var(--ease-out),transform var(--dur-move) var(--ease-out);pointer-events:none;z-index:20}
+    transition:opacity var(--dur-move) var(--ease-out),transform var(--dur-move) var(--ease-out);pointer-events:none;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
   .toast.show{opacity:1;transform:none}
+  .toast.com-acao{pointer-events:auto;padding-right:var(--space-2)}
+  .toast .snack-acao{color:var(--snack-action);font-weight:var(--w-medium);min-height:var(--touch);padding:0 var(--space-3);border-radius:var(--radius-chip);flex:none}
 </style>
 </head>
 <body>
@@ -343,9 +364,16 @@ function montarNav(){
 const { fmt, somaDias, curto } = Regras;
 const hoje = () => fmt(new Date());
 const nomeDia = iso => Regras.nomeDia(iso, hoje());
-const itensDoDia = (dia, secao) => Regras.itensDoDia(dados, dia, secao);
+const ocultos = new Set();
+function visao(){
+  if(!ocultos.size) return dados;
+  return { ...dados, secoes: dados.secoes.map(s => ({ ...s, itens: s.itens.filter(i => !ocultos.has(i.id)) })),
+    tarefas: (dados.tarefas || []).filter(t => !ocultos.has(t.id)) };
+}
+const secaoVisivel = s => s && visao().secoes.find(x => x.id === s.id);
+const itensDoDia = (dia, secao) => Regras.itensDoDia(visao(), dia, secaoVisivel(secao));
 const feito = (dia, idItem) => Regras.feito(dados, dia, idItem);
-const resumoDia = (dia, secao) => Regras.resumoDia(dados, dia, secao);
+const resumoDia = (dia, secao) => Regras.resumoDia(visao(), dia, secaoVisivel(secao));
 
 let dados = null;
 let tela = 'rotina';        // rotina | secao | constancia | ajustes
@@ -371,11 +399,163 @@ function salvar(){
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function alternar(idItem){
-  const lista = dados.feitos[diaSel] || [];
-  dados.feitos[diaSel] = lista.includes(idItem) ? lista.filter(x => x !== idItem) : [...lista, idItem];
-  if(!dados.feitos[diaSel].length) delete dados.feitos[diaSel];
-  salvar(); render();
+/* ---------- concluir, excluir e desfazer ---------- */
+const durMs = nome => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(nome)) || 0;
+const vibrar = () => { try{ if(navigator.vibrate) navigator.vibrate(10); }catch(e){} };
+function marcarItem(idItem, dia, valor){
+  const lista = dados.feitos[dia] || [];
+  const tem = lista.includes(idItem);
+  if(valor === tem) return;
+  dados.feitos[dia] = valor ? [...lista, idItem] : lista.filter(x => x !== idItem);
+  if(!dados.feitos[dia].length) delete dados.feitos[dia];
+}
+function estaFeita(tipo, id){ return feito(diaSel, id); }
+function definirFeita(tipo, id, valor){ marcarItem(id, diaSel, valor); }
+function animarSaida(linha, fim){
+  const dc = durMs('--dur-check'), dm = durMs('--dur-move');
+  if(!linha || !dm){ fim(); return; }
+  setTimeout(() => {
+    linha.style.height = linha.offsetHeight + 'px';
+    void linha.offsetHeight;
+    linha.classList.add('saindo');
+    setTimeout(fim, dm);
+  }, dc);
+}
+function concluirEntrada(tipo, id){
+  const dia = diaSel;
+  const valor = !estaFeita(tipo, id);
+  definirFeita(tipo, id, valor);
+  salvar();
+  const linha = document.querySelector(`.linha[data-id="${id}"]`);
+  if(linha){
+    linha.querySelector('.item').classList.toggle('done', valor);
+    const chk = linha.querySelector('.check'); if(chk) chk.setAttribute('aria-checked', valor);
+  }
+  if(valor){
+    vibrar();
+    snack('Tarefa concluída', () => { const d0 = diaSel; diaSel = dia; definirFeita(tipo, id, false); diaSel = d0; salvar(); render(); });
+  }
+  animarSaida(linha, render);
+}
+function apagarDeVez(tipo, id){
+  dados.secoes.forEach(s => { s.itens = s.itens.filter(i => i.id !== id); });
+  Object.keys(dados.feitos).forEach(d => {
+    dados.feitos[d] = dados.feitos[d].filter(x => x !== id);
+    if(!dados.feitos[d].length) delete dados.feitos[d];
+  });
+}
+function excluirEntrada(tipo, id){
+  ocultos.add(id); render();
+  snack('Tarefa excluída',
+    () => { ocultos.delete(id); render(); },
+    () => { ocultos.delete(id); apagarDeVez(tipo, id); salvar(); render(); });
+}
+const alternar = idItem => concluirEntrada('item', idItem);
+
+/* ---------- snackbar ---------- */
+let snackAtual = null;
+function esconderSnack(){
+  const t = document.getElementById('toast');
+  clearTimeout(t._h); t.classList.remove('show', 'com-acao');
+}
+function finalizarSnack(){
+  const s = snackAtual; snackAtual = null; esconderSnack();
+  if(s && s.aoExpirar) s.aoExpirar();
+}
+function desfazerSnack(){
+  const s = snackAtual; snackAtual = null; esconderSnack();
+  if(s && s.desfazer) s.desfazer();
+}
+function snack(msg, desfazer, aoExpirar){
+  finalizarSnack();
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span>${esc(msg)}</span>` + (desfazer ? '<button class="snack-acao" onclick="desfazerSnack()">Desfazer</button>' : '');
+  t.classList.toggle('com-acao', !!desfazer);
+  void t.offsetHeight; t.classList.add('show');
+  snackAtual = { desfazer, aoExpirar };
+  t._h = setTimeout(finalizarSnack, desfazer ? 5000 : 2000);
+}
+const toast = msg => snack(msg);
+
+/* ---------- gestos: deslizar e toque longo ---------- */
+let gesto = null, suprimirClique = false, menuAlvo = null;
+function fimGesto(){
+  if(!gesto) return;
+  clearTimeout(gesto.timer);
+  gesto.linha.classList.remove('arrastando');
+  gesto = null;
+}
+document.addEventListener('pointerdown', e => {
+  const linha = e.target.closest('.linha');
+  if(!linha || e.button > 0) return;
+  gesto = { linha, item: linha.querySelector('.item'), x: e.clientX, y: e.clientY, dx: 0, modo: null, id: e.pointerId };
+  gesto.timer = setTimeout(() => {
+    if(gesto && !gesto.modo){ gesto.modo = 'longo'; suprimirClique = true; vibrar(); abrirMenu(linha.dataset); }
+  }, 500);
+});
+document.addEventListener('pointermove', e => {
+  if(!gesto || e.pointerId !== gesto.id || gesto.modo === 'longo') return;
+  const dx = e.clientX - gesto.x, dy = e.clientY - gesto.y;
+  if(!gesto.modo){
+    if(Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)){ fimGesto(); return; }
+    if(Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5){
+      clearTimeout(gesto.timer);
+      gesto.modo = 'desliza'; gesto.linha.classList.add('arrastando');
+    } else return;
+  }
+  const podeDir = gesto.linha.dataset.concluivel === '1';
+  gesto.dx = podeDir ? dx : Math.min(dx, 0);
+  gesto.item.style.transform = `translateX(${gesto.dx}px)`;
+  if(gesto.dx > 0) gesto.linha.dataset.dir = 'dir';
+  else if(gesto.dx < 0) gesto.linha.dataset.dir = 'esq';
+});
+function soltar(e){
+  if(!gesto || e.pointerId !== gesto.id) return;
+  const g = gesto; fimGesto();
+  if(g.modo !== 'desliza') return;
+  suprimirClique = true;
+  const largura = g.linha.offsetWidth;
+  const passou = Math.abs(g.dx) > largura * 0.35;
+  const { tipo, id } = g.linha.dataset;
+  if(passou && g.dx < 0){
+    g.item.style.transform = `translateX(${-largura}px)`;
+    setTimeout(() => excluirEntrada(tipo, id), durMs('--dur-move'));
+    return;
+  }
+  g.item.style.transform = '';
+  setTimeout(() => { delete g.linha.dataset.dir; }, durMs('--dur-move'));
+  if(passou && g.dx > 0) concluirEntrada(tipo, id);
+}
+document.addEventListener('pointerup', soltar);
+document.addEventListener('pointercancel', e => {
+  if(!gesto || e.pointerId !== gesto.id) return;
+  const g = gesto; fimGesto();
+  g.item.style.transform = ''; delete g.linha.dataset.dir;
+});
+document.addEventListener('click', e => {
+  if(suprimirClique){ suprimirClique = false; if(e.target.closest('.linha')){ e.stopPropagation(); e.preventDefault(); } }
+}, true);
+document.addEventListener('contextmenu', e => { if(e.target.closest('.linha')) e.preventDefault(); });
+
+function abrirMenu(d){
+  menuAlvo = { ...d };
+  const s = dados.secoes.find(x => x.id === d.sid);
+  const it = s && s.itens.find(i => i.id === d.id);
+  if(!it) return;
+  const concluir = d.concluivel === '1' ? `<button onclick="menuAcao('concluir')">${ic('check')}${estaFeita(d.tipo, d.id) ? 'Desmarcar' : 'Concluir'}</button>` : '';
+  abrirSheetOuAtualizar(`
+    <h2 class="menu-tit">${esc(it.nome)}</h2>
+    <div class="menu">
+      ${concluir}
+      <button onclick="menuAcao('editar')">${ic('editar')}Editar</button>
+      <button class="perigo" onclick="menuAcao('excluir')">${ic('excluir')}Excluir</button>
+    </div>`);
+}
+function menuAcao(acao){
+  const d = menuAlvo;
+  if(acao === 'editar'){ sheetItem(d.id, d.sid); return; }
+  fecharSheet();
+  setTimeout(() => acao === 'concluir' ? concluirEntrada(d.tipo, d.id) : excluirEntrada(d.tipo, d.id), 60);
 }
 
 /* ---------- navegação (botão voltar do Android funciona) ---------- */
@@ -442,12 +622,16 @@ function linhaHoje(s, i, comSecao){
   if(i.dias.length < 7) partes.push(`<span class="rep">${ic('repetir','sm')}${Regras.resumoDias(i.dias)}</span>`);
   return partes.length ? `<small>${partes.join(' · ')}</small>` : '';
 }
-function itemHoje(s, i, comSecao){
+function itemHoje(s, i, comSecao, concluivel = true){
   const f = feito(diaSel, i.id);
-  return `<div class="item ${f ? 'done' : ''}" style="--c:${corDe(s)}">
-    <button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(i.nome)}" onclick="alternar('${i.id}')"><i>${ic('check')}</i></button>
-    <div class="info" role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="if(event.key==='Enter')this.click()">
-      <b>${esc(i.nome)}</b>${linhaHoje(s, i, comSecao)}
+  return `<div class="linha" data-tipo="item" data-id="${i.id}" data-sid="${s.id}" data-concluivel="${concluivel ? 1 : 0}">
+    <div class="fundo" aria-hidden="true"><span class="lado-esq">${ic('check')}${f ? 'Desmarcar' : 'Concluir'}</span><span class="lado-dir">Excluir${ic('excluir')}</span></div>
+    <div class="item ${f ? 'done' : ''}" style="--c:${corDe(s)}">
+      ${concluivel ? `<button class="check" role="checkbox" aria-checked="${f}" aria-label="${esc(i.nome)}" onclick="concluirEntrada('item','${i.id}')"><i>${ic('check')}</i></button>` : ''}
+      <div class="info ${concluivel ? '' : 'sem-check'}" role="button" tabindex="0" onclick="sheetItem('${i.id}','${s.id}')" onkeydown="if(event.key==='Enter')this.click()">
+        <b>${esc(i.nome)}</b>${linhaHoje(s, i, comSecao)}
+      </div>
+      <button class="sr" onclick="abrirMenu(this.closest('.linha').dataset)">Mais ações: ${esc(i.nome)}</button>
     </div>
   </div>`;
 }
@@ -517,24 +701,11 @@ function telaSecao(){
   const s = dados.secoes.find(x => x.id === secaoAberta);
   if(!s){ tela = 'rotina'; return telaHoje(); }
   const r = resumoDia(diaSel, s);
-  const itens = s.itens.filter(i => i.criadoEm <= diaSel && Regras.repeteNoDia(i, diaSel));
-  const outros = s.itens.filter(i => !itens.includes(i));
-  const lista = itens.map(i => {
-    const f = feito(diaSel, i.id);
-    return `
-    <div class="item tinta ${f ? 'done' : ''}" style="${tintaDe(s)}">
-      <button class="check" role="checkbox" aria-checked="${f}" onclick="alternar('${i.id}')" aria-label="${esc(i.nome)}"><i>${ic('check')}</i></button>
-      <div class="info" onclick="alternar('${i.id}')">
-        <b>${esc(i.nome)}</b>
-        ${linhaItem(s, i)}
-      </div>
-      <button class="more" onclick="sheetItem('${i.id}')" aria-label="Editar ${esc(i.nome)}">${ic('mais')}</button>
-    </div>`; }).join('');
-  const listaOutros = outros.map(i => `
-    <div class="item tinta" style="${tintaDe(s)}">
-      <div class="info sem-check" onclick="sheetItem('${i.id}')"><b>${esc(i.nome)}</b>${linhaItem(s, i)}</div>
-      <button class="more" onclick="sheetItem('${i.id}')" aria-label="Editar ${esc(i.nome)}">${ic('mais')}</button>
-    </div>`).join('');
+  const visiveis = s.itens.filter(i => !ocultos.has(i.id));
+  const itens = visiveis.filter(i => i.criadoEm <= diaSel && Regras.repeteNoDia(i, diaSel));
+  const outros = visiveis.filter(i => !itens.includes(i));
+  const lista = itens.length ? `<div class="lista tinta" style="${tintaDe(s)}">${Regras.ordenarItens(itens).map(i => itemHoje(s, i, false)).join('')}</div>` : '';
+  const listaOutros = outros.length ? `<div class="lista tinta" style="${tintaDe(s)}">${outros.map(i => itemHoje(s, i, false, false)).join('')}</div>` : '';
   return `
     <header class="top">
       <button class="icon-btn" onclick="history.back()" aria-label="Voltar">${ic('voltar')}</button>
@@ -547,9 +718,9 @@ function telaSecao(){
       <small>${r.feitas} de ${r.total} feitas · ${nomeDia(diaSel).toLowerCase()}</small>
       <div class="bar"><i style="width:${r.pct}%"></i></div>
     </div>
-    ${lista || `<p class="empty">${s.itens.length ? 'Nada desta seção para ' + nomeDia(diaSel).toLowerCase() + '.' : 'Nenhum item. Adicione o primeiro ' + esc(s.rotuloNome.toLowerCase()) + '.'}</p>`}
+    ${lista || `<p class="empty">${visiveis.length ? 'Nada desta seção para ' + nomeDia(diaSel).toLowerCase() + '.' : 'Nenhum item. Adicione o primeiro ' + esc(s.rotuloNome.toLowerCase()) + '.'}</p>`}
     ${listaOutros ? `<h3 class="secao-titulo">Outros dias</h3>${listaOutros}` : ''}
-    <button class="btn" onclick="sheetItem()">${ic('add')} Adicionar ${esc(s.rotuloNome.toLowerCase())}</button>
+    <button class="btn mt" onclick="sheetItem()">${ic('add')} Adicionar ${esc(s.rotuloNome.toLowerCase())}</button>
   `;
 }
 
@@ -566,7 +737,7 @@ function telaConstancia(){
   const fei = comTarefa.reduce((a,r) => a + r.feitas, 0);
   const media = tot ? Math.round(fei / tot * 100) : 0;
 
-  const seq = Regras.sequencia(dados, hoje());
+  const seq = Regras.sequencia(visao(), hoje());
   const melhor = comTarefa.length ? Math.max(...comTarefa.map(r => r.pct)) : 0;
 
   const passo = periodo > 14 ? 5 : 1;
@@ -728,7 +899,7 @@ function sheetItem(idItem, secaoId, escolher = false, valores = null){
     <button class="btn" onclick="salvarItem('${idItem||''}')">${it ? 'Salvar' : 'Adicionar'}</button>
     ${it ? `<button class="btn danger" onclick="excluirItem('${it.id}')">Excluir</button>` : ''}
   `;
-  if(valores) abrirSheetOuAtualizar(html); else abrirSheet(html);
+  abrirSheetOuAtualizar(html);
   document.querySelectorAll('#sheet input:not([type=time])').forEach(inp =>
     inp.addEventListener('keydown', e => { if(e.key === 'Enter') salvarItem(idItem||''); }));
 }
@@ -768,13 +939,8 @@ function salvarItem(idItem){
   salvar(); fecharSheet(); render(); toast('Tarefa salva');
 }
 function excluirItem(idItem){
-  const s = dados.secoes.find(x => x.id === secaoEditor);
-  s.itens = s.itens.filter(i => i.id !== idItem);
-  Object.keys(dados.feitos).forEach(d => {
-    dados.feitos[d] = dados.feitos[d].filter(x => x !== idItem);
-    if(!dados.feitos[d].length) delete dados.feitos[d];
-  });
-  salvar(); fecharSheet(); render(); toast('Item excluído');
+  fecharSheet();
+  setTimeout(() => excluirEntrada('item', idItem), 60);
 }
 
 let acaoConfirmar = null;
@@ -817,11 +983,6 @@ document.getElementById('arquivo').addEventListener('change', async e => {
   e.target.value = '';
 });
 
-function toast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1900);
-}
 
 // quando o app volta do segundo plano num dia novo, atualiza o "Hoje"
 let ultimoHoje = hoje();
