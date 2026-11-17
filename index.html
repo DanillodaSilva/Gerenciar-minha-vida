@@ -309,6 +309,15 @@
   .interruptor[aria-checked="true"] .sw::after{background:var(--on-primary);transform:translateX(calc(var(--space-6) * .625))}
   .experiencia label{margin-bottom:var(--space-3)}
   .experiencia .rotulo-grupo{display:block;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary);margin:var(--space-2) 0 0}
+  .reord-barra{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:0 0 var(--space-2)}
+  .reord-barra span{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary)}
+  .linha-reord{position:relative}
+  .linha-reord .item{background:var(--cc);border:0;border-radius:0;margin:0;padding:var(--space-1) var(--space-1) var(--space-1) var(--space-4)}
+  .linha-reord+.linha-reord{border-top:var(--border-width) solid var(--divider-container)}
+  .linha-reord .item .nm{flex:1;min-width:0;overflow-wrap:anywhere;padding:var(--space-3) 0}
+  .linha-reord.arrastando{z-index:2}
+  .linha-reord.arrastando .item{box-shadow:var(--shadow-fab);border-radius:var(--radius-card)}
+  .alca-item{width:var(--touch);height:var(--touch);display:grid;place-items:center;color:var(--text-secondary);touch-action:none;cursor:grab;border-radius:var(--radius-full)}
   .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
   .hoje-tit{flex:1;min-width:0}
   .hoje-tit h1{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);margin:0;overflow-wrap:anywhere}
@@ -1033,6 +1042,7 @@ function abrirMenu(d, x, y){
   m.setAttribute('aria-label', nomeMenu);
   m.innerHTML = `<p class="menu-tit" aria-hidden="true">${esc(nomeMenu)}</p>${marcar}
     <button role="menuitem" onclick="menuAcao('editar')">${ic('editar')}Editar</button>
+    ${d.tipo === 'item' && tela === 'rotina' && d.sid ? `<button role="menuitem" onclick="menuAcao('reordenar')">${ic('reordenar')}Reordenar</button>` : ''}
     <button role="menuitem" class="perigo" onclick="menuAcao('excluir')">${ic('excluir')}Excluir</button>`;
   m._abridor = document.activeElement;
   document.body.appendChild(m);
@@ -1060,9 +1070,76 @@ document.addEventListener('keydown', e => {
     bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
   }
 }, true);
+let reordenando = null, arrasteReord = null;
+function entrarReordenar(sid){ adicaoAberta = null; reordenando = sid; render(); }
+function sairReordenar(){ reordenando = null; render(); }
+function listaReordenar(s){
+  return `<div class="reord-barra"><span>Arraste pela alça para mudar a ordem.</span><button class="btn text" onclick="sairReordenar()">Concluído</button></div>
+    <div class="lista tinta reord" style="${tintaDe(s)}">${s.itens.filter(i => !ocultos.has(i.id)).map(i => `<div class="linha-reord" data-id="${i.id}">
+      <div class="item"><span class="nm">${esc(i.nome)}</span>
+        <button class="alca-item" aria-label="Mover ${esc(i.nome)}. Use as setas para cima e para baixo." onkeydown="teclaReordenar(event, '${s.id}', '${i.id}')">${ic('reordenar')}</button>
+      </div></div>`).join('')}</div>`;
+}
+function moverItem(sid, id, para){
+  const s = secaoDe(sid); if(!s) return;
+  const de = s.itens.findIndex(i => i.id === id);
+  if(de < 0 || para < 0 || para >= s.itens.length || para === de) return;
+  const [it] = s.itens.splice(de, 1);
+  s.itens.splice(para, 0, it);
+  salvar(); render();
+}
+function teclaReordenar(e, sid, id){
+  if(e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+  e.preventDefault();
+  const s = secaoDe(sid); const i = s.itens.findIndex(x => x.id === id);
+  moverItem(sid, id, i + (e.key === 'ArrowUp' ? -1 : 1));
+  const alca = document.querySelector(`.linha-reord[data-id="${id}"] .alca-item`); if(alca) alca.focus();
+}
+document.addEventListener('pointerdown', e => {
+  const alca = e.target.closest('.alca-item');
+  if(!alca || e.button > 0) return;
+  const linha = alca.closest('.linha-reord'), lista = linha.parentElement;
+  e.preventDefault();
+  try{ alca.setPointerCapture(e.pointerId); }catch(err){}
+  linha.classList.add('arrastando');
+  arrasteReord = { linha, lista, id: linha.dataset.id, y0: e.clientY, topo0: linha.getBoundingClientRect().top, pid: e.pointerId };
+});
+document.addEventListener('pointermove', e => {
+  const a = arrasteReord;
+  if(!a || e.pointerId !== a.pid) return;
+  const irmaos = [...a.lista.children].filter(x => x !== a.linha);
+  const centro = a.topo0 + (e.clientY - a.y0) + a.linha.offsetHeight / 2;
+  let alvo = irmaos.find(x => { const r = x.getBoundingClientRect(); return centro < r.top + r.height / 2; }) || null;
+  if(alvo !== a.linha.nextElementSibling && !(alvo === null && a.linha === a.lista.lastElementChild)){
+    Animacoes.flip(a.lista, () => a.lista.insertBefore(a.linha, alvo));
+    a.linha.getAnimations().forEach(x => x.cancel());
+  }
+  const deslocamento = a.topo0 + (e.clientY - a.y0) - (a.linha.getBoundingClientRect().top - (parseFloat((a.linha.style.transform.match(/-?[\d.]+/) || [0])[0]) || 0));
+  a.linha.style.transform = `translateY(${deslocamento}px)`;
+});
+function soltarReordenar(e){
+  const a = arrasteReord;
+  if(!a || e.pointerId !== a.pid) return;
+  arrasteReord = null;
+  const de = a.linha.style.transform;
+  a.linha.style.transform = '';
+  a.linha.classList.remove('arrastando');
+  if(de && !Animacoes.reduzido()) a.linha.animate([{ transform: de }, { transform: 'none' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() });
+  const s = secaoDe(reordenando); if(!s) return;
+  const ordem = [...a.lista.children].map(x => x.dataset.id);
+  const porId = new Map(s.itens.map(i => [i.id, i]));
+  const visiveis = ordem.map(id => porId.get(id)).filter(Boolean);
+  const resto = s.itens.filter(i => !ordem.includes(i.id));
+  s.itens = [...visiveis, ...resto];
+  salvar();
+}
+document.addEventListener('pointerup', soltarReordenar);
+document.addEventListener('pointercancel', soltarReordenar);
+
 function menuAcao(acao){
   const d = menuAlvo;
   fecharMenu(false);
+  if(acao === 'reordenar'){ entrarReordenar(d.sid); return; }
   if(acao === 'editar'){ if(d.tipo === 'tarefa') editarTarefa(d.id); else sheetItem(d.id, d.sid); return; }
   if(acao === 'concluir') concluirEntrada(d.tipo, d.id); else excluirEntrada(d.tipo, d.id);
 }
@@ -1352,8 +1429,8 @@ function telaHoje(){
         <button class="grupo-top" onclick="abrirSecao('${s.id}')" aria-label="Abrir ${esc(s.nome)}, ${rs.feitas} de ${rs.total} feitas">
           <span class="emo" aria-hidden="true">${esc(s.emoji)}</span><span class="nm">${esc(s.nome)}</span><span class="cont">${rs.feitas} de ${rs.total}</span>${ic('proximo','sm')}
         </button>
-        ${pendentes.length ? `<div class="lista">${pendentes.map(e => linhaEntrada(e, s, false)).join('')}</div>` : ''}
-        ${linhaAdicao(s)}
+        ${reordenando === s.id ? listaReordenar(s) : `${pendentes.length ? `<div class="lista">${pendentes.map(e => linhaEntrada(e, s, false)).join('')}</div>` : ''}
+        ${linhaAdicao(s)}`}
       </section>`;
     });
   });
