@@ -158,7 +158,7 @@ Fonte do sistema (Roboto no Android), sem download: `system-ui, Roboto, "Segoe U
 - Margem lateral da tela: `--space-4` (16 dp).
 - Item da lista: altura mínima 56 dp, `--space-3` (12 dp) de espaço interno vertical.
 
-## 4. Cantos, elevação, toque e movimento
+## 4. Cantos, elevação e toque
 
 | Token | Valor | Uso |
 |---|---|---|
@@ -171,14 +171,50 @@ Fonte do sistema (Roboto no Android), sem download: `system-ui, Roboto, "Segoe U
 | `--shadow-fab` | `0 3px 8px rgb(0 0 0 / .18), 0 1px 3px rgb(0 0 0 / .12)` | só botão flutuante |
 | `--shadow-sheet` | `0 -4px 16px rgb(0 0 0 / .16)` | só folha inferior |
 | `--touch` | 48px | área mínima de tudo que é tocável |
-| `--dur-fast` | 150ms | estados, chips |
-| `--dur-check` | 200ms | animação do check |
-| `--dur-move` | 250ms | item descendo, folha, snackbar |
-| `--ease-out` | `cubic-bezier(.2, 0, 0, 1)` | todas as transições |
 
 - Elevação por borda de 1 dp (`border`) no lugar de sombra. Sombra só no botão flutuante e na folha inferior.
-- Nada de animação em loop.
-- Com `prefers-reduced-motion: reduce` (Android: "Remover animações"), todas as durações viram 0 e os movimentos viram troca direta.
+
+## 4.1 Movimento
+
+Fonte única de toda duração e curva. CSS lê as variáveis; o JavaScript usa o objeto `MOV` de `animacoes.js`, com os mesmos valores. Nenhum `ms` ou `cubic-bezier` solto no código.
+
+### Durações
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--dur-toque` | 100ms | resposta ao pressionar (escala, cor) |
+| `--dur-rapida` | 160ms | alternar estados, check, chips, saída de elementos pequenos |
+| `--dur-base` | 240ms | entrada de elementos, troca de aba, snackbar, saída da folha |
+| `--dur-lenta` | 340ms | folha inferior, troca de dia, reorganizar lista (FLIP) |
+| `--dur-comemoracao` | 1100ms | confete e comemoração do dia (única exceção ao limite de 400 ms) |
+
+- Saída ≈ 70% da entrada correspondente (folha: abre em 340 ms, fecha em 240 ms; elemento pequeno: entra em 240 ms, sai em 160 ms).
+- Nenhuma animação de interface passa de 400 ms, fora as comemorações.
+
+### Curvas
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--ease-saida` | `cubic-bezier(0.22, 1, 0.36, 1)` | entradas e respostas |
+| `--ease-entrada` | `cubic-bezier(0.4, 0, 1, 1)` | saídas |
+| `--ease-movimento` | `cubic-bezier(0.65, 0, 0.35, 1)` | elemento que muda de lugar (FLIP, troca de dia) |
+| `--ease-mola` | ver abaixo; sem suporte a `linear()`, cai em `var(--ease-saida)` por `@supports` | folha, item que volta do gesto, indicador da aba, pulo do emoji, cartão de comemoração |
+
+**Curva da mola** (rigidez 380, amortecimento 30, massa 1). Gerada por simulação física (passo de 0,25 ms), não por chute: fator de amortecimento 0,769, passa 2,2% do alvo e assenta (±0,1%) em 420 ms; amostrada em 25 pontos ao longo desse tempo. Usada com `--dur-lenta`, a mesma forma fica um pouco mais firme.
+
+```
+linear(0, 0.051 4.2%, 0.166 8.3%, 0.309 12.5%, 0.456 16.7%, 0.591 20.8%, 0.708 25%, 0.803 29.2%, 0.877 33.3%, 0.932 37.5%, 0.970 41.7%, 0.996 45.8%, 1.011 50%, 1.019 54.2%, 1.022 58.3%, 1.022 62.5%, 1.020 66.7%, 1.017 70.8%, 1.013 75%, 1.010 79.2%, 1.008 83.3%, 1.005 87.5%, 1.003 91.7%, 1.002 95.8%, 1)
+```
+
+### Regras
+
+1. Só `transform` e `opacity`. Exceções: `stroke-dashoffset` dos anéis (SVG pequeno) e `background-color` em botões. Nunca `width`, `height`, `top`, `left`, `margin` nem `box-shadow`.
+2. `will-change` só durante a animação.
+3. Toda animação é interrompível: um toque novo nunca espera a anterior; a nova parte da posição atual (transições CSS retomam do valor corrente; na Web Animations API, `commitStyles()` + `cancel()` antes da próxima).
+4. Cascata de entrada: 30 ms entre itens, no máximo 8 em cascata (o resto entra junto com o 8º). Só na primeira exibição de cada tela na sessão.
+5. Dados antes da animação: a ação grava o estado e só depois anima.
+6. **Reduzir movimento** (`prefers-reduced-motion: reduce` ou ajuste "Animações: Reduzidas"): deslocamento, escala e confete viram troca de opacidade de até 120 ms ou troca direta; gestos seguem o dedo, mas ao soltar o item vai direto ao destino; vibração e sons seguem os próprios ajustes.
+7. Nada de animação em loop, fora o brilho do esqueleto enquanto carrega. Nada pisca mais de 3 vezes por segundo.
 
 ## 5. Ícones
 
@@ -189,17 +225,22 @@ Um conjunto só: **Material Icons**, desenhados como SVG inline 24×24 com `fill
 | Componente | Tokens | Estados |
 |---|---|---|
 | Item de tarefa | `--item-bg: surface`, `--item-border: border`, `--item-radius: radius-card`, `--item-min-h: 56px`, `--item-pad-y: space-3` | normal; concluído (título riscado + `textSecondary`); pressionado (`surfaceVariant`); foco (contorno 2px `primary`) |
-| Caixa de conclusão | 24×24 visível, 48×48 de toque, borda 2px na cor da seção (ou `primary`), raio 6px | marcada: fundo `primary` (ou cor da seção), check `onPrimary`, 200 ms |
+| Caixa de conclusão | `button` com `aria-pressed`, 24×24 visível, 48×48 de toque, borda 2px na cor da seção (ou `primary`), raio 6px | marcada: fundo preenche e o check é desenhado pelo traço em `--dur-rapida`; onda de 0,16 → 0 em 400 ms a partir do toque; risco do título cresce com `scaleX` em `--dur-base` |
 | Cabeçalho de seção | `type-section`, `textSecondary`, altura 48 | recolhível: seta gira 180° |
 | Chip | `--chip-bg: surfaceVariant`, `--chip-border: borderStrong`, `--chip-radius: radius-chip`, altura visível 32, toque 48 | selecionado: fundo `primaryContainer`, borda `primary`, texto `textPrimary` |
 | Botão principal | `--btn-bg: primary`, `--btn-fg: onPrimary`, `radius-card`, altura 48, `type-label` | desabilitado: fundo `surfaceVariant`, texto `textSecondary` |
 | Botão de texto | fundo transparente, texto `primary` (ou `danger`), altura 48 | pressionado: `surfaceVariant` |
 | Botão flutuante | `--fab-bg: primaryContainer`, `--fab-fg: textPrimary`, `radius-fab`, altura 56, `shadow-fab`, ícone + "Nova tarefa" | pressionado: sombra menor |
-| Snackbar | fundo `textPrimary`, texto `background`, ação `primary` invertido, `radius-card`, 5 s | entra de baixo em 250 ms |
-| Folha inferior | `surface`, topo `radius-sheet`, `shadow-sheet`, `scrim` atrás | sobe em 250 ms |
+| Snackbar | fundo `textPrimary`, texto `background`, ação `snackAction`, `radius-card`, 5 s, `role="status"` | entra de baixo em `--dur-base`; um novo substitui o anterior com animação, sem empilhar |
+| Folha inferior | `surface`, topo `radius-sheet`, `shadow-sheet`, `scrim` atrás (até 40%) | sobe em `--dur-lenta` com `--ease-mola`; fecha em `--dur-base` com `--ease-entrada`; arrasta para baixo (fecha além de 30% ou 0,5 px/ms; elástico de 30% para cima) |
 | Campo de texto | `surfaceVariant`, borda `borderStrong`, `radius-card`, altura 48 | foco: borda 2px `primary`; erro: borda e mensagem `danger` |
 | Cartão | `surface`, borda `border`, `radius-card`, padding `space-4` | — |
 | Anel de progresso | 48×48, trilho `primaryContainer`, arco `primary`, traço 5 | some com total 0 |
 | Barra do gráfico | `primary` (hoje) / `border-strong` com 40% de mistura (outros dias), raio 4 no topo, número em cima | zero: traço de 2px |
 | Estado vazio | ícone 48 `textSecondary`, texto `type-body`, botão principal | — |
-| Navegação inferior | `surface`, borda superior `border`, 4 destinos de 48+ dp, indicador `primaryContainer` atrás do ícone ativo | ativo: ícone e rótulo `textPrimary`; inativo: `textSecondary` |
+| Navegação inferior | `surface`, borda superior `border`, 4 destinos de 48+ dp | ativo: ícone preenchido e rótulo `textPrimary`; inativo: ícone vazado e `textSecondary` |
+| Indicador de aba | pílula `primaryContainer` 64×32, raio `radius-full`, uma só para a barra | desliza até a aba tocada com `translateX` em `--dur-lenta` + `--ease-mola` |
+| Faixa da semana | 7 dias (S T Q Q S S D + número + mini anel 24 px, traço 3), toque 48 dp, botão "Hoje" à direita | dia exibido: fundo `primary`, texto `onPrimary`; hoje: ponto embaixo; ≥50%: mini anel cheio em `primary`; futuro: `textSecondary` e sem toque |
+| Cartão de comemoração | `surface`, `radius-sheet`, `shadow-sheet`, centrado, máx. `--dialog-max`, título `type-title`, linha `type-meta`, `aria-live="polite"` | entra com escala 0,9 → 1 e opacidade em `--dur-lenta` + `--ease-mola`; fecha em 2,5 s ou ao toque |
+| Alça da folha | 36×4 dp, `border`, raio `radius-full`, área de arrasto de 48 dp no topo da folha | — |
+| Barra do snackbar | 2 dp no rodapé do snackbar, `snackAction` | encolhe com `scaleX` 1 → 0 em 5 s, linear (contagem do Desfazer) |
