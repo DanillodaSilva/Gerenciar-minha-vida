@@ -534,7 +534,13 @@
   .toast.show{opacity:1;transform:none}
   .toast.com-acao{pointer-events:auto;padding-right:var(--space-2)}
   .toast .snack-acao{color:var(--snack-action);font-weight:var(--w-medium);min-height:var(--touch);padding:0 var(--space-3);border-radius:var(--radius-chip);flex:none}
-  .fac-seg button{font-size:var(--fs-meta);min-width:0;padding:0 var(--space-1)}
+  .fac-top{flex-wrap:wrap}
+  header.top.fac-top h1{flex:1 0 auto}
+  .mat-top,.aula-top,.an-top{flex-wrap:wrap}
+  .card .mat-top b,.card .an-top b,.card .aula-nm{flex:1 1 60%}
+  .card .presenca{grid-template-columns:repeat(auto-fit,minmax(min(100%,6em),1fr))}
+  .fac-seg{flex-wrap:wrap;gap:var(--space-1)}
+  .fac-seg button{flex:1 1 auto;min-height:var(--touch);font-size:var(--fs-meta);padding:0 var(--space-2)}
   .assist-passos{margin:0 0 var(--space-1);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary)}
   .barra-salvar{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));background:var(--background);padding:var(--space-2) 0;z-index:2}
   .aula{display:flex;flex-direction:column;gap:var(--space-3)}
@@ -2525,7 +2531,7 @@ function telaFaculdade(){
   if(!f.semestre) return `<header class="top"><h1>Faculdade</h1></header>
     <div class="vazio" data-chave="fac-vazio">${ILUSTRA_CAPELO}<h2>Configure seu semestre</h2><p>Monte a grade, marque presença e acompanhe suas faltas.</p><button class="btn" onclick="abrirAssistente()">Configurar semestre</button></div>`;
   const abas = [['hoje', 'Hoje'], ['materias', 'Matérias'], ['grade', 'Grade'], ['anotacoes', 'Anotações']];
-  return `<header class="top"><h1>Faculdade</h1><span class="hint">${esc(f.semestre.nome)}</span></header>
+  return `<header class="top fac-top"><h1>Faculdade</h1><span class="hint">${esc(f.semestre.nome)}</span></header>
     <div class="seg fac-seg" role="tablist" aria-label="Partes da faculdade">${abas.map(([id, r]) => `<button role="tab" aria-selected="${facAba === id}" class="${facAba === id ? 'on' : ''}" onclick="irFacAba('${id}')">${r}</button>`).join('')}</div>
     ${facAba === 'hoje' ? facHoje() : facAba === 'materias' ? facMaterias() : facAba === 'grade' ? facGrade() : facAnotacoes()}`;
 }
