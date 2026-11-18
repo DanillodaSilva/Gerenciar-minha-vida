@@ -319,3 +319,33 @@ Mesma arquitetura: os componentes abaixo só usam tokens que já existem. Nenhum
 | Visualizador de foto | tela cheia, fundo `p-night-950`, texto e ícones `p-white`, botões de 48 dp, áreas seguras respeitadas | abre/fecha por opacidade (`--dur-base`/`--dur-rapida`); pinça até 4x e arrastar quando ampliada; deslizar para os lados troca (limite 25% ou `GESTO.velocidade`), para baixo fecha; volta com `--ease-mola`; com movimento reduzido, só opacidade |
 | Cartão de alerta de faltas | `card` com fundo `--nv` a 10% sobre `surface`, borda `--nv` a 45%, ícone de alerta em `--nv`, linhas de 48 dp em `textPrimary` | aparece na tela Hoje enquanto alguma matéria estiver em perigo ou acima |
 | Diálogo de alerta | diálogo existente com ícone de alerta em `--nv` (`icon-lg`) acima do título | "Entendi" e "Ver matéria"; vários alertas entram em fila, do mais grave para o menos grave |
+
+### 6.2 Datas comemorativas (versão 1.5.0)
+
+**Arquitetura:** primitivas `--p-<festa>-1..4` (claro) e `--p-<festa>-1e..4e` (escuro) → semânticos `--festa-1..4`, trocados por `:root[data-festa="<id>"]` e repetidos nos dois seletores de modo escuro. Sem festa, `--festa-*` aponta para `--primary`. As cores festivas só pintam decoração e partícula; texto, botão, chave, aba e foco continuam em `--primary`.
+
+**No auge:** `--background` recebe 4% de `--festa-1` sobre `--p-sand-50` (claro) ou 6% sobre `--p-night-950` (escuro). O `theme-color` não muda (usa as primitivas de fundo).
+
+| Festa | `--festa-1` | `--festa-2` | `--festa-3` | `--festa-4` |
+|---|---|---|---|---|
+| Natal | `#C62828` / `#F28B82` | `#2E7D4F` / `#7FCB9A` | `#B8860B` / `#E8C468` | `#929292`* / `#F2F0EB` |
+| Ano Novo | `#B8860B` / `#E8C468` | `#8A8F98` / `#C9CDD3` | `#6B3FA0` / `#C3A6F0` | `#1C1B19` / `#F2F0EB` |
+| Carnaval | `#D6336C` / `#F48FB1` | `#1E88E5` / `#82B7F5` | `#BA8B00`* / `#F7D560` | `#27A569`* / `#7FD8A8` |
+| Páscoa | `#CD8317`* / `#F3C77A` | `#559AC7`* / `#A9CCE6` | `#D175A4`* / `#ECB3CF` | `#6B4226` / `#C49A7A` |
+| Namorados | `#D6336C` / `#F48FB1` | `#F06092`* / `#F7A8C4` | `#C2255C` / `#E6779F` | `#929292`* / `#F2F0EB` |
+| Junina | `#E03131` / `#FF8787` | `#CA8300`* / `#FFC94D` | `#1C7ED6` / `#74B6F2` | `#2F9E44` / `#7BD389` |
+| Halloween | `#E8590C` / `#FF922B` | `#1C1B19` / `#6C6961`* | `#6B3FA0` / `#C3A6F0` | `#CA8300`* / `#FFC94D` |
+| Aniversário | `#6B3FA0` / `#C3A6F0` | `#CA8300`* / `#FFC94D` | `#1C7ED6` / `#74B6F2` | `#E64980` / `#F783AC` |
+
+\* Ajuste de luminosidade (mesma matiz e saturação) para chegar a 3:1 contra o fundo onde a decoração aparece (`surface` `#FFFFFF` no claro, `#1E1D1B` no escuro). Valores originais e resultado: Natal-4 e Namorados-4 `#FFFFFF` → `#929292` (3,11:1); Carnaval-3 `#E0A800` → `#BA8B00` (3,10:1); Carnaval-4 `#2BB673` → `#27A569` (3,15:1); Páscoa-1 `#E9A23B` → `#CD8317` (3,06:1); Páscoa-2 `#7FB3D5` → `#559AC7` (3,07:1); Páscoa-3 `#D98CB3` → `#D175A4` (3,09:1); Namorados-2 `#F06595` → `#F06092` (3,09:1); Junina-2, Halloween-4 e Aniversário-2 `#F59F00` → `#CA8300` (3,11:1); Halloween-2 escuro `#2A2926` → `#6C6961` (3,07:1). As outras 52 cores já passavam de 3:1.
+
+| Componente | Tokens | Estados |
+|---|---|---|
+| Chip de contagem (fase chegando) | pílula `surface`, borda `border`, `radius-full`, `type-label` peso médio em `textPrimary`, ícone de 24 dp da festa à esquerda | texto exato da especificação ("Faltam 15 dias para o Natal", "Falta 1 dia…"); a contagem está no texto, o ícone tem `aria-hidden` |
+| Decoração do cabeçalho (auge) | SVG inline original, até 3 KB por festa, `aria-hidden`, `z-index` abaixo do texto; varal de luzes/bandeirinhas no topo (cabeçalho ganha `space-5` a mais em cima), enfeite de canto embaixo à direita, estrelas, confete e corações só na faixa de cima e no canto inferior direito | pisca-pisca só de opacidade (1 → 0,6) em 2,4 s, `--ease-movimento`, alternado e defasado (nunca mais que 3 vezes por segundo); parado com movimento reduzido |
+| Saudação festiva | `h1` com a frase da festa; a saudação por horário desce para uma linha `type-label` `textSecondary` | o cabeçalho guarda em `data-desenho` período + saudação + dia + festa + fase e só redesenha quando isso muda |
+| Cartão festivo | `card` com o desenho da festa (48 dp), título `type-section` `textPrimary`, botão de texto "Fechar" de 48 dp, `role="region"` "Data comemorativa" | em 31/12 mostra a contagem da virada (atualiza por minuto, sem `aria-live`); fechado, só volta no dia seguinte (`ajustes.festas.cartaoFechadoEm`) |
+| Cartão de retrospectiva | `card` com título "Seu {ano} na rotina" e grade 2 × 2 de blocos `surfaceVariant`, número `type-title` com algarismos tabulares e rótulo `type-label` `textSecondary`, `role="region"` "Retrospectiva do ano" | números com a contagem animada existente (parada com movimento reduzido); "Fechar" grava `retrospectivaVista` |
+| Folha "Escolher datas" | folha inferior com uma chave por festa (padrão do interruptor existente) e "Fechar" | Aniversário desativado (opacidade 0,55) com a dica "Informe seu aniversário para ativar" até existir data |
+| Banner de prévia | fixo no topo, fundo `snackBg`, texto `snackFg`, botão "Sair da prévia" em `snackAction` com 48 dp, `role="status"`; o conteúdo desce enquanto ele aparece | some ao tocar em "Sair da prévia" ou depois de 30 s; não grava nada |
+| Partículas | canvas existente (`Animacoes.confete`) com forma por festa (floco, faísca, ovo, coração, bandeirinha, morcego; confete retangular no Carnaval e no aniversário) e cores `--festa-1..4`; fogos com `Animacoes.faiscas` (até 60 por explosão, 1,4 s) | efeito ambiente (neve, confete, corações) com até 24 partículas por 8 s, uma vez por abertura, só `transform` e `opacity`, para quando a aba fica oculta; nada disso com movimento reduzido |
