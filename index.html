@@ -824,7 +824,7 @@ function aplicarAnimacoes(){
   if(dados && dados.ajustes.animacoes === 'reduzidas') document.documentElement.setAttribute('data-animacoes', 'reduzidas');
   else document.documentElement.removeAttribute('data-animacoes');
 }
-function mudarNome(v){ dados.ajustes.nome = Array.from(v).slice(0, 24).join(''); salvar(); }
+function mudarNome(v){ dados.ajustes.nome = Array.from(v).slice(0, 30).join(''); salvar(); }
 function mudarAnimacoes(v){ dados.ajustes.animacoes = v; salvar(); aplicarAnimacoes(); render(); }
 function alternarAjuste(chave){
   dados.ajustes[chave] = !dados.ajustes[chave]; salvar(); render();
@@ -1980,7 +1980,7 @@ function telaAjustes(){
     <header class="top"><h1>Ajustes</h1></header>
     <div class="card experiencia" data-chave="experiencia">
       <h2>Experiência</h2>
-      <label>Seu nome<input id="f-meu-nome" name="nome-usuario" autocomplete="given-name" maxlength="24" value="${esc(aj.nome)}" placeholder="Ex.: Ana…" oninput="mudarNome(this.value)"></label>
+      <label>Seu nome<input id="f-meu-nome" name="nome-usuario" autocomplete="given-name" maxlength="30" value="${esc(aj.nome)}" placeholder="Ex.: Ana…" oninput="mudarNome(this.value)"></label>
       <span class="rotulo-grupo" id="rot-anim">Animações</span>
       <div class="opcoes" role="radiogroup" aria-labelledby="rot-anim">${opcaoAnim('auto', 'Automático (segue o sistema)')}${opcaoAnim('reduzidas', 'Reduzidas')}</div>
       ${temVibracao ? interruptor('vibracao', 'Vibração') : ''}

@@ -461,7 +461,7 @@ describe('comemoração do dia', () => {
 
 describe('normalizarAjustes', () => {
   test('objeto vazio recebe todos os padrões da 5.16', () => {
-    assert.deepEqual(R.normalizarAjustes({}, false), { tema: 'system', nome: '', animacoes: 'auto', vibracao: true, sons: false, dicaGestoVista: false, boasVindasVista: false, ultimaComemoracao: null, ultimoMarco: null, festas: { ativas: true, desligadas: [], aniversario: null, cartaoFechadoEm: null, retrospectivaVista: null } });
+    assert.deepEqual(R.normalizarAjustes({}, false), { tema: 'system', nome: '', animacoes: 'auto', vibracao: true, sons: false, dicaGestoVista: false, boasVindasVista: false, ultimaComemoracao: null, ultimoMarco: null, festas: { ativas: true, desligadas: [], aniversario: null, cartaoFechadoEm: null, retrospectivaVista: null }, abertura: { concluida: false, passo: 1, novidadesVistas: null }, mostrarFaculdade: true, lembreteDiario: { ativo: false, hora: '08:00' }, folhinha: { ativa: true, dicasVistas: [], ultimaAparicao: null, proximaDica: 0 }, arvore: { folhasVistas: null, estagioVisto: null } });
   });
   test('com dados existentes, boasVindasVista = true (e o campo antigo do APK também conta)', () => {
     assert.equal(R.normalizarAjustes({}, true).boasVindasVista, true);
@@ -474,7 +474,7 @@ describe('normalizarAjustes', () => {
     assert.equal(a.extra, 7);
     assert.equal(a.animacoes, 'auto');
     assert.equal(a.vibracao, true);
-    assert.equal(a.nome.length, 24);
+    assert.equal(a.nome.length, 30);
     assert.deepEqual(a.ultimoMarco, { inicio: '2026-11-10', valor: 7 });
   });
   test('normalizar duas vezes não muda nada', () => {
@@ -577,5 +577,33 @@ describe('backup com a faculdade', () => {
     assert.throws(() => R.lerBackup(com(x => { x.faculdade.grades[0].dias[1] = 'm1'; return x; })), msg);
     assert.throws(() => R.lerBackup(com(x => ({ ...x, fotos: [{ id: 'f1', anotacaoId: 'a1', tipo: 'text/plain', dados: 'AAEC' }] }))), msg);
     assert.throws(() => R.lerBackup(com(x => ({ ...x, fotos: [{ id: 'f1', anotacaoId: 'a1', tipo: 'image/webp', dados: 'não é base64' }] }))), msg);
+  });
+});
+
+describe('ajustes da abertura, Folhinha e árvore', () => {
+  test('usuário existente já tem a abertura concluída e ainda não viu as novidades', () => {
+    const a = R.normalizarAjustes({}, true);
+    assert.equal(a.abertura.concluida, true);
+    assert.equal(a.abertura.novidadesVistas, null);
+  });
+  test('usuário novo começa no passo 1', () => {
+    const a = R.normalizarAjustes({}, false);
+    assert.deepEqual(a.abertura, { concluida: false, passo: 1, novidadesVistas: null });
+  });
+  test('valores inválidos voltam ao padrão e os válidos ficam', () => {
+    const a = R.normalizarAjustes({ abertura: { concluida: true, passo: 12, novidadesVistas: '1.6.0' }, mostrarFaculdade: false, lembreteDiario: { ativo: true, hora: '25:00' }, folhinha: { ativa: false, dicasVistas: ['rotina', 3, 'rotina'], ultimaAparicao: '2026-02-30', proximaDica: -1 }, arvore: { folhasVistas: 12, estagioVisto: 10 } }, true);
+    assert.deepEqual(a.abertura, { concluida: true, passo: 1, novidadesVistas: '1.6.0' });
+    assert.equal(a.mostrarFaculdade, false);
+    assert.deepEqual(a.lembreteDiario, { ativo: true, hora: '08:00' });
+    assert.deepEqual(a.folhinha, { ativa: false, dicasVistas: ['rotina'], ultimaAparicao: null, proximaDica: 0 });
+    assert.deepEqual(a.arvore, { folhasVistas: 12, estagioVisto: null });
+  });
+  test('nome aceita até 30 caracteres, sem espaços nas pontas', () => {
+    assert.equal(R.normalizarAjustes({ nome: '  ' + 'a'.repeat(40) + ' ' }, true).nome.length, 30);
+    assert.equal(R.normalizarAjustes({ nome: '  Ana  ' }, true).nome, 'Ana');
+  });
+  test('normalizar duas vezes não muda nada', () => {
+    const uma = R.migrar(JSON.stringify({ schemaVersion: 4, secoes: [{ id: 's', itens: [] }], feitos: {}, tarefas: [] })).dados;
+    assert.equal(R.migrar(JSON.stringify(uma)).migrou, false);
   });
 });

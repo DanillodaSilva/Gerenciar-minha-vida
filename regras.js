@@ -225,7 +225,7 @@
     return {
       ...ajustes,
       tema: ['system', 'light', 'dark'].includes(ajustes.tema) ? ajustes.tema : 'system',
-      nome: typeof ajustes.nome === 'string' ? Array.from(ajustes.nome).slice(0, 24).join('') : '',
+      nome: typeof ajustes.nome === 'string' ? Array.from(ajustes.nome.trim()).slice(0, 30).join('') : '',
       animacoes: ajustes.animacoes === 'reduzidas' ? 'reduzidas' : 'auto',
       vibracao: typeof ajustes.vibracao === 'boolean' ? ajustes.vibracao : true,
       sons: typeof ajustes.sons === 'boolean' ? ajustes.sons : false,
@@ -234,7 +234,28 @@
       ultimaComemoracao: ehData(ajustes.ultimaComemoracao) ? ajustes.ultimaComemoracao : null,
       ultimoMarco: marco,
       festas: normalizarFestas(ajustes.festas),
+      abertura: normalizarAbertura(ajustes.abertura, !!temDados),
+      mostrarFaculdade: ajustes.mostrarFaculdade !== false,
+      lembreteDiario: normalizarLembreteDiario(ajustes.lembreteDiario),
+      folhinha: normalizarFolhinha(ajustes.folhinha),
+      arvore: normalizarArvore(ajustes.arvore),
     };
+  }
+  function normalizarAbertura(a, temDados) {
+    const x = ehObjeto(a) ? a : {};
+    return { ...x, concluida: typeof x.concluida === 'boolean' ? x.concluida : temDados, passo: Number.isInteger(x.passo) && x.passo >= 1 && x.passo <= 10 ? x.passo : 1, novidadesVistas: typeof x.novidadesVistas === 'string' ? x.novidadesVistas : null };
+  }
+  function normalizarLembreteDiario(l) {
+    const x = ehObjeto(l) ? l : {};
+    return { ...x, ativo: x.ativo === true, hora: ehHora(x.hora) ? x.hora : '08:00' };
+  }
+  function normalizarFolhinha(f) {
+    const x = ehObjeto(f) ? f : {};
+    return { ...x, ativa: x.ativa !== false, dicasVistas: Array.isArray(x.dicasVistas) ? [...new Set(x.dicasVistas.filter(d => typeof d === 'string'))] : [], ultimaAparicao: ehData(x.ultimaAparicao) ? x.ultimaAparicao : null, proximaDica: Number.isInteger(x.proximaDica) && x.proximaDica >= 0 ? x.proximaDica : 0 };
+  }
+  function normalizarArvore(a) {
+    const x = ehObjeto(a) ? a : {};
+    return { ...x, folhasVistas: Number.isInteger(x.folhasVistas) && x.folhasVistas >= 0 ? x.folhasVistas : null, estagioVisto: Number.isInteger(x.estagioVisto) && x.estagioVisto >= 0 && x.estagioVisto <= 9 ? x.estagioVisto : null };
   }
   const IDS_FESTAS = ['natal', 'ano-novo', 'carnaval', 'pascoa', 'namorados', 'junina', 'halloween', 'aniversario'];
   function aniversarioValido(s) {
