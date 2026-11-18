@@ -600,6 +600,24 @@
   .legenda .dia-cal,.legenda .dia-cal span{width:var(--space-4);height:var(--space-4)}
   .dlg-icone{color:var(--nv);margin-bottom:var(--space-2)}
   .dlg-icone svg{width:var(--icon-lg);height:var(--icon-lg);fill:currentColor}
+  .an-texto{min-height:calc(var(--touch) * 4);field-sizing:content;resize:none}
+  #an-prox{field-sizing:content;resize:none}
+  .miniaturas{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--touch) * 1.75),1fr));gap:var(--space-2)}
+  .miniatura{position:relative;display:block;aspect-ratio:1;border-radius:var(--radius-chip);overflow:hidden;background:var(--surface-variant)}
+  .miniatura img{width:100%;height:100%;object-fit:cover;display:block}
+  .miniatura img:not([src]){visibility:hidden}
+  .miniatura.carregando{display:grid;place-items:center}
+  .giro{width:var(--space-6);height:var(--space-6);border-radius:var(--radius-full);border:var(--check-border) solid var(--border-strong);border-top-color:var(--primary);animation:girar var(--dur-esqueleto) linear infinite}
+  @keyframes girar{to{transform:rotate(360deg)}}
+  .miniaturas.pequenas{display:flex;gap:var(--space-1);align-items:center}
+  .miniaturas.pequenas .miniatura{width:calc(var(--touch) * 1.1);flex:none}
+  .mais-fotos{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);padding:0 var(--space-1)}
+  .card.item-anot{display:flex;flex-direction:column;gap:var(--space-2);width:100%;text-align:left;color:var(--text-primary)}
+  .an-top{display:flex;align-items:center;gap:var(--space-2)}
+  .an-top b{flex:1;min-width:0;font-weight:var(--w-semibold);overflow-wrap:anywhere}
+  .an-top small{color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta);flex:none}
+  .an-resumo{overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .lista-anot .item-anot{background:var(--surface-variant);border:0;margin-bottom:var(--space-2)}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -797,8 +815,8 @@ function salvar(){
   if(!dados) return;
   facVersao++;
   agendarReconciliacao();
-  try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); }
-  catch(e){ toast('Não consegui salvar 😕'); }
+  try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); return true; }
+  catch(e){ toast('Não consegui salvar 😕'); return false; }
 }
 const uid = () => (globalThis.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1311,6 +1329,7 @@ function teclaAdicao(e, sid){
 /* ---------- navegação (botão voltar do Android funciona) ---------- */
 function irPara(t){
   if(t === tela){ scrollTo({ top: 0, behavior: Animacoes.reduzido() ? 'auto' : 'smooth' }); return; }
+  if(tela === 'fac-anotacao') gravarCamposAnotacao();
   let voltas = 0, empurrar = false;
   if(tela === 'secao'){ voltas = 1; empurrar = t !== 'rotina'; }
   else if(tela.startsWith('fac-')) voltas = (pilhaFac[0] && pilhaFac[0].tela === 'rotina' ? 0 : 1) + pilhaFac.length - (t === 'rotina' ? 0 : 1);
@@ -1380,6 +1399,7 @@ function render(refazer = false, semFlip = false){
   talvezMostrarDica();
   document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
   animarProgresso();
+  carregarMiniaturas();
 }
 setInterval(() => {
   const topo = document.querySelector('#app .hoje-top');
@@ -2416,7 +2436,7 @@ const DIAS_MIN = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', '
 const naDia = d => (d >= 6 ? 'no ' : 'na ') + DIAS_MIN[d - 1];
 const ILUSTRA_CAPELO = '<svg class="ilustra" viewBox="0 0 120 120" aria-hidden="true"><circle class="fundo-il" cx="60" cy="60" r="56"/><path class="bloco-il" d="M60 30 18 48l42 18 42-18z"/><path class="traco-il" d="M60 30 18 48l42 18 42-18zM34 56v18c7 7 16 10 26 10s19-3 26-10V56M96 50v22"/><circle class="detalhe-il" cx="96" cy="76" r="4"/></svg>';
 function irFacAba(a){ if(a === facAba) return; facAba = a; render(true); }
-function voltarFac(){ const a = pilhaFac.pop() || { tela: 'faculdade', facMateria: null, y: 0 }; tela = a.tela; facMateria = a.facMateria; render(); scrollTo(0, a.y); }
+function voltarFac(){ gravarCamposAnotacao(); const a = pilhaFac.pop() || { tela: 'faculdade', facMateria: null, y: 0 }; tela = a.tela; facMateria = a.facMateria; render(); scrollTo(0, a.y); }
 function telaFaculdade(){
   const f = fac();
   if(!f.semestre) return `<header class="top"><h1>Faculdade</h1></header>
@@ -2444,6 +2464,7 @@ function cartaoAula(d, a){
     <div class="aula-top"><i class="ponto"></i><div class="aula-nm"><b>${esc(m.nome)}</b><small>${meta}</small></div>${s.nivel !== 'ok' ? selo(s.nivel) : ''}</div>
     ${blocoPresenca(d, m, a)}
     <p class="status" style="--nv:${NIVEL_COR[s.nivel]}">${Faculdade.textoStatus(s)}</p>
+    <button class="btn text inicio" onclick="abrirAnotacao('${m.id}','${d}')">${ic('editar')} Anotar aula</button>
   </div>`;
 }
 const quandoProxima = (d, hj) => (Regras.somaDias(hj, 7) > d ? (d === Regras.somaDias(hj, 1) ? 'amanhã' : DIAS_MIN[Regras.diaSemana(d) - 1]) : Regras.dataCurta(d));
@@ -2529,7 +2550,10 @@ function facMaterias(){
 function abrirMateria(id){ pilhaFac.push({ tela, facMateria, y: scrollY }); history.pushState({ fac: 'materia' }, ''); facMateria = id; tela = 'fac-materia'; render(); scrollTo(0, 0); }
 const ESTADO_DIA = { presente: 'presente', falta: 'falta', futuro: 'aula futura', sem_aula: 'sem aula', pendente: 'sem marcação' };
 const nomeMes = ym => { const n = Regras.dataExtenso(ym + '-01').split(' de ')[1]; return n.charAt(0).toUpperCase() + n.slice(1); };
-const secaoAnotacoesMateria = () => '';
+function secaoAnotacoesMateria(m){
+  const l = Faculdade.buscarAnotacoes(fac().anotacoes, '', m.id);
+  return `<div class="card" data-chave="mat-anot"><h2>Anotações</h2>${l.length ? `<div class="lista-anot">${l.map(itemAnot).join('')}</div>` : '<p class="hint">Nenhuma anotação desta matéria.</p>'}</div>`;
+}
 function telaMateria(){
   const m = materiaDe(facMateria);
   if(!m){ tela = 'faculdade'; return telaFaculdade(); }
@@ -2710,6 +2734,7 @@ function cartaoAjustesFaculdade(){
 const AVISO_COTA = 'O espaço para fotos está quase cheio. Exporte um backup e apague fotos antigas.';
 const formatarMB = b => { const mb = b / 1048576; return String(mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10).replace('.', ',') + ' MB'; };
 const espacoFotosHtml = () => '<p class="hint" id="espaco-fotos" aria-live="polite">Fotos da faculdade: calculando…</p><p class="erro" id="espaco-aviso"></p>';
+const usoLocal = () => { let n = 0; for(let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); n += k.length + (localStorage.getItem(k) || '').length; } return n / 5e6; };
 async function atualizarEspacoFotos(){
   const el = $('espaco-fotos');
   if(!el) return;
@@ -2717,7 +2742,7 @@ async function atualizarEspacoFotos(){
     const e = await Fotos.espaco();
     el.textContent = 'Fotos da faculdade: ' + formatarMB(e.fotos);
     const av = $('espaco-aviso');
-    if(av) av.textContent = e.cota && e.usado / e.cota > 0.8 ? AVISO_COTA : '';
+    if(av) av.textContent = [e.cota && e.usado / e.cota > 0.8 ? AVISO_COTA : '', usoLocal() > 0.8 ? 'O espaço para anotações está quase cheio. Exporte um backup e apague anotações antigas.' : ''].filter(Boolean).join(' ');
   }catch(err){ el.textContent = 'Fotos da faculdade: não foi possível calcular.'; }
 }
 const fotosEmUso = new Set();
@@ -2759,7 +2784,158 @@ function verSemestreAnterior(i){
     ${f.anotacoes.length ? `<h3 class="sub">Anotações</h3><ul class="lista-simples">${f.anotacoes.slice().sort((x, y) => y.data.localeCompare(x.data)).map(n => `<li><span>${Regras.dataCurta(n.data)} · ${esc((f.materias.find(m => m.id === n.materiaId) || {}).nome || '')}<small>${esc(n.titulo || n.texto.slice(0, 80))}</small></span></li>`).join('')}</ul>` : ''}
     <button class="btn text" onclick="fecharSheet()">Fechar</button>`);
 }
-function facAnotacoes(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+let anotAtual = null, timerAnot = null, buscaAnot = '', filtroAnot = null;
+const urlsFoto = new Map(), processando = new Set();
+const anotacaoDe = (mid, d) => fac().anotacoes.find(a => a.materiaId === mid && a.data === d);
+function abrirAnotacao(mid, d){
+  if($('overlay').classList.contains('show')){ fecharSheet(); setTimeout(() => abrirAnotacao(mid, d), 120); return; }
+  pilhaFac.push({ tela, facMateria, y: scrollY }); history.pushState({ fac: 'anotacao' }, '');
+  anotAtual = { materiaId: mid, data: d }; tela = 'fac-anotacao'; render(); scrollTo(0, 0);
+}
+function garantirAnotacao(){
+  let a = anotacaoDe(anotAtual.materiaId, anotAtual.data);
+  if(!a){
+    const agora = new Date().toISOString();
+    a = { id: uid(), materiaId: anotAtual.materiaId, data: anotAtual.data, titulo: '', texto: '', fotoIds: [], paraProximaAula: '', criadoEm: agora, atualizadoEm: agora };
+    fac().anotacoes.push(a);
+  }
+  return a;
+}
+function gravarCamposAnotacao(){
+  clearTimeout(timerAnot); timerAnot = null;
+  const t = $('an-titulo'), x = $('an-texto'), p = $('an-prox');
+  if(!anotAtual || !t || !x || !p) return;
+  const val = { titulo: t.value.slice(0, 80), texto: x.value.slice(0, 10000), paraProximaAula: p.value.slice(0, 500) };
+  let a = anotacaoDe(anotAtual.materiaId, anotAtual.data);
+  if(!a && !(val.titulo + val.texto + val.paraProximaAula).trim()) return;
+  a = a || garantirAnotacao();
+  if(a.titulo === val.titulo && a.texto === val.texto && a.paraProximaAula === val.paraProximaAula) return;
+  Object.assign(a, val, { atualizadoEm: new Date().toISOString() });
+  const ok = salvar(), s = $('an-salvo');
+  if(s) s.textContent = ok ? 'Salvo' : 'Não foi salvo: o espaço do aparelho está cheio.';
+}
+const crescer = el => { if(!CSS.supports('field-sizing', 'content')){ el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } };
+function agendarSalvarAnot(el){
+  if(el && el.tagName === 'TEXTAREA') crescer(el);
+  const s = $('an-salvo'); if(s) s.textContent = '';
+  clearTimeout(timerAnot); timerAnot = setTimeout(gravarCamposAnotacao, 800);
+}
+document.addEventListener('visibilitychange', () => { if(document.hidden && tela === 'fac-anotacao') gravarCamposAnotacao(); });
+const imgFoto = id => { const u = urlsFoto.get(id); return `<img alt="" ${u ? `src="${u}"` : ''}>`; };
+async function carregarMiniaturas(){
+  for(const img of document.querySelectorAll('[data-foto] img:not([src])')){
+    const id = img.parentElement.dataset.foto;
+    try{
+      if(!urlsFoto.has(id)){ const r = await Fotos.ler(id); if(!r) continue; urlsFoto.set(id, URL.createObjectURL(r.blob)); }
+      img.src = urlsFoto.get(id);
+    }catch(e){}
+  }
+}
+function revogarFoto(id){ const u = urlsFoto.get(id); if(u){ URL.revokeObjectURL(u); urlsFoto.delete(id); } }
+function telaAnotacao(){
+  const x = anotAtual, m = x && materiaDe(x.materiaId);
+  if(!m){ tela = 'faculdade'; return telaFaculdade(); }
+  gravarCamposAnotacao();
+  const f = fac(), a = anotacaoDe(x.materiaId, x.data), n = Faculdade.temposNoDia(f, m.id, x.data);
+  const v = a || { titulo: '', texto: '', paraProximaAula: '', fotoIds: [] };
+  const fotos = v.fotoIds.map((id, i) => `<button class="miniatura" data-foto="${id}" data-chave="foto-${id}" onclick="abrirVisor('${id}')" aria-label="Abrir foto ${i + 1} do quadro">${imgFoto(id)}</button>`)
+    .concat([...processando].map(id => `<div class="miniatura carregando" data-chave="proc-${id}" role="status" aria-label="Processando foto"><span class="giro" aria-hidden="true"></span></div>`));
+  return `<header class="top"><button class="icon-btn" onclick="history.back()" aria-label="Voltar">${ic('voltar')}</button><h1>${esc(m.nome)}</h1>
+      ${a ? `<button class="icon-btn perigo" onclick="excluirAnotacao()" aria-label="Excluir anotação">${ic('excluir')}</button>` : ''}</header>
+    <p class="hint meta-mat">${Regras.dataExtenso(x.data)}</p>
+    ${n && Faculdade.dentro(f, x.data) && !Faculdade.feriado(f, x.data) ? `<div class="card" data-chave="an-pres" style="${tintaMat(m)}">${blocoPresenca(x.data, m, { registro: Faculdade.registro(f, x.data, m.id), tempos: n })}</div>` : ''}
+    <div class="card fac-form" data-chave="an-form">
+      <label>Título<input id="an-titulo" name="titulo" autocomplete="off" maxlength="80" placeholder="Assunto da aula" value="${esc(v.titulo)}" oninput="agendarSalvarAnot(this)"></label>
+      <label>O que teve na aula<textarea id="an-texto" name="texto" class="an-texto" maxlength="10000" oninput="agendarSalvarAnot(this)">${esc(v.texto)}</textarea></label>
+      <p class="hint" id="an-salvo" aria-live="polite"></p>
+    </div>
+    <div class="card" data-chave="an-fotos"><h2>Fotos do quadro</h2>
+      ${fotos.length ? `<div class="miniaturas">${fotos.join('')}</div>` : '<p class="hint">Nenhuma foto ainda.</p>'}
+      <div class="row mt"><button class="btn ghost" onclick="pedirFoto('in-camera')">Tirar foto</button><button class="btn ghost" onclick="pedirFoto('in-galeria')">Da galeria</button></div>
+      <input type="file" id="in-camera" accept="image/*" capture="environment" hidden onchange="adicionarFotos(this)">
+      <input type="file" id="in-galeria" accept="image/*" multiple hidden onchange="adicionarFotos(this)">
+    </div>
+    <div class="card fac-form" data-chave="an-prox"><label>Para a próxima aula (opcional)<textarea id="an-prox" name="proxima" maxlength="500" oninput="agendarSalvarAnot(this)">${esc(v.paraProximaAula)}</textarea></label>
+      <button class="btn text inicio" onclick="criarTarefaDaAnotacao()">${ic('add')} Criar tarefa</button></div>`;
+}
+function pedirFoto(id){
+  const a = anotacaoDe(anotAtual.materiaId, anotAtual.data);
+  if((a ? a.fotoIds.length : 0) + processando.size >= Fotos.MAX_POR_ANOTACAO) return toast('Máximo de 10 fotos por aula.');
+  $(id).click();
+}
+async function adicionarFotos(input){
+  const arquivos = [...input.files];
+  input.value = '';
+  if(!arquivos.length || !anotAtual) return;
+  gravarCamposAnotacao();
+  const a = garantirAnotacao();
+  salvar();
+  let avisouLimite = false;
+  const tarefas = arquivos.map(arq => {
+    if(!Fotos.ehImagem(arq)){ toast('Esse arquivo não é uma imagem.'); return null; }
+    if(a.fotoIds.length + processando.size >= Fotos.MAX_POR_ANOTACAO){ if(!avisouLimite) toast('Máximo de 10 fotos por aula.'); avisouLimite = true; return null; }
+    const id = uid(); processando.add(id); fotosEmUso.add(id);
+    return { arq, id };
+  }).filter(Boolean);
+  if(!tarefas.length) return;
+  render();
+  Fotos.persistir();
+  for(const { arq, id } of tarefas){
+    try{
+      const r = await Fotos.processar(arq);
+      await Fotos.salvar({ id, anotacaoId: a.id, blob: r.blob, tipo: r.tipo, largura: r.largura, altura: r.altura, bytes: r.bytes, criadoEm: new Date().toISOString() });
+      a.fotoIds.push(id); a.atualizadoEm = new Date().toISOString();
+      salvar();
+    }catch(e){ toast(e && e.message === 'nao-imagem' ? 'Esse arquivo não é uma imagem.' : 'Não foi possível guardar a foto.'); }
+    finally{ processando.delete(id); fotosEmUso.delete(id); if(tela === 'fac-anotacao') render(); }
+  }
+  try{ const e = await Fotos.espaco(); if(e.cota && e.usado / e.cota > 0.8) toast(AVISO_COTA); }catch(e){}
+}
+function excluirAnotacao(){
+  const f = fac(), a = anotacaoDe(anotAtual.materiaId, anotAtual.data);
+  if(!a) return;
+  clearTimeout(timerAnot);
+  const i = f.anotacoes.indexOf(a);
+  f.anotacoes.splice(i, 1); salvar();
+  a.fotoIds.forEach(id => fotosEmUso.add(id));
+  anotAtual = null;
+  history.back();
+  snack('Anotação excluída', () => { f.anotacoes.splice(Math.min(i, f.anotacoes.length), 0, a); a.fotoIds.forEach(id => fotosEmUso.delete(id)); salvar(); render(); },
+    () => { Fotos.apagar(a.fotoIds).then(() => a.fotoIds.forEach(id => { fotosEmUso.delete(id); revogarFoto(id); })).catch(() => {}); });
+}
+function criarTarefaDaAnotacao(){
+  gravarCamposAnotacao();
+  const texto = ($('an-prox').value || '').trim();
+  if(!texto) return toast('Escreva o que fazer para a próxima aula.');
+  const m = materiaDe(anotAtual.materiaId), d = Faculdade.proximaAulaDe(fac(), m.id, anotAtual.data), agora = new Date().toISOString();
+  const titulo = Array.from(texto.replace(/\s+/g, ' ')).slice(0, 120).join('');
+  dados.tarefas.push({ id: uid(), title: titulo, notes: `${m.nome} · aula de ${Regras.dataCurta(anotAtual.data)}`, dueDate: d, dueTime: null, reminderOffsetMin: null, priority: 'medium', categoryId: null, completedAt: null, createdAt: agora, updatedAt: agora });
+  salvar();
+  toast(d ? `Tarefa criada para ${Regras.dataCurta(d)}` : 'Tarefa criada sem data');
+}
+function itemAnot(a){
+  const m = materiaDe(a.materiaId) || { nome: 'Matéria removida', cor: 'gray' };
+  const resumo = a.titulo.trim() || a.texto.trim().split(/\s+/).slice(0, 12).join(' ') || 'Sem texto';
+  const fotos = a.fotoIds.slice(0, 4).map(id => `<span class="miniatura" data-foto="${id}">${imgFoto(id)}</span>`).join('') + (a.fotoIds.length > 4 ? `<span class="mais-fotos">+${a.fotoIds.length - 4}</span>` : '');
+  return `<button class="card item-anot" style="${tintaMat(m)}" data-chave="an-${a.id}" onclick="abrirAnotacao('${a.materiaId}','${a.data}')">
+    <span class="an-top"><i class="ponto"></i><b>${esc(m.nome)}</b><small>${Regras.dataCurta(a.data)}</small></span>
+    <span class="an-resumo">${esc(resumo)}</span>${fotos ? `<span class="miniaturas pequenas">${fotos}</span>` : ''}</button>`;
+}
+function listaAnot(){
+  const r = Faculdade.buscarAnotacoes(fac().anotacoes, buscaAnot, filtroAnot);
+  return r.length ? r.map(itemAnot).join('') : '<p class="hint" data-chave="an-nada">Nenhuma anotação encontrada.</p>';
+}
+function atualizarListaAnot(){ const el = $('lista-anot'); if(el){ Animacoes.mesclarHtml(el, listaAnot()); carregarMiniaturas(); } }
+function facAnotacoes(){
+  const f = fac();
+  if(!f.anotacoes.length) return `<div class="vazio" data-chave="an-vazio">${ILUSTRA_CAPELO}<p>Nenhuma anotação ainda. Depois da aula, toque em Anotar aula.</p></div>`;
+  const usadas = f.materias.filter(m => f.anotacoes.some(a => a.materiaId === m.id));
+  if(filtroAnot && !usadas.some(m => m.id === filtroAnot)) filtroAnot = null;
+  return `<div class="busca" data-chave="an-busca">${ic('buscar')}<label class="sr" for="busca-anot">Buscar nas anotações</label><input type="search" id="busca-anot" name="busca" autocomplete="off" placeholder="Buscar nas anotações" value="${esc(buscaAnot)}" oninput="buscaAnot=this.value;atualizarListaAnot()"></div>
+    <div class="chips filtros" role="group" aria-label="Filtrar por matéria" data-chave="an-filtros">${[['', 'Todas'], ...usadas.map(m => [m.id, m.nome])].map(([id, nome]) => `<button class="chip ${(filtroAnot || '') === id ? 'on' : ''}" aria-pressed="${(filtroAnot || '') === id}" onclick="filtroAnot=${id ? `'${id}'` : 'null'};render()"><span>${esc(nome)}</span></button>`).join('')}</div>
+    <div id="lista-anot" data-chave="an-lista">${listaAnot()}</div>`;
+}
+function abrirVisor(){}
 
 const PASSOS = ['Semestre', 'Matérias', 'Grade da semana', 'Faltas'];
 const formVazio = cor => ({ id: null, nome: '', professor: '', sala: '', cor: cor || 'blue' });
