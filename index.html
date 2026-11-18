@@ -564,6 +564,40 @@
   .pend{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-3);border-top:var(--border-width) solid var(--divider-container)}
   .pend p{margin:0;display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;overflow-wrap:anywhere}
   .pend small{color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .card.mat{display:flex;flex-direction:column;gap:var(--space-2);width:100%;text-align:left;color:var(--text-primary)}
+  .mat-top{display:flex;align-items:center;gap:var(--space-2)}
+  .mat-top b{flex:1;min-width:0;font-weight:var(--w-semibold);overflow-wrap:anywhere}
+  .mat-num{display:flex;align-items:baseline;gap:var(--space-2);flex-wrap:wrap}
+  .mat-num b{font-size:var(--fs-number);line-height:var(--lh-number);font-weight:var(--w-semibold);font-variant-numeric:tabular-nums}
+  .mat-num small{color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .barra-faltas{position:relative;display:block;height:var(--space-2);margin:var(--space-1) 0;border-radius:var(--radius-full);background:var(--surface-variant)}
+  .barra-faltas i{position:absolute;inset:0;border-radius:var(--radius-full);background:var(--nv);transform:scaleX(var(--p));transform-origin:left center;transition:transform var(--dur-lenta) var(--ease-saida)}
+  .barra-faltas b{position:absolute;top:calc(var(--space-1) * -1);bottom:calc(var(--space-1) * -1);width:var(--border-focus);margin-left:calc(var(--border-focus) / -2);border-radius:var(--radius-full);background:var(--text-secondary)}
+  .linha-arq{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);min-height:var(--touch)}
+  .linha-arq span{min-width:0;overflow-wrap:anywhere}
+  .meta-mat{margin:calc(var(--space-3) * -1) 0 var(--space-3)}
+  .mat-resumo{display:flex;align-items:center;gap:var(--space-4)}
+  .mat-resumo p{margin:0}
+  .mat-resumo>div:last-child{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);min-width:0}
+  .anel-grande{position:relative;flex:none;width:calc(var(--touch) * 2.5);height:calc(var(--touch) * 2.5)}
+  .anel-grande svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .anel-grande circle{fill:none;stroke-width:10}
+  .anel-grande .trilho{stroke:var(--surface-variant)}
+  .anel-grande .arco{stroke:var(--nv);stroke-linecap:round;transition:stroke-dashoffset var(--dur-lenta) var(--ease-saida)}
+  .anel-grande span{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .anel-grande b{font-size:var(--fs-section);line-height:var(--lh-section);font-weight:var(--w-semibold);font-variant-numeric:tabular-nums}
+  .anel-grande small{color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .cal{display:grid;grid-template-columns:repeat(auto-fill,var(--touch));justify-content:start}
+  .dia-cal{width:var(--touch);height:var(--touch);display:grid;place-items:center}
+  .dia-cal span{width:calc(var(--touch) - var(--space-2));height:calc(var(--touch) - var(--space-2));display:grid;place-items:center;border-radius:var(--radius-chip);border:var(--border-width) solid transparent;font-size:var(--fs-meta);font-variant-numeric:tabular-nums}
+  .dia-cal.presente span{background:var(--c);color:var(--on-primary)}
+  .dia-cal.pendente span{background:var(--cc);border:var(--border-width) dashed var(--c);color:var(--text-primary)}
+  .dia-cal.futuro span{border-color:var(--border-strong);color:var(--text-secondary)}
+  .dia-cal.falta span{background:var(--danger);color:var(--on-danger)}
+  .dia-cal.sem_aula span{background:linear-gradient(to top right,transparent calc(50% - 1px),var(--text-secondary) calc(50% - 1px),var(--text-secondary) calc(50% + 1px),transparent calc(50% + 1px)),var(--surface-variant);color:var(--text-secondary)}
+  .legenda{display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-3);margin-top:var(--space-2);color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .legenda>span{display:inline-flex;align-items:center;gap:var(--space-1)}
+  .legenda .dia-cal,.legenda .dia-cal span{width:var(--space-4);height:var(--space-4)}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -2375,7 +2409,6 @@ const DIAS_MIN = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', '
 const naDia = d => (d >= 6 ? 'no ' : 'na ') + DIAS_MIN[d - 1];
 const ILUSTRA_CAPELO = '<svg class="ilustra" viewBox="0 0 120 120" aria-hidden="true"><circle class="fundo-il" cx="60" cy="60" r="56"/><path class="bloco-il" d="M60 30 18 48l42 18 42-18z"/><path class="traco-il" d="M60 30 18 48l42 18 42-18zM34 56v18c7 7 16 10 26 10s19-3 26-10V56M96 50v22"/><circle class="detalhe-il" cx="96" cy="76" r="4"/></svg>';
 function irFacAba(a){ if(a === facAba) return; facAba = a; render(true); }
-function abrirSubFac(nova){ pilhaFac.push({ tela, facMateria, y: scrollY }); history.pushState({ fac: nova }, ''); tela = nova; render(); scrollTo(0, 0); }
 function voltarFac(){ const a = pilhaFac.pop() || { tela: 'faculdade', facMateria: null, y: 0 }; tela = a.tela; facMateria = a.facMateria; render(); scrollTo(0, a.y); }
 function telaFaculdade(){
   const f = fac();
@@ -2473,7 +2506,92 @@ function marcarPendentesPresente(){
     salvar(); aposMudarFaltas(); render();
   });
 }
-function facMaterias(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+const barraFaltas = (s, lim) => `<span class="barra-faltas" aria-hidden="true"><i style="--p:${s.total ? Math.min(1, s.percentual / lim) : 0}"></i><b style="left:60%"></b><b style="left:80%"></b></span>`;
+const pctOuTraco = s => (s.total ? Faculdade.formatarPct(s.percentual) : '—');
+function facMaterias(){
+  const f = fac(), est = estFac();
+  const ativas = Faculdade.ordenarPorGravidade(f.materias.filter(m => !m.arquivada), est), arq = f.materias.filter(m => m.arquivada);
+  if(!ativas.length && !arq.length) return `<div class="vazio" data-chave="mat-vazio"><h2>Nenhuma matéria ainda.</h2><button class="btn" onclick="abrirAssistente(true)">Configurar semestre</button></div>`;
+  return ativas.map(m => { const s = est[m.id]; return `<button class="card mat" style="${tintaMat(m)};--nv:${NIVEL_COR[s.nivel]}" data-chave="mat-${m.id}" onclick="abrirMateria('${m.id}')">
+      <span class="mat-top"><i class="ponto"></i><b>${esc(m.nome)}</b>${selo(s.nivel)}</span>
+      <span class="mat-num"><b>${pctOuTraco(s)}</b><small>${s.total ? `${s.faltas} de ${Faculdade.tempos(s.total)}` : 'Sem aulas previstas'}</small></span>
+      ${barraFaltas(s, f.limiteFaltas)}</button>`; }).join('')
+    + (arq.length ? `<div class="card" data-chave="mat-arq"><h2>Arquivadas</h2>${arq.map(m => `<div class="linha-arq"><span>${esc(m.nome)}</span><button class="btn text" onclick="arquivarMateria('${m.id}', false)">Desarquivar</button></div>`).join('')}</div>` : '');
+}
+function abrirMateria(id){ pilhaFac.push({ tela, facMateria, y: scrollY }); history.pushState({ fac: 'materia' }, ''); facMateria = id; tela = 'fac-materia'; render(); scrollTo(0, 0); }
+const ESTADO_DIA = { presente: 'presente', falta: 'falta', futuro: 'aula futura', sem_aula: 'sem aula', pendente: 'sem marcação' };
+const nomeMes = ym => { const n = Regras.dataExtenso(ym + '-01').split(' de ')[1]; return n.charAt(0).toUpperCase() + n.slice(1); };
+const secaoAnotacoesMateria = () => '';
+function telaMateria(){
+  const m = materiaDe(facMateria);
+  if(!m){ tela = 'faculdade'; return telaFaculdade(); }
+  const f = fac(), s = estFac()[m.id], lim = f.limiteFaltas, R = 52, C = 2 * Math.PI * R;
+  const p = s.total ? Math.min(1, s.percentual / lim) : 0;
+  const meses = {};
+  Faculdade.calendario(f, m.id, hoje()).forEach(c => (meses[c.data.slice(0, 7)] = meses[c.data.slice(0, 7)] || []).push(c));
+  const resumo = s.total ? `<p>Você faltou ${Faculdade.formatarPct(s.percentual)} (${s.faltas} de ${Faculdade.tempos(s.total)})</p>
+      <p>${s.restante > 0 ? 'Ainda pode faltar ' + Faculdade.tempos(s.restante) : s.restante === 0 ? 'Não pode faltar mais' : 'Passou do limite de ' + lim + '%'}</p>
+      ${s.frequencia !== null ? `<p class="hint">Frequência até hoje: ${Math.floor(s.frequencia)}%</p>` : ''}` : '<p>Sem aulas previstas</p>';
+  return `<header class="top"><button class="icon-btn" onclick="history.back()" aria-label="Voltar">${ic('voltar')}</button><h1>${esc(m.nome)}</h1></header>
+    ${metaMateria(m) ? `<p class="hint meta-mat">${esc(metaMateria(m))}</p>` : ''}
+    <div class="card mat-resumo" data-chave="mat-resumo" style="${tintaMat(m)};--nv:${NIVEL_COR[s.nivel]}">
+      <div class="anel-grande"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="trilho" cx="60" cy="60" r="${R}"/><circle class="arco" cx="60" cy="60" r="${R}" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p)}"/></svg><span><b>${pctOuTraco(s)}</b><small>de faltas</small></span></div>
+      <div>${resumo}${selo(s.nivel)}${s.pendentes ? `<p class="hint">${s.pendentes === 1 ? '1 aula sem marcação' : s.pendentes + ' aulas sem marcação'}</p>` : ''}</div>
+    </div>
+    <div class="card" data-chave="mat-cal" style="${tintaMat(m)}"><h2>Calendário do semestre</h2>
+      ${Object.entries(meses).map(([ym, dias]) => `<h3 class="sub">${nomeMes(ym)}</h3><div class="cal">${dias.map(c => `<button class="dia-cal ${c.estado}" onclick="abrirFolhaDia('${c.data}')" aria-label="${Regras.dataCurta(c.data)}: ${ESTADO_DIA[c.estado]}${c.estado === 'falta' ? ', ' + Faculdade.tempos(c.faltados) : ''}"><span>${Number(c.data.slice(8))}</span></button>`).join('')}</div>`).join('') || '<p class="hint">Nenhuma aula na grade.</p>'}
+      <div class="legenda" aria-hidden="true">${['presente', 'falta', 'futuro', 'sem_aula', 'pendente'].map(e => `<span><i class="dia-cal ${e}"><span></span></i>${ESTADO_DIA[e].charAt(0).toUpperCase() + ESTADO_DIA[e].slice(1)}</span>`).join('')}</div>
+    </div>
+    ${secaoAnotacoesMateria(m)}
+    <div class="row" data-chave="mat-acoes"><button class="btn ghost" onclick="editarMateria('${m.id}')">${ic('editar')} Editar matéria</button><button class="btn danger" onclick="arquivarMateria('${m.id}', true)">Arquivar</button></div>`;
+}
+let folhaDia = null, edMat = null;
+function abrirFolhaDia(d){ folhaDia = { d, mid: facMateria }; desenharFolhaDia(); }
+function desenharFolhaDia(){
+  const { d, mid } = folhaDia, f = fac(), m = materiaDe(mid), n = Faculdade.temposNoDia(f, mid, d), fer = Faculdade.feriado(f, d);
+  abrirSheetOuAtualizar(`<h2 data-folha="dia">${Regras.dataExtenso(d)}</h2><p class="hint">${esc(m.nome)} · ${Faculdade.tempos(n)}</p>
+    ${fer ? `<p>Dia sem aula no semestre${fer.motivo ? ': ' + esc(fer.motivo) : ''}. Para mudar, use Configurar semestre.</p>` : blocoPresenca(d, m, { registro: Faculdade.registro(f, d, mid), tempos: n })}
+    <button class="btn text" onclick="fecharSheet()">Fechar</button>`);
+}
+function editarMateria(id){ edMat = { ...materiaDe(id) }; desenharEdMat(); }
+function desenharEdMat(){
+  const m = edMat, uso = Faculdade.usoDaMateria(fac(), m.id);
+  abrirSheetOuAtualizar(`<h2>Editar matéria</h2>
+    <label>Nome da matéria<input name="materia" autocomplete="off" maxlength="40" value="${esc(m.nome)}" oninput="edMat.nome=this.value"></label>
+    <div class="row"><label>Professor (opcional)<input name="professor" autocomplete="off" maxlength="40" value="${esc(m.professor)}" oninput="edMat.professor=this.value"></label>
+    <label>Sala (opcional)<input name="sala" autocomplete="off" maxlength="20" value="${esc(m.sala)}" oninput="edMat.sala=this.value"></label></div>
+    ${seletorCor(m.cor, "edMat.cor='$';desenharEdMat()")}
+    <label>Total de tempos no semestre (opcional)<input type="number" inputmode="numeric" min="1" value="${esc(m.totalManual || '')}" placeholder="Calculado pela grade" oninput="edMat.totalManual=this.value"></label>
+    <p class="hint">Preencha só se a faculdade informar o total. Se ficar vazio, o app calcula pela grade.</p>
+    <p class="erro" role="alert" id="em-erro"></p>
+    <button class="btn" onclick="salvarEdMat()">Salvar</button>
+    ${uso.podeExcluir ? `<button class="btn danger" onclick="excluirMateria('${m.id}')">Excluir matéria</button>` : ''}`);
+}
+function salvarEdMat(){
+  const m = edMat, f = fac(), bruto = String(m.totalManual ?? '').trim(), tm = bruto === '' ? null : Number(bruto);
+  const erro = Faculdade.validarMateria(m.nome, f.materias, m.id) || (tm !== null && (!Number.isInteger(tm) || tm < 1 || tm > 100000) ? 'Use um número inteiro de tempos.' : '');
+  if(erro){ $('em-erro').textContent = erro; return; }
+  Object.assign(materiaDe(m.id), { nome: m.nome.trim(), professor: String(m.professor || '').trim().slice(0, 40), sala: String(m.sala || '').trim().slice(0, 20), cor: m.cor, totalManual: tm });
+  salvar(); aposMudarFaltas(); fecharSheet(); render(); toast('Matéria salva');
+}
+function excluirMateria(id){
+  const f = fac();
+  if(!Faculdade.usoDaMateria(f, id).podeExcluir) return;
+  mostrarDialogo({ titulo: 'Excluir matéria?', texto: 'Ela também sai da grade.', cancelar: 'Cancelar', ok: 'Excluir', perigo: true, acao: () => {
+    f.materias = f.materias.filter(m => m.id !== id);
+    f.grades.forEach(g => Object.values(g.dias).forEach(s => s.forEach((x, i) => { if(x === id) s[i] = null; })));
+    delete f.alertasEnviados[id];
+    salvar(); gradeRasc = null; fecharSheet();
+    if(tela === 'fac-materia') setTimeout(() => history.back(), 80); else render();
+    toast('Matéria excluída');
+  } });
+}
+function arquivarMateria(id, arquivar){
+  const m = materiaDe(id);
+  m.arquivada = arquivar; salvar();
+  if(arquivar && tela === 'fac-materia') history.back(); else render();
+  snack(arquivar ? `${m.nome} foi arquivada` : `${m.nome} voltou para as listas`, () => { m.arquivada = !arquivar; salvar(); render(); });
+}
 function facGrade(){
   const f = fac(), vig = Faculdade.gradeVigente(f, hoje());
   const base = Faculdade.ajustarTempos(vig ? vig.dias : {}, f.temposPorDia).dias;
