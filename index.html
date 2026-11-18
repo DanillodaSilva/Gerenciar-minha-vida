@@ -637,6 +637,16 @@
   .fac-hoje-aula+.fac-hoje-aula{border-top:var(--border-width) solid var(--divider-container);padding-top:var(--space-3)}
   .fac-hoje-aula .aula-nm{margin:0}
   .fac-hoje-aula .aula-nm b{display:flex;align-items:center;gap:var(--space-2);font-weight:var(--w-semibold);overflow-wrap:anywhere}
+  #visor-cont{flex:1}
+  .campo-cor{display:flex;flex-direction:column;gap:var(--space-2);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary)}
+  :root[data-animacoes="reduzidas"] .giro{animation:none}
+  @media (prefers-reduced-motion: reduce){ .giro{animation:none} }
+  @media (hover: hover) and (pointer: fine){
+    .presenca button:not([aria-pressed="true"]):hover,.celula:not(:disabled):not(.sel):hover{filter:brightness(.95)}
+    .card.mat:hover,.card.item-anot:hover,.banner:hover{border-color:var(--border-strong)}
+    .dia-cal:hover span{box-shadow:0 0 0 var(--border-width) var(--border-strong)}
+    .visor-acoes button:hover,.visor .icon-btn:hover,.alerta-fac .linhas button:hover{text-decoration:underline}
+  }
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -2666,7 +2676,7 @@ function desenharEdMat(){
     <div class="row"><label>Professor (opcional)<input name="professor" autocomplete="off" maxlength="40" value="${esc(m.professor)}" oninput="edMat.professor=this.value"></label>
     <label>Sala (opcional)<input name="sala" autocomplete="off" maxlength="20" value="${esc(m.sala)}" oninput="edMat.sala=this.value"></label></div>
     ${seletorCor(m.cor, "edMat.cor='$';desenharEdMat()")}
-    <label>Total de tempos no semestre (opcional)<input type="number" inputmode="numeric" min="1" value="${esc(m.totalManual || '')}" placeholder="Calculado pela grade" oninput="edMat.totalManual=this.value"></label>
+    <label>Total de tempos no semestre (opcional)<input type="number" name="total" autocomplete="off" inputmode="numeric" min="1" value="${esc(m.totalManual || '')}" placeholder="Calculado pela grade" oninput="edMat.totalManual=this.value"></label>
     <p class="hint">Preencha só se a faculdade informar o total. Se ficar vazio, o app calcula pela grade.</p>
     <p class="erro" role="alert" id="em-erro"></p>
     <button class="btn" onclick="salvarEdMat()">Salvar</button>
@@ -2712,7 +2722,7 @@ function salvarGrade(){
   abrirSheet(`<h2>A partir de quando vale a nova grade?</h2>
     <p class="hint">As aulas antes dessa data continuam calculadas pela grade antiga.</p>
     <button class="btn" onclick="aplicarNovaGrade(hoje())">Hoje</button>
-    <div class="fac-form"><label>Escolher data<input type="date" id="g-data" min="${s.inicio}" max="${s.fim}" value="${hj > s.fim ? s.fim : hj}"></label>
+    <div class="fac-form"><label>Escolher data<input type="date" id="g-data" name="valida-desde" autocomplete="off" min="${s.inicio}" max="${s.fim}" value="${hj > s.fim ? s.fim : hj}"></label>
     <button class="btn ghost" onclick="aplicarNovaGrade($('g-data').value)">Usar esta data</button></div>
     <button class="btn ghost" onclick="mostrarDialogo({ titulo: 'Valer desde o início do semestre?', texto: 'Isso muda o cálculo das faltas já registradas.', cancelar: 'Cancelar', ok: 'Confirmar', acao: () => aplicarNovaGrade(fac().semestre.inicio, true) })">Desde o início do semestre</button>`);
 }
@@ -2797,7 +2807,7 @@ function cartaoAjustesFaculdade(){
   return `<div class="card fac-form" data-chave="aj-fac"><h2>Faculdade</h2>
     <button class="btn ghost" onclick="abrirAssistente(!!fac().semestre)">Configurar semestre</button>
     <button class="interruptor" role="switch" aria-checked="${f.alertasAtivos}" onclick="alternarAlertasFac()"><span>Alertas de faltas</span><span class="sw" aria-hidden="true"></span></button>
-    <label>Limite de faltas (%)<input type="number" inputmode="numeric" min="1" max="50" value="${f.limiteFaltas}" onchange="mudarLimiteFac(this)"></label>
+    <label>Limite de faltas (%)<input type="number" name="limite-faltas" autocomplete="off" inputmode="numeric" min="1" max="50" value="${f.limiteFaltas}" onchange="mudarLimiteFac(this)"></label>
     <p class="erro" role="alert" id="aj-lim-erro"></p>
     ${espacoFotosHtml()}
     ${f.semestre ? '<button class="btn text inicio" onclick="pedirNovoSemestre()">Novo semestre</button>' : ''}
@@ -3020,7 +3030,7 @@ function abrirVisor(id){
   el.className = 'visor'; el.id = 'visor';
   el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Foto do quadro');
   el.innerHTML = `<div class="visor-fundo" id="visor-fundo"></div>
-    <div class="visor-topo"><button class="icon-btn" id="visor-fechar" onclick="fecharVisor()" aria-label="Fechar">${ic('fechar')}</button><span id="visor-cont" aria-live="polite"></span></div>
+    <div class="visor-topo"><button class="icon-btn" id="visor-fechar" onclick="fecharVisor()" aria-label="Fechar">${ic('fechar')}</button><span id="visor-cont" aria-live="polite"></span><button class="icon-btn" onclick="trocarFoto(-1)" aria-label="Foto anterior">${ic('anterior')}</button><button class="icon-btn" onclick="trocarFoto(1)" aria-label="Próxima foto">${ic('proximo')}</button></div>
     <div class="visor-palco" id="visor-palco"><img id="visor-img" alt="" draggable="false"></div>
     <div class="visor-acoes">${NATIVO || web ? '<button onclick="compartilharFoto()">Compartilhar</button>' : ''}<button onclick="baixarFoto()">Baixar</button><button onclick="excluirFotoVisor()">Excluir foto</button></div>`;
   document.body.appendChild(el);
@@ -3140,6 +3150,7 @@ function fecharVisor(deVolta){
 document.addEventListener('keydown', e => {
   if(!visor) return;
   if(e.key === 'Escape'){ e.preventDefault(); fecharVisor(); }
+  else if(e.key === 'Tab'){ const f = [...$('visor').querySelectorAll('button')], i = f.indexOf(document.activeElement); if(e.shiftKey ? i <= 0 : i === f.length - 1 || i < 0){ e.preventDefault(); f[e.shiftKey ? f.length - 1 : 0].focus(); } }
   else if(e.key === 'ArrowRight') trocarFoto(1);
   else if(e.key === 'ArrowLeft') trocarFoto(-1);
 });
@@ -3212,13 +3223,13 @@ function desenharAssistente(){
 function passoSemestre(){
   const s = assist.semestre;
   const lista = s.diasSemAula.slice().sort((x, y) => x.data.localeCompare(y.data));
-  return `<label>Nome do semestre<input id="a-nome" name="semestre" autocomplete="off" maxlength="20" placeholder="Ex.: 2026.1" value="${esc(s.nome)}" oninput="assist.semestre.nome=this.value"></label>
-    <div class="row"><label>Início<input type="date" value="${s.inicio}" onchange="assist.semestre.inicio=this.value"></label>
-    <label>Fim<input type="date" value="${s.fim}" onchange="assist.semestre.fim=this.value"></label></div>
+  return `<label>Nome do semestre<input id="a-nome" name="semestre" autocomplete="off" maxlength="20" placeholder="Ex.: 2026.1…" value="${esc(s.nome)}" oninput="assist.semestre.nome=this.value"></label>
+    <div class="row"><label>Início<input type="date" name="inicio" autocomplete="off" value="${s.inicio}" onchange="assist.semestre.inicio=this.value"></label>
+    <label>Fim<input type="date" name="fim" autocomplete="off" value="${s.fim}" onchange="assist.semestre.fim=this.value"></label></div>
     <h3 class="sub">Dias sem aula</h3>
     <p class="hint">Feriados, recesso e provas sem aula.</p>
     ${lista.length ? `<ul class="lista-simples">${lista.map(d => `<li><span>${Regras.dataCurta(d.data)}${d.motivo ? `<small>${esc(d.motivo)}</small>` : ''}</span><button class="icon-btn" onclick="removerDiaSemAula('${d.data}')" aria-label="Remover ${Regras.dataCurta(d.data)}">${ic('excluir')}</button></li>`).join('')}</ul>` : ''}
-    <div class="row"><label>Data<input type="date" id="a-dsa" min="${s.inicio}" max="${s.fim}"></label><label>Motivo<input id="a-dsa-m" name="motivo" autocomplete="off" maxlength="40" placeholder="Ex.: Carnaval"></label></div>
+    <div class="row"><label>Data<input type="date" id="a-dsa" name="dia-sem-aula" autocomplete="off" min="${s.inicio}" max="${s.fim}"></label><label>Motivo<input id="a-dsa-m" name="motivo" autocomplete="off" maxlength="40" placeholder="Ex.: Carnaval…"></label></div>
     <button class="btn ghost" onclick="adicionarDiaSemAula()">${ic('add')} Adicionar dia sem aula</button>`;
 }
 function adicionarDiaSemAula(){
@@ -3228,14 +3239,14 @@ function adicionarDiaSemAula(){
   desenharAssistente();
 }
 function removerDiaSemAula(d){ assist.semestre.diasSemAula = assist.semestre.diasSemAula.filter(x => x.data !== d); desenharAssistente(); }
-const seletorCor = (atual, acao) => `<label>Cor<div class="colors" role="radiogroup" aria-label="Cor da matéria">${CORES.map(c => `<button role="radio" aria-checked="${atual === c}" aria-label="${NOME_COR[c]}" style="--c:var(--cat-${c})" class="${atual === c ? 'on' : ''}" onclick="${acao.replace('$', c)}"><i>${atual === c ? ic('check', 'sm') : ''}</i></button>`).join('')}</div></label>`;
+const seletorCor = (atual, acao) => `<div class="campo-cor"><span id="cor-mat">Cor</span><div class="colors" role="radiogroup" aria-labelledby="cor-mat">${CORES.map(c => `<button role="radio" aria-checked="${atual === c}" aria-label="${NOME_COR[c]}" style="--c:var(--cat-${c})" class="${atual === c ? 'on' : ''}" onclick="${acao.replace('$', c)}"><i>${atual === c ? ic('check', 'sm') : ''}</i></button>`).join('')}</div></div>`;
 const metaMateria = m => [m.professor, m.sala && 'Sala ' + m.sala].filter(Boolean).join(' · ');
 function passoMaterias(){
   const a = assist, fm = a.form, ativas = a.materias.filter(m => !m.arquivada);
   return `${ativas.length ? `<ul class="lista-simples">${ativas.map(m => `<li style="${tintaMat(m)}"><i class="ponto"></i><span>${esc(m.nome)}${metaMateria(m) ? `<small>${esc(metaMateria(m))}</small>` : ''}</span>
       <button class="icon-btn" onclick="editarMatAssist('${m.id}')" aria-label="Editar ${esc(m.nome)}">${ic('editar')}</button>
       <button class="icon-btn" onclick="removerMatAssist('${m.id}')" aria-label="Remover ${esc(m.nome)}">${ic('excluir')}</button></li>`).join('')}</ul>` : '<p class="hint">Nenhuma matéria ainda.</p>'}
-    <label>Nome da matéria<input id="a-mat" name="materia" autocomplete="off" maxlength="40" placeholder="Ex.: Cálculo I" value="${esc(fm.nome)}" oninput="assist.form.nome=this.value"></label>
+    <label>Nome da matéria<input id="a-mat" name="materia" autocomplete="off" maxlength="40" placeholder="Ex.: Cálculo I…" value="${esc(fm.nome)}" oninput="assist.form.nome=this.value"></label>
     <div class="row"><label>Professor (opcional)<input name="professor" autocomplete="off" maxlength="40" value="${esc(fm.professor)}" oninput="assist.form.professor=this.value"></label>
     <label>Sala (opcional)<input name="sala" autocomplete="off" maxlength="20" value="${esc(fm.sala)}" oninput="assist.form.sala=this.value"></label></div>
     ${seletorCor(fm.cor, "assist.form.cor='$';desenharAssistente()")}
@@ -3272,8 +3283,8 @@ function passoGrade(){
   const tempos = `<h3 class="sub">Tempos por dia</h3>${[1, 2, 3, 4, 5, 6, 7].map(d => `<div class="linha-tempos"><span id="lt-${d}">${Faculdade.DIAS[d - 1]}</span><div class="stepper" role="group" aria-labelledby="lt-${d}">
       <button class="icon-btn" onclick="mudarTempos(${d},-1)" ${a.tempos[d] <= 0 ? 'disabled' : ''} aria-label="Um tempo a menos ${naDia(d)}">−</button><b>${a.tempos[d]}</b>
       <button class="icon-btn" onclick="mudarTempos(${d},1)" ${a.tempos[d] >= 10 ? 'disabled' : ''} aria-label="Um tempo a mais ${naDia(d)}">+</button></div></div>`).join('')}`;
-  const horario = `<h3 class="sub">Horário (opcional)</h3><div class="row"><label>Início do 1º tempo<input type="time" value="${a.horario.inicio || ''}" onchange="assist.horario.inicio=this.value||null"></label>
-    <label>Minutos por tempo<input type="number" inputmode="numeric" min="1" max="300" value="${a.horario.duracaoMin || ''}" onchange="assist.horario.duracaoMin=parseInt(this.value,10)||null"></label></div>`;
+  const horario = `<h3 class="sub">Horário (opcional)</h3><div class="row"><label>Início do 1º tempo<input type="time" name="hora-inicio" autocomplete="off" value="${a.horario.inicio || ''}" onchange="assist.horario.inicio=this.value||null"></label>
+    <label>Minutos por tempo<input type="number" name="duracao" autocomplete="off" inputmode="numeric" min="1" max="300" value="${a.horario.duracaoMin || ''}" onchange="assist.horario.duracaoMin=parseInt(this.value,10)||null"></label></div>`;
   if(a.edicao) return tempos + horario + '<p class="hint">Para mudar as matérias de cada tempo, use a aba Grade.</p>';
   return `<p class="hint">Toque num tempo para escolher a matéria.</p>${editorGrade(a.grade, a.tempos, a.materias)}${tempos}${horario}`;
 }
@@ -3301,9 +3312,9 @@ function editorGrade(ge, tempos, mats){
     <tbody>${Array.from({ length: max }, (_, i) => `<tr><th scope="row">${i + 1}º</th>${dias.map(d => celula(d, i)).join('')}</tr>`).join('')}</tbody></table>
     ${ge.sel ? escolhaCelula(ge, mats) : ''}
     <div class="fac-form"><h3 class="sub">Adicionar matéria ao dia</h3>
-    <div class="row"><label>Dia<select id="ad-dia-${ge.ctx}">${dias.map(d => opc(d, Faculdade.DIAS[d - 1], ad.d === d)).join('')}</select></label>
-    <label>Tempos<select id="ad-qtd-${ge.ctx}">${Array.from({ length: max }, (_, i) => opc(i + 1, i + 1, ad.q === i + 1)).join('')}</select></label></div>
-    <label>Matéria<select id="ad-mat-${ge.ctx}">${ativas.map(m => opc(m.id, esc(m.nome), ad.m === m.id)).join('')}</select></label>
+    <div class="row"><label>Dia<select id="ad-dia-${ge.ctx}" name="dia">${dias.map(d => opc(d, Faculdade.DIAS[d - 1], ad.d === d)).join('')}</select></label>
+    <label>Tempos<select id="ad-qtd-${ge.ctx}" name="tempos">${Array.from({ length: max }, (_, i) => opc(i + 1, i + 1, ad.q === i + 1)).join('')}</select></label></div>
+    <label>Matéria<select id="ad-mat-${ge.ctx}" name="materia">${ativas.map(m => opc(m.id, esc(m.nome), ad.m === m.id)).join('')}</select></label>
     <button class="btn ghost" onclick="adicionarAoDiaUI('${ge.ctx}')">Adicionar</button>
     ${ge.erro ? `<p class="erro" role="alert">${esc(ge.erro)}</p>` : ''}</div>`;
 }
@@ -3327,7 +3338,7 @@ function adicionarAoDiaUI(ctx){
 const textoLimite = l => `Você reprova se faltar mais que ${parseInt(l, 10) || 25}% dos tempos de uma matéria. O app avisa antes de chegar lá.`;
 function passoFaltas(){
   const a = assist;
-  return `<label>Limite de faltas (%)<input type="number" inputmode="numeric" min="1" max="50" value="${esc(a.limite)}" oninput="assist.limite=this.value;$('a-explica').textContent=textoLimite(this.value)"></label>
+  return `<label>Limite de faltas (%)<input type="number" name="limite" autocomplete="off" inputmode="numeric" min="1" max="50" value="${esc(a.limite)}" oninput="assist.limite=this.value;$('a-explica').textContent=textoLimite(this.value)"></label>
     <button class="interruptor" role="switch" aria-checked="${a.alertas}" onclick="assist.alertas=!assist.alertas;this.setAttribute('aria-checked',assist.alertas)"><span>Alertas de faltas</span><span class="sw" aria-hidden="true"></span></button>
     <p class="hint" id="a-explica">${textoLimite(a.limite)}</p>`;
 }
