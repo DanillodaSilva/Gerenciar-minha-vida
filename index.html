@@ -627,6 +627,16 @@
   .visor-acoes{position:relative;display:flex;justify-content:space-around;gap:var(--space-2);padding:var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom))}
   .visor-acoes button{min-height:var(--touch);padding:0 var(--space-3);border-radius:var(--radius-chip);color:var(--p-white);font-size:var(--fs-label);font-weight:var(--w-medium)}
   .visor-acoes button:active,.visor .icon-btn:active{background:color-mix(in srgb, var(--p-white) 16%, transparent)}
+  .alerta-fac{display:flex;align-items:flex-start;gap:var(--space-3);background:color-mix(in srgb, var(--nv) 10%, var(--surface));border-color:color-mix(in srgb, var(--nv) 45%, transparent)}
+  .alerta-fac>svg{color:var(--nv);margin-top:var(--space-3)}
+  .alerta-fac .linhas{flex:1;min-width:0;display:flex;flex-direction:column}
+  .alerta-fac .linhas button{min-height:var(--touch);padding:var(--space-2) 0;text-align:left;color:var(--text-primary);font-size:var(--fs-label);line-height:var(--lh-label);overflow-wrap:anywhere}
+  .fac-hoje{display:flex;flex-direction:column;gap:var(--space-3)}
+  .fac-hoje h2{margin:0}
+  .fac-hoje-aula{display:flex;flex-direction:column;gap:var(--space-2)}
+  .fac-hoje-aula+.fac-hoje-aula{border-top:var(--border-width) solid var(--divider-container);padding-top:var(--space-3)}
+  .fac-hoje-aula .aula-nm{margin:0}
+  .fac-hoje-aula .aula-nm b{display:flex;align-items:center;gap:var(--space-2);font-weight:var(--w-semibold);overflow-wrap:anywhere}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -1639,6 +1649,7 @@ function telaHoje(){
       ${anel(r.feitas, r.total)}
     </header>
     ${faixaSemana()}
+    ${cartoesFaculdadeHoje()}
     ${corpo}
     <button class="btn text nova-secao" data-chave="nova-secao" onclick="sheetSecao()">${ic('add')} Nova seção</button>
     <button class="fab" onclick="novaTarefa()">${ic('add')}<span>Nova tarefa</span></button>
@@ -3322,6 +3333,22 @@ function concluirAssistente(){
   if(fac().alertasAtivos && !a.alertas0){ pedirPermissaoFac(); mostrarProximoAlerta(); }
 }
 
+const GRAVES = ['perigo', 'ultima_chance', 'ultrapassado'];
+function cartoesFaculdadeHoje(){
+  const f = fac();
+  if(!f.semestre) return '';
+  const est = estFac(), ehHoje = diaSel === hoje();
+  const graves = Faculdade.ordenarPorGravidade(f.materias.filter(m => !m.arquivada && est[m.id] && GRAVES.includes(est[m.id].nivel)), est);
+  const linha = m => { const s = est[m.id]; return `<button onclick="verMateria('${m.id}')"><b>${esc(m.nome)}:</b> ${Faculdade.formatarPct(s.percentual)} de faltas. ${s.restante > 0 ? 'Ainda pode faltar ' + Faculdade.tempos(s.restante) + '.' : s.restante === 0 ? 'Não pode faltar mais.' : 'Passou do limite de ' + f.limiteFaltas + '%.'}</button>`; };
+  const alerta = graves.length && ehHoje ? `<div class="card alerta-fac" role="status" data-chave="fac-alerta" style="--nv:${NIVEL_COR[est[graves[0].id].nivel]}">${ic('alerta')}<div class="linhas">${graves.map(linha).join('')}</div></div>` : '';
+  const aulas = Faculdade.aulasDoDia(f, diaSel).filter(ativaNaLista);
+  const cartao = aulas.length ? `<section class="card fac-hoje" data-chave="fac-hoje"><h2>${ehHoje ? 'Faculdade hoje' : 'Faculdade neste dia'}</h2>
+    ${aulas.map(a => { const m = materiaDe(a.materiaId); return `<div class="fac-hoje-aula" style="${tintaMat(m)}">
+      <p class="aula-nm"><b><i class="ponto"></i>${esc(m.nome)}</b><small>${[Faculdade.rotuloTempos(a.posicoes), Faculdade.faixaHorario(f.horario, a.posicoes), m.sala && 'Sala ' + esc(m.sala)].filter(Boolean).join(' · ')}</small></p>
+      ${blocoPresenca(diaSel, m, a)}
+      <button class="btn text inicio" onclick="abrirAnotacao('${m.id}','${diaSel}')">${ic('editar')} Anotar aula</button></div>`; }).join('')}</section>` : '';
+  return alerta + cartao;
+}
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
