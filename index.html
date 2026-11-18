@@ -598,6 +598,8 @@
   .legenda{display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-3);margin-top:var(--space-2);color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
   .legenda>span{display:inline-flex;align-items:center;gap:var(--space-1)}
   .legenda .dia-cal,.legenda .dia-cal span{width:var(--space-4);height:var(--space-4)}
+  .dlg-icone{color:var(--nv);margin-bottom:var(--space-2)}
+  .dlg-icone svg{width:var(--icon-lg);height:var(--icon-lg);fill:currentColor}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -1823,6 +1825,7 @@ function telaAjustes(){
         ${opcao('system', 'Automático (sistema)')}${opcao('light', 'Claro')}${opcao('dark', 'Escuro')}
       </div>
     </div>
+    ${cartaoAjustesFaculdade()}
     <div class="card">
       <h2>Seções</h2>
       ${secoes || '<p class="hint">Nenhuma seção ainda.</p>'}
@@ -2260,11 +2263,12 @@ function criarSecaoEditor(){
 function cancelarEditor(){ if(editorAlterado()) pedirDescartar(); else fecharEditor(); }
 function fecharEditor(){ ed = null; fecharSheet(); }
 let dlgComEntrada = false, dlgAcao = null;
-function mostrarDialogo({ titulo, texto = '', cancelar, ok, perigo = false, acao }){
-  dlgAcao = acao;
+let dlgAoFechar = null;
+function mostrarDialogo({ titulo, texto = '', cancelar, ok, perigo = false, acao, icone = '', cor = '', aoFechar = null }){
+  dlgAcao = acao; dlgAoFechar = aoFechar;
   dlgComEntrada = !document.getElementById('overlay').classList.contains('show');
   if(dlgComEntrada) history.pushState({dlg:true}, '');
-  $('dlg-caixa').innerHTML = `<h2 id="dlg-tit">${esc(titulo)}</h2>${texto ? `<p>${esc(texto)}</p>` : ''}
+  $('dlg-caixa').innerHTML = `${icone ? `<div class="dlg-icone" style="--nv:${cor}">${icone}</div>` : ''}<h2 id="dlg-tit">${esc(titulo)}</h2>${texto ? `<p>${esc(texto)}</p>` : ''}
     <div class="dlg-acoes">
       <button class="btn text" id="dlg-cancelar" onclick="dialogoCancelar()">${esc(cancelar)}</button>
       <button class="btn text ${perigo ? 'danger' : ''}" onclick="dialogoOk()">${esc(ok)}</button>
@@ -2273,6 +2277,8 @@ function mostrarDialogo({ titulo, texto = '', cancelar, ok, perigo = false, acao
   setTimeout(() => $('dlg-cancelar').focus(), 50);
 }
 function fecharDialogo(vindoDoVoltar){
+  const depois = dlgAoFechar; dlgAoFechar = null;
+  if(depois) setTimeout(depois, 0);
   $('dialogo').classList.remove('show');
   if(dlgComEntrada && !vindoDoVoltar){ ignorarPop = true; history.back(); }
   dlgComEntrada = false;
@@ -2473,6 +2479,7 @@ function marcarAula(d, mid, status){
   const antes = Faculdade.registro(f, d, mid), agora = new Date().toISOString();
   const voltar = () => definirRegistro(d, mid, antes);
   if(antes && antes.status === status){ definirRegistro(d, mid, null); snack('Marcação removida', voltar); return; }
+  if(status === 'falta') pedirPermissaoFac();
   definirRegistro(d, mid, status === 'falta' ? { status, temposFaltados: n, marcadoEm: agora } : { status, marcadoEm: agora });
   if(status === 'falta') snack(`Falta registrada em ${m.nome} (${Faculdade.tempos(n)})`, voltar);
   else if(status === 'sem_aula') snack(`Aula de ${m.nome} não contará nas faltas`, voltar);
@@ -2623,7 +2630,113 @@ function aplicarNovaGrade(data, tudo){
   render();
   toast('Grade salva');
 }
-function aposMudarFaltas(){}
+let filaAlertas = [];
+const textoAlertaDe = ({ m, n, s }) => Faculdade.textoAlerta(n, { materia: m.nome, percentual: s.percentual, faltas: s.faltas, total: s.total, restante: s.restante, limite: fac().limiteFaltas });
+function aposMudarFaltas(){
+  const f = fac();
+  if(!f.semestre) return;
+  const est = estFac(), novos = [];
+  let mudou = false;
+  f.materias.forEach(m => {
+    const s = est[m.id];
+    if(!s) return;
+    const antes = f.alertasEnviados[m.id] || [], r = Faculdade.avaliarAlertas(antes, s.atingidos);
+    if(r.enviados.join() !== antes.join()){ mudou = true; if(r.enviados.length) f.alertasEnviados[m.id] = r.enviados; else delete f.alertasEnviados[m.id]; }
+    if(!m.arquivada) r.novos.forEach(n => novos.push({ m, n, s }));
+  });
+  if(mudou) salvar();
+  if(!novos.length) return;
+  novos.sort((a, b) => Faculdade.NIVEIS.indexOf(b.n) - Faculdade.NIVEIS.indexOf(a.n));
+  novos.forEach(notificarAlerta);
+  filaAlertas.push(...novos);
+  mostrarProximoAlerta();
+}
+function mostrarProximoAlerta(){
+  if($('dialogo').classList.contains('show')) return;
+  const a = filaAlertas.shift();
+  if(!a) return;
+  const seguir = () => setTimeout(mostrarProximoAlerta, 200);
+  if(a.tipo === 'permissao'){
+    (NATIVO ? permissaoNotif() : Promise.resolve(window.Notification ? Notification.permission : 'denied')).then(p => {
+      if(p !== 'prompt' && p !== 'prompt-with-rationale' && p !== 'default') return seguir();
+      mostrarDialogo({ titulo: 'Alertas de faltas', texto: 'Ative para ser avisado quando suas faltas chegarem perto do limite.', cancelar: 'Agora não', ok: 'Ativar', aoFechar: seguir,
+        acao: () => { if(NATIVO) pedirPermissaoNotif(); else Notification.requestPermission().catch(() => {}); } });
+    });
+    return;
+  }
+  const t = textoAlertaDe(a);
+  mostrarDialogo({ titulo: t.titulo, texto: t.texto, cancelar: 'Entendi', ok: 'Ver matéria', icone: ic('alerta'), cor: NIVEL_COR[a.n], aoFechar: seguir, acao: () => verMateria(a.m.id) });
+}
+function pedirPermissaoFac(){
+  const f = fac();
+  if(f.permissaoPedida || !f.alertasAtivos || !(NATIVO || window.Notification)) return;
+  f.permissaoPedida = true; salvar();
+  filaAlertas.unshift({ tipo: 'permissao' });
+}
+function verMateria(id){
+  if(!materiaDe(id)) return;
+  if($('overlay').classList.contains('show')){ fecharSheet(); setTimeout(() => verMateria(id), 120); return; }
+  if(tela === 'fac-materia'){ facMateria = id; render(); scrollTo(0, 0); return; }
+  abrirMateria(id);
+}
+async function notificarAlerta(a){
+  if(!fac().alertasAtivos) return;
+  const t = textoAlertaDe(a);
+  try{
+    if(NATIVO){
+      if(await permissaoNotif() !== 'granted') return;
+      await plugin('LocalNotifications').schedule({ notifications: [{ id: Regras.idNotificacao('falta:' + a.m.id + ':' + a.n), title: t.titulo, body: t.texto, channelId: 'alertas', smallIcon: 'ic_stat_rotina', extra: { tipo: 'falta', ref: a.m.id } }] });
+      return;
+    }
+    if(!window.Notification || Notification.permission !== 'granted' || !navigator.serviceWorker) return;
+    const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((_, nao) => setTimeout(() => nao(new Error('sem service worker')), 3000))]);
+    await reg.showNotification(t.titulo, { body: t.texto, tag: a.m.id + ':' + a.n, icon: 'icons/icon-192.png', data: { materia: a.m.id } });
+  }catch(e){ console.error('Falha ao notificar:', e && e.message); }
+}
+if(!NATIVO && navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', e => { if(e.data && e.data.tipo === 'abrir-materia' && dados) verMateria(e.data.id); });
+function cartaoAjustesFaculdade(){
+  const f = fac();
+  return `<div class="card fac-form" data-chave="aj-fac"><h2>Faculdade</h2>
+    <button class="btn ghost" onclick="abrirAssistente(!!fac().semestre)">Configurar semestre</button>
+    <button class="interruptor" role="switch" aria-checked="${f.alertasAtivos}" onclick="alternarAlertasFac()"><span>Alertas de faltas</span><span class="sw" aria-hidden="true"></span></button>
+    <label>Limite de faltas (%)<input type="number" inputmode="numeric" min="1" max="50" value="${f.limiteFaltas}" onchange="mudarLimiteFac(this)"></label>
+    <p class="erro" role="alert" id="aj-lim-erro"></p>
+    ${espacoFotosHtml()}
+    ${f.semestre ? '<button class="btn text inicio" onclick="pedirNovoSemestre()">Novo semestre</button>' : ''}
+    ${f.semestresAnteriores.length ? `<h3 class="sub">Semestres anteriores</h3>${f.semestresAnteriores.map((s, i) => `<button class="btn text inicio" onclick="verSemestreAnterior(${i})">${esc(s.semestre.nome)}</button>`).join('')}` : ''}
+  </div>`;
+}
+const espacoFotosHtml = () => '';
+function alternarAlertasFac(){
+  const f = fac();
+  f.alertasAtivos = !f.alertasAtivos; salvar(); render();
+  if(f.alertasAtivos){ pedirPermissaoFac(); mostrarProximoAlerta(); }
+}
+function mudarLimiteFac(el){
+  const v = Number(el.value), f = fac();
+  if(!Number.isInteger(v) || v < 1 || v > 50){ $('aj-lim-erro').textContent = 'Use um limite entre 1% e 50%.'; return; }
+  $('aj-lim-erro').textContent = '';
+  if(v === f.limiteFaltas) return;
+  f.limiteFaltas = v; salvar(); aposMudarFaltas(); render(); toast('Limite de faltas: ' + v + '%');
+}
+function pedirNovoSemestre(){
+  mostrarDialogo({ titulo: 'Começar um novo semestre?', texto: 'O atual fica guardado para consulta.', cancelar: 'Cancelar', ok: 'Começar', acao: () => {
+    const f = fac();
+    f.semestresAnteriores.push({ semestre: f.semestre, materias: f.materias, grades: f.grades, aulas: f.aulas, anotacoes: f.anotacoes, temposPorDia: f.temposPorDia, limiteFaltas: f.limiteFaltas, arquivadoEm: new Date().toISOString() });
+    Object.assign(f, { semestre: null, materias: [], grades: [], aulas: {}, anotacoes: [], alertasEnviados: {} });
+    salvar(); assist = null; gradeRasc = null; facAba = 'hoje'; facDia = hoje();
+    if(tela === 'faculdade') render(true); else irPara('faculdade');
+    setTimeout(() => { if(!$('overlay').classList.contains('show')) abrirAssistente(); }, 200);
+  } });
+}
+function verSemestreAnterior(i){
+  const a = fac().semestresAnteriores[i], s = a.semestre;
+  const f = Regras.normalizarFaculdade({ ...a, alertasEnviados: {} }), est = Faculdade.estatisticas(f, s.fim);
+  abrirSheet(`<h2>${esc(s.nome)}</h2><p class="hint">${Regras.dataCurta(s.inicio)} a ${Regras.dataCurta(s.fim)} · só para consulta</p>
+    <ul class="lista-simples">${f.materias.map(m => `<li style="${tintaMat(m)}"><i class="ponto"></i><span>${esc(m.nome)}<small>${est[m.id].total ? `Faltas: ${Faculdade.formatarPct(est[m.id].percentual)} (${est[m.id].faltas} de ${Faculdade.tempos(est[m.id].total)})` : 'Sem aulas previstas'}</small></span></li>`).join('')}</ul>
+    ${f.anotacoes.length ? `<h3 class="sub">Anotações</h3><ul class="lista-simples">${f.anotacoes.slice().sort((x, y) => y.data.localeCompare(x.data)).map(n => `<li><span>${Regras.dataCurta(n.data)} · ${esc((f.materias.find(m => m.id === n.materiaId) || {}).nome || '')}<small>${esc(n.titulo || n.texto.slice(0, 80))}</small></span></li>`).join('')}</ul>` : ''}
+    <button class="btn text" onclick="fecharSheet()">Fechar</button>`);
+}
 function facAnotacoes(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
 
 const PASSOS = ['Semestre', 'Matérias', 'Grade da semana', 'Faltas'];
@@ -2636,7 +2749,7 @@ function abrirAssistente(edicao = false){
     materias: edicao ? clonar(f.materias) : [],
     tempos: { ...f.temposPorDia },
     horario: edicao ? clonar(f.horario) : { inicio: null, duracaoMin: null, intervalos: [] },
-    limite: edicao ? f.limiteFaltas : 25, alertas: edicao ? f.alertasAtivos : true,
+    limite: edicao ? f.limiteFaltas : 25, alertas: edicao ? f.alertasAtivos : true, alertas0: edicao ? f.alertasAtivos : true,
     form: formVazio(), grade: { ctx: 'assist', dias: Faculdade.gradeVazia(f.temposPorDia), sel: null, erro: '', ad: {} },
   };
   desenharAssistente();
@@ -2822,6 +2935,7 @@ function concluirAssistente(){
   if(novo){ facAba = 'hoje'; facDia = hoje(); }
   render(true);
   toast(novo ? 'Semestre configurado' : 'Semestre atualizado');
+  if(fac().alertasAtivos && !a.alertas0){ pedirPermissaoFac(); mostrarProximoAlerta(); }
 }
 
 /* ---------- lembretes (só no APK) ---------- */
@@ -2864,7 +2978,10 @@ function iniciarLembretes(){
   if(!NATIVO) return;
   const LN = plugin('LocalNotifications');
   LN.createChannel({ id: 'lembretes', name: 'Lembretes', description: 'Avisos das tarefas com horário', importance: 4, visibility: 1 }).catch(() => {});
-  LN.addListener('localNotificationActionPerformed', () => {
+  LN.createChannel({ id: 'alertas', name: 'Alertas de faltas', description: 'Avisos quando as faltas chegam perto do limite', importance: 4, visibility: 1 }).catch(() => {});
+  LN.addListener('localNotificationActionPerformed', ev => {
+    const extra = ev && ev.notification && ev.notification.extra;
+    if(extra && extra.tipo === 'falta'){ verMateria(extra.ref); return; }
     if(document.getElementById('overlay').classList.contains('show')) return;
     diaSel = hoje();
     if(tela !== 'rotina') irPara('rotina'); else render();
@@ -2974,6 +3091,8 @@ function iniciar(){
   aplicarTema(); montarNav(); render();
   iniciarLembretes();
   if(deveMostrarBoasVindas()) mostrarBoasVindas();
+  const pedida = new URLSearchParams(location.search).get('materia');
+  if(pedida){ history.replaceState(null, '', location.pathname); if(materiaDe(pedida)) setTimeout(() => verMateria(pedida), 100); }
 }
 iniciar();
 </script>

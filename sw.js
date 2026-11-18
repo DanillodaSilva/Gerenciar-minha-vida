@@ -27,3 +27,13 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
   );
 });
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const id = (e.notification.data && e.notification.data.materia) || '';
+  e.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(lista => {
+    const c = lista[0];
+    if (c) { c.postMessage({ tipo: 'abrir-materia', id }); return c.focus(); }
+    return clients.openWindow('./?materia=' + encodeURIComponent(id));
+  }));
+});
