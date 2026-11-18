@@ -536,6 +536,7 @@
   .toast .snack-acao{color:var(--snack-action);font-weight:var(--w-medium);min-height:var(--touch);padding:0 var(--space-3);border-radius:var(--radius-chip);flex:none}
   .fac-seg button{font-size:var(--fs-meta);min-width:0;padding:0 var(--space-1)}
   .assist-passos{margin:0 0 var(--space-1);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary)}
+  .barra-salvar{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));background:var(--background);padding:var(--space-2) 0;z-index:2}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -2359,7 +2360,38 @@ function telaFaculdade(){
 }
 function facHoje(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
 function facMaterias(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
-function facGrade(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+function facGrade(){
+  const f = fac(), vig = Faculdade.gradeVigente(f, hoje());
+  const base = Faculdade.ajustarTempos(vig ? vig.dias : {}, f.temposPorDia).dias;
+  if(!gradeRasc) gradeRasc = { ctx: 'grade', dias: clonar(base), sel: null, erro: '', ad: {} };
+  const mudou = JSON.stringify(gradeRasc.dias) !== JSON.stringify(base);
+  return `<div class="card" data-chave="fac-grade">${f.grades.length > 1 && vig ? `<p class="hint">Grade valendo desde ${Regras.dataCurta(vig.validaDesde)}.</p>` : ''}${editorGrade(gradeRasc, f.temposPorDia, f.materias)}</div>
+    ${mudou ? `<div class="row barra-salvar" data-chave="grade-salvar"><button class="btn ghost" onclick="gradeRasc=null;render()">Descartar</button><button class="btn" onclick="salvarGrade()">Salvar alterações</button></div>` : ''}
+    <button class="btn text" data-chave="config-sem" onclick="abrirAssistente(true)">${ic('ajustes')} Configurar semestre</button>`;
+}
+function salvarGrade(){
+  const f = fac(), hj = hoje(), s = f.semestre;
+  if(hj <= s.inicio) return aplicarNovaGrade(s.inicio, true);
+  abrirSheet(`<h2>A partir de quando vale a nova grade?</h2>
+    <p class="hint">As aulas antes dessa data continuam calculadas pela grade antiga.</p>
+    <button class="btn" onclick="aplicarNovaGrade(hoje())">Hoje</button>
+    <div class="fac-form"><label>Escolher data<input type="date" id="g-data" min="${s.inicio}" max="${s.fim}" value="${hj > s.fim ? s.fim : hj}"></label>
+    <button class="btn ghost" onclick="aplicarNovaGrade($('g-data').value)">Usar esta data</button></div>
+    <button class="btn ghost" onclick="mostrarDialogo({ titulo: 'Valer desde o início do semestre?', texto: 'Isso muda o cálculo das faltas já registradas.', cancelar: 'Cancelar', ok: 'Confirmar', acao: () => aplicarNovaGrade(fac().semestre.inicio, true) })">Desde o início do semestre</button>`);
+}
+function aplicarNovaGrade(data, tudo){
+  const f = fac();
+  if(!data || data < f.semestre.inicio || data > f.semestre.fim) return toast('Escolha uma data dentro do semestre.');
+  if(!Faculdade.validarGrade(gradeRasc.dias, f.temposPorDia)) return toast('A grade não bate com os tempos por dia.');
+  f.grades = tudo ? [{ validaDesde: f.semestre.inicio, dias: clonar(gradeRasc.dias) }] : Faculdade.aplicarGrade(f.grades, clonar(gradeRasc.dias), data);
+  salvar();
+  gradeRasc = null;
+  if($('overlay').classList.contains('show')) fecharSheet();
+  aposMudarFaltas();
+  render();
+  toast('Grade salva');
+}
+function aposMudarFaltas(){}
 function facAnotacoes(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
 
 const PASSOS = ['Semestre', 'Matérias', 'Grade da semana', 'Faltas'];
@@ -2554,6 +2586,7 @@ function concluirAssistente(){
   salvar();
   assist = null; gradeRasc = null;
   fecharSheet();
+  aposMudarFaltas();
   if(novo){ facAba = 'hoje'; facDia = hoje(); }
   render(true);
   toast(novo ? 'Semestre configurado' : 'Semestre atualizado');
