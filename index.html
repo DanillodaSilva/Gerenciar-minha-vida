@@ -690,6 +690,12 @@
   :root[data-animacoes="reduzidas"] .luz{animation:none}
   @media (prefers-reduced-motion: reduce){ .luz{animation:none} }
   .festa-estrela-h1{width:1em;height:1em;margin-left:var(--space-2);vertical-align:-.1em}
+  .retro h2{color:var(--text-primary)}
+  .retro-nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+  .retro-num{display:flex;flex-direction:column;gap:var(--space-1);min-width:0;padding:var(--space-3);border-radius:var(--radius-card);background:var(--surface-variant)}
+  .retro-num b{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .retro-num span{color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .retro .btn{margin-top:var(--space-2)}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -1474,6 +1480,7 @@ function render(refazer = false, semFlip = false){
   talvezMostrarDica();
   document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
   animarProgresso();
+  animarRetro();
   carregarMiniaturas();
 }
 setInterval(() => {
@@ -1712,6 +1719,7 @@ function telaHoje(){
     </header>
     ${faixaSemana()}
     ${cartaoFestivo(fz)}
+    ${cartaoRetro()}
     ${cartoesFaculdadeHoje()}
     ${corpo}
     <button class="btn text nova-secao" data-chave="nova-secao" onclick="sheetSecao()">${ic('add')} Nova seção</button>
@@ -3570,6 +3578,35 @@ function virada(){
   if(naHoje && !Animacoes.reduzido()) soltarFogos();
 }
 document.addEventListener('visibilitychange', () => { if(!document.hidden && dados){ diaFestaVisto = hojeFesta(); agendarVirada(); } });
+let retroCache = { chave: '', valor: null }, retroAnimada = false;
+function retroAtual(){
+  const d = hojeFesta(), dia = Number(d.slice(8));
+  if(!d.includes('-01-') || dia > 7) return null;
+  const ano = Number(d.slice(0, 4)) - 1;
+  if(dados.ajustes.festas.retrospectivaVista === ano) return null;
+  const chave = d + ':' + facVersao;
+  if(retroCache.chave !== chave) retroCache = { chave, valor: Festas.retrospectiva(dados, ano) };
+  return retroCache.valor;
+}
+function cartaoRetro(){
+  const r = retroAtual();
+  if(!r) return '';
+  const num = (v, rot) => `<div class="retro-num"><b data-contar="${v}" data-duracao="600">${v}</b><span>${rot}</span></div>`;
+  return `<section class="card retro" role="region" aria-label="Retrospectiva do ano" data-chave="retro">
+    <h2>Seu ${r.ano} na rotina</h2>
+    <div class="retro-nums">${num(r.diasContaram, 'Dias que contaram')}${num(r.maiorSequencia, 'Maior sequência')}${num(r.itensConcluidos, 'Itens concluídos')}
+      <div class="retro-num"><b>${esc(r.mesMaisConstante || '—')}</b><span>Mês mais constante</span></div></div>
+    <button class="btn text" onclick="fecharRetro(${r.ano})">Fechar</button>
+  </section>`;
+}
+function animarRetro(){
+  if(retroAnimada || tela !== 'rotina') return;
+  const els = document.querySelectorAll('#app .retro [data-contar]');
+  if(!els.length) return;
+  retroAnimada = true;
+  els.forEach(el => { el._mostrado = 0; Animacoes.contar(el); });
+}
+function fecharRetro(ano){ dados.ajustes.festas.retrospectivaVista = ano; salvar(); render(); }
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
