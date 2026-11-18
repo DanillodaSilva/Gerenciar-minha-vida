@@ -655,7 +655,7 @@
     .visor-acoes button:hover,.visor .icon-btn:hover,.alerta-fac .linhas button:hover{text-decoration:underline}
   }
   :root{--festa-1:var(--primary);--festa-2:var(--primary);--festa-3:var(--primary);--festa-4:var(--primary);
-    --p-natal-1:#C62828; --p-natal-2:#2E7D4F; --p-natal-3:#B8860B; --p-natal-4:#FFFFFF; --p-natal-1e:#F28B82; --p-natal-2e:#7FCB9A; --p-natal-3e:#E8C468; --p-natal-4e:#F2F0EB;
+    --p-natal-1:#C62828; --p-natal-2:#2E7D4F; --p-natal-3:#B8860B; --p-natal-4:#929292; --p-natal-1e:#F28B82; --p-natal-2e:#7FCB9A; --p-natal-3e:#E8C468; --p-natal-4e:#F2F0EB;
     --p-ano-novo-1:#B8860B; --p-ano-novo-2:#8A8F98; --p-ano-novo-3:#6B3FA0; --p-ano-novo-4:#1C1B19; --p-ano-novo-1e:#E8C468; --p-ano-novo-2e:#C9CDD3; --p-ano-novo-3e:#C3A6F0; --p-ano-novo-4e:#F2F0EB}
   :root[data-festa="natal"]{--festa-1:var(--p-natal-1);--festa-2:var(--p-natal-2);--festa-3:var(--p-natal-3);--festa-4:var(--p-natal-4)}
   :root[data-festa="ano-novo"]{--festa-1:var(--p-ano-novo-1);--festa-2:var(--p-ano-novo-2);--festa-3:var(--p-ano-novo-3);--festa-4:var(--p-ano-novo-4)}
@@ -696,6 +696,9 @@
   .retro-num b{font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
   .retro-num span{color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
   .retro .btn{margin-top:var(--space-2)}
+  .festa-ambiente{position:fixed;z-index:4;overflow:hidden;pointer-events:none}
+  .festa-ambiente .amb{position:absolute;top:0;display:block}
+  .festa-ambiente .amb svg{width:100%;height:100%;display:block}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -993,13 +996,14 @@ function comemorarMarco({ valor, recorde }){
 }
 function comemorarDiaCompleto(total, depois){
   vibrar([15, 40, 15, 40, 30]);
-  if(dados.ajustes.sons) Animacoes.tocar('comemoracao');
+  const festa = festaAtual();
+  if(dados.ajustes.sons) Animacoes.tocar(festa && festa.id === 'natal' && festa.fase === 'auge' ? 'sino' : 'comemoracao');
   const anelEl = document.querySelector('#app .anel .circ');
   if(!Animacoes.reduzido()){
     const r = anelEl ? anelEl.getBoundingClientRect() : { left: 0, top: -1, width: 0, height: 0, bottom: -1 };
     const cor = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
     const visivel = r.bottom > 0 && r.top < innerHeight;
-    Animacoes.confete(visivel ? r.left + r.width / 2 : innerWidth / 2, visivel ? r.top + r.height / 2 : innerHeight * 0.3, ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor));
+    Animacoes.confete(visivel ? r.left + r.width / 2 : innerWidth / 2, visivel ? r.top + r.height / 2 : innerHeight * 0.3, festa ? coresFesta() : ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor), festa ? FORMA_FESTA[festa.id] : undefined);
   }
   mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), ic('hoje'), depois);
 }
@@ -1481,6 +1485,7 @@ function render(refazer = false, semFlip = false){
   document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
   animarProgresso();
   animarRetro();
+  if(tela === 'rotina') efeitoAmbiente(); else pararAmbiente();
   carregarMiniaturas();
 }
 setInterval(() => {
@@ -3607,6 +3612,37 @@ function animarRetro(){
   els.forEach(el => { el._mostrado = 0; Animacoes.contar(el); });
 }
 function fecharRetro(ano){ dados.ajustes.festas.retrospectivaVista = ano; salvar(); render(); }
+const FORMA_FESTA = { natal: 'floco', 'ano-novo': 'faisca', pascoa: 'ovo', namorados: 'coracao', junina: 'bandeira', halloween: 'morcego' };
+const AMBIENTE = {
+  natal: { sobe: false, cores: ['var(--festa-4)'], forma: '<svg viewBox="0 0 24 24"><path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg>' },
+  carnaval: { sobe: false, cores: ['var(--festa-1)', 'var(--festa-2)', 'var(--festa-3)', 'var(--festa-4)'], forma: '<svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2" fill="currentColor"/></svg>' },
+  namorados: { sobe: true, cores: ['var(--festa-1)', 'var(--festa-2)', 'var(--festa-3)'], forma: '<svg viewBox="0 0 24 24"><path d="M12 21C5 15.5 2 12.3 2 8.5 2 5.4 4.4 3 7.4 3c1.8 0 3.5.9 4.6 2.3C13.1 3.9 14.8 3 16.6 3 19.6 3 22 5.4 22 8.5c0 3.8-3 7-10 12.5z" fill="currentColor"/></svg>' },
+};
+let ambienteFeito = false, ambienteEl = null;
+function pararAmbiente(){ if(ambienteEl){ ambienteEl.remove(); ambienteEl = null; } }
+function efeitoAmbiente(){
+  if(ambienteFeito || tela !== 'rotina' || document.hidden || Animacoes.reduzido()) return;
+  const f = festaAtual(), cfg = f && f.fase === 'auge' && AMBIENTE[f.id], topo = document.querySelector('#app .hoje-top');
+  if(!cfg || !topo) return;
+  ambienteFeito = true;
+  const r = topo.getBoundingClientRect(), M = Animacoes.MOV;
+  const el = document.createElement('div');
+  el.className = 'festa-ambiente'; el.setAttribute('aria-hidden', 'true');
+  Object.assign(el.style, { left: r.left + 'px', top: Math.max(0, r.top) + 'px', width: r.width + 'px', height: Math.max(0, r.bottom) + 'px' });
+  document.body.appendChild(el); ambienteEl = el;
+  const h = r.height + 24;
+  for(let i = 0; i < M.ambiente; i++){
+    const p = document.createElement('span'), tam = 6 + Math.random() * 8, dur = 3000 + Math.random() * 2000, deriva = (Math.random() - 0.5) * 48;
+    p.className = 'amb'; p.innerHTML = cfg.forma;
+    Object.assign(p.style, { left: Math.random() * 96 + '%', width: tam + 'px', height: tam + 'px', color: cfg.cores[i % cfg.cores.length] });
+    el.appendChild(p);
+    const de = cfg.sobe ? h : -24, ate = cfg.sobe ? -24 : h;
+    p.animate([{ transform: `translate(0, ${de}px)`, opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.8 }, { transform: `translate(${deriva}px, ${ate}px) rotate(${(Math.random() - 0.5) * 300}deg)`, opacity: 0 }],
+      { duration: dur, delay: Math.random() * (M.ambienteDuracao - dur), easing: 'linear', fill: 'both' });
+  }
+  setTimeout(pararAmbiente, M.ambienteDuracao + 100);
+}
+document.addEventListener('visibilitychange', () => { if(document.hidden) pararAmbiente(); });
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }

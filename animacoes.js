@@ -115,7 +115,15 @@
     el._quadro = requestAnimationFrame(passo);
   }
 
-  function confete(x, y, cores) {
+  const FORMAS = {
+    floco: (c, s) => { c.lineWidth = 1.6; c.lineCap = 'round'; c.beginPath(); for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3; c.moveTo(-Math.cos(a) * s, -Math.sin(a) * s); c.lineTo(Math.cos(a) * s, Math.sin(a) * s); } c.stroke(); },
+    faisca: (c, s) => { c.beginPath(); c.moveTo(0, -s); c.quadraticCurveTo(0, 0, s, 0); c.quadraticCurveTo(0, 0, 0, s); c.quadraticCurveTo(0, 0, -s, 0); c.quadraticCurveTo(0, 0, 0, -s); c.fill(); },
+    ovo: (c, s) => { c.beginPath(); c.ellipse(0, 0, s * 0.62, s * 0.85, 0, 0, Math.PI * 2); c.fill(); },
+    coracao: (c, s) => { c.beginPath(); c.moveTo(0, s * 0.8); c.bezierCurveTo(-s * 1.2, 0, -s * 0.6, -s, 0, -s * 0.35); c.bezierCurveTo(s * 0.6, -s, s * 1.2, 0, 0, s * 0.8); c.fill(); },
+    bandeira: (c, s) => { c.beginPath(); c.moveTo(-s * 0.7, -s); c.lineTo(s * 0.7, -s); c.lineTo(0, s); c.closePath(); c.fill(); },
+    morcego: (c, s) => { c.beginPath(); c.moveTo(0, -s * 0.2); c.quadraticCurveTo(-s * 0.5, -s * 0.8, -s * 1.3, -s * 0.3); c.quadraticCurveTo(-s * 0.9, 0, -s * 0.9, s * 0.4); c.quadraticCurveTo(-s * 0.4, 0, 0, s * 0.5); c.quadraticCurveTo(s * 0.4, 0, s * 0.9, s * 0.4); c.quadraticCurveTo(s * 0.9, 0, s * 1.3, -s * 0.3); c.quadraticCurveTo(s * 0.5, -s * 0.8, 0, -s * 0.2); c.fill(); },
+  };
+  function confete(x, y, cores, forma) {
     if (reduzido()) return;
     const c = document.createElement('canvas');
     c.className = 'confete';
@@ -140,7 +148,9 @@
       ctx.globalAlpha = p > 0.75 ? Math.max(0, (1 - p) / 0.25) : 1;
       for (const q of ps) {
         q.vy += g * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.r += q.vr * dt;
-        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r); ctx.fillStyle = q.cor; ctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h); ctx.restore();
+        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r); ctx.fillStyle = q.cor; ctx.strokeStyle = q.cor;
+        if (FORMAS[forma]) FORMAS[forma](ctx, q.h / 2); else ctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h);
+        ctx.restore();
       }
       if (p < 1) requestAnimationFrame(passo); else c.remove();
     };
@@ -209,7 +219,7 @@
     a.oncancel = depois;
   }
 
-  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar, confete, faiscas, prepararAudio, tocar, SONS };
+  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar, confete, FORMAS, faiscas, prepararAudio, tocar, SONS };
   if (typeof module !== 'undefined' && module.exports) module.exports = Animacoes;
   else raiz.Animacoes = Animacoes;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
