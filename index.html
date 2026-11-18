@@ -537,6 +537,33 @@
   .fac-seg button{font-size:var(--fs-meta);min-width:0;padding:0 var(--space-1)}
   .assist-passos{margin:0 0 var(--space-1);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary)}
   .barra-salvar{position:sticky;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));background:var(--background);padding:var(--space-2) 0;z-index:2}
+  .aula{display:flex;flex-direction:column;gap:var(--space-3)}
+  .aula-top{display:flex;align-items:flex-start;gap:var(--space-2)}
+  .aula-top .ponto{margin-top:calc((var(--lh-body) - var(--space-3)) / 2)}
+  .aula-nm{flex:1;min-width:0}
+  .aula-nm b{display:block;font-weight:var(--w-semibold);overflow-wrap:anywhere}
+  .aula-nm small{display:block;color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .presenca{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-2)}
+  .presenca button{min-height:var(--touch);padding:0 var(--space-1);border-radius:var(--radius-chip);background:var(--surface-variant);color:var(--text-primary);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);
+    transition:background-color var(--dur-rapida) var(--ease-saida),color var(--dur-rapida) var(--ease-saida),transform var(--dur-toque) var(--ease-saida)}
+  .presenca button:active{transform:scale(.97)}
+  .presenca button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+  .presenca button:nth-child(2)[aria-pressed="true"]{background:var(--danger);color:var(--on-danger)}
+  .presenca button:nth-child(3)[aria-pressed="true"]{background:var(--text-secondary);color:var(--surface)}
+  .parcial{display:flex;flex-direction:column;gap:var(--space-1);font-size:var(--fs-label);line-height:var(--lh-label);color:var(--text-secondary)}
+  .status{margin:0;color:var(--nv);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium)}
+  .selo{display:inline-flex;align-items:center;gap:var(--space-1);flex:none;padding:0 var(--space-2);min-height:calc(var(--space-6) - var(--space-1));border-radius:var(--radius-full);
+    font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium);color:var(--text-primary);background:color-mix(in srgb, var(--nv) 14%, var(--surface));border:var(--border-width) solid color-mix(in srgb, var(--nv) 45%, transparent)}
+  .selo::before{content:'';width:var(--space-2);height:var(--space-2);border-radius:var(--radius-full);background:var(--nv)}
+  .banner{display:flex;align-items:center;gap:var(--space-2);width:100%;min-height:var(--touch);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-3);border-radius:var(--radius-card);text-align:left;
+    background:color-mix(in srgb, var(--priority-medium) 12%, var(--surface));border:var(--border-width) solid color-mix(in srgb, var(--priority-medium) 40%, transparent);color:var(--text-primary);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium)}
+  .banner span{flex:1;min-width:0}
+  .banner svg:first-child{color:var(--priority-medium)}
+  .fac-dia span{flex:1;text-align:center}
+  .fac-dia .hoje-btn{min-height:var(--touch);padding:0 var(--space-2)}
+  .pend{display:flex;flex-direction:column;gap:var(--space-2);padding-top:var(--space-3);border-top:var(--border-width) solid var(--divider-container)}
+  .pend p{margin:0;display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;overflow-wrap:anywhere}
+  .pend small{color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -2325,6 +2352,7 @@ let ultimoHoje = hoje();
 function conferirDia(){
   if(hoje() === ultimoHoje) return;
   if(diaSel === ultimoHoje) diaSel = hoje();
+  if(facDia === ultimoHoje) facDia = hoje();
   ultimoHoje = hoje();
   if(dados && !gesto) render();
 }
@@ -2358,7 +2386,93 @@ function telaFaculdade(){
     <div class="seg fac-seg" role="tablist" aria-label="Partes da faculdade">${abas.map(([id, r]) => `<button role="tab" aria-selected="${facAba === id}" class="${facAba === id ? 'on' : ''}" onclick="irFacAba('${id}')">${r}</button>`).join('')}</div>
     ${facAba === 'hoje' ? facHoje() : facAba === 'materias' ? facMaterias() : facAba === 'grade' ? facGrade() : facAnotacoes()}`;
 }
-function facHoje(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+const NIVEL_ROTULO = { ok: 'Em dia', atencao: 'Atenção', perigo: 'Perigo', ultima_chance: 'Última chance', ultrapassado: 'Reprovado por falta' };
+const NIVEL_COR = { ok: 'var(--primary)', atencao: 'var(--priority-medium)', perigo: 'var(--priority-high)', ultima_chance: 'var(--danger)', ultrapassado: 'var(--danger)' };
+const selo = n => `<span class="selo" style="--nv:${NIVEL_COR[n]}">${NIVEL_ROTULO[n]}</span>`;
+const ativaNaLista = x => { const m = materiaDe(x.materiaId); return !!m && !m.arquivada; };
+function irFacDia(d){ if(d === facDia) return; const dir = d > facDia ? 1 : -1; facDia = d; render(true); entrarDia(dir); }
+function blocoPresenca(d, m, a){
+  const r = a.registro, st = r ? r.status : null, nome = esc(m.nome), id = `pq-${m.id}-${d}`;
+  const b = (s, rot) => `<button class="${st === s ? 'on' : ''}" aria-pressed="${st === s}" aria-label="${rot} em ${nome}" onclick="marcarAula('${d}','${m.id}','${s}')">${rot}</button>`;
+  return `<div class="presenca" role="group" aria-label="Presença em ${nome}">${b('presente', 'Presente')}${b('falta', 'Faltei')}${b('sem_aula', 'Sem aula')}</div>
+    ${st === 'falta' && a.tempos > 1 ? `<div class="parcial"><span id="${id}">Faltei em quantos tempos?</span><div class="chips" role="radiogroup" aria-labelledby="${id}">${Array.from({ length: a.tempos }, (_, i) => i + 1).map(n => `<button class="chip ${r.temposFaltados === n ? 'on' : ''}" role="radio" aria-checked="${r.temposFaltados === n}" onclick="faltaParcial('${d}','${m.id}',${n})"><span>${n}</span></button>`).join('')}</div></div>` : ''}`;
+}
+function cartaoAula(d, a){
+  const m = materiaDe(a.materiaId), s = estFac()[m.id];
+  const meta = [Faculdade.rotuloTempos(a.posicoes), Faculdade.faixaHorario(fac().horario, a.posicoes), m.sala && 'Sala ' + esc(m.sala)].filter(Boolean).join(' · ');
+  return `<div class="card aula" style="${tintaMat(m)}" data-chave="aula-${m.id}">
+    <div class="aula-top"><i class="ponto"></i><div class="aula-nm"><b>${esc(m.nome)}</b><small>${meta}</small></div>${s.nivel !== 'ok' ? selo(s.nivel) : ''}</div>
+    ${blocoPresenca(d, m, a)}
+    <p class="status" style="--nv:${NIVEL_COR[s.nivel]}">${Faculdade.textoStatus(s)}</p>
+  </div>`;
+}
+const quandoProxima = (d, hj) => (Regras.somaDias(hj, 7) > d ? (d === Regras.somaDias(hj, 1) ? 'amanhã' : DIAS_MIN[Regras.diaSemana(d) - 1]) : Regras.dataCurta(d));
+function facHoje(){
+  const f = fac(), d = facDia, hj = hoje(), s = f.semestre;
+  const pend = Faculdade.pendentes(f, hj).filter(ativaNaLista);
+  const aulas = Faculdade.aulasDoDia(f, d).filter(ativaNaLista);
+  let corpo;
+  if(d < s.inicio || d > s.fim) corpo = `<div class="vazio" data-chave="fac-fora"><h2>${d < s.inicio ? 'O semestre começa em ' + Regras.dataCurta(s.inicio) : 'O semestre terminou em ' + Regras.dataCurta(s.fim)}.</h2></div>`;
+  else if(aulas.length) corpo = aulas.map(a => cartaoAula(d, a)).join('');
+  else {
+    const fer = Faculdade.feriado(f, d), prox = Faculdade.proximaAula(f, d), pm = prox && materiaDe(prox.materiaId);
+    corpo = `<div class="vazio" data-chave="fac-sem-aula"><h2>${d === hj ? 'Sem aulas hoje.' : 'Sem aulas neste dia.'}</h2>${fer && fer.motivo ? `<p>${esc(fer.motivo)}</p>` : ''}
+      ${pm ? `<button class="btn ghost" onclick="irFacDia('${prox.data}')">Próxima: ${quandoProxima(prox.data, hj)}, ${esc(pm.nome)}</button>` : ''}</div>`;
+  }
+  return `${pend.length ? `<button class="banner" data-chave="fac-pend" onclick="desenharPendentes()">${ic('alerta')}<span>${pend.length === 1 ? '1 aula sem marcação' : pend.length + ' aulas sem marcação'}</span>${ic('proximo')}</button>` : ''}
+    <div class="day fac-dia" data-chave="fac-dia"><button class="icon-btn" onclick="irFacDia(Regras.somaDias(facDia,-1))" aria-label="Dia anterior">${ic('anterior')}</button>
+      <span>${Regras.dataExtenso(d)}</span>${d !== hj ? '<button class="btn text hoje-btn" onclick="irFacDia(hoje())">Hoje</button>' : ''}
+      <button class="icon-btn" onclick="irFacDia(Regras.somaDias(facDia,1))" aria-label="Próximo dia">${ic('proximo')}</button></div>
+    ${corpo}`;
+}
+function definirRegistro(d, mid, r){
+  const f = fac();
+  if(r) f.aulas[d] = { ...(f.aulas[d] || {}), [mid]: r };
+  else if(f.aulas[d]){ delete f.aulas[d][mid]; if(!Object.keys(f.aulas[d]).length) delete f.aulas[d]; }
+  salvar();
+  aposMudarFaltas();
+  render();
+  atualizarFolhaFac();
+}
+function marcarAula(d, mid, status){
+  const f = fac(), m = materiaDe(mid), n = Faculdade.temposNoDia(f, mid, d);
+  if(!m || !n) return;
+  const antes = Faculdade.registro(f, d, mid), agora = new Date().toISOString();
+  const voltar = () => definirRegistro(d, mid, antes);
+  if(antes && antes.status === status){ definirRegistro(d, mid, null); snack('Marcação removida', voltar); return; }
+  definirRegistro(d, mid, status === 'falta' ? { status, temposFaltados: n, marcadoEm: agora } : { status, marcadoEm: agora });
+  if(status === 'falta') snack(`Falta registrada em ${m.nome} (${Faculdade.tempos(n)})`, voltar);
+  else if(status === 'sem_aula') snack(`Aula de ${m.nome} não contará nas faltas`, voltar);
+}
+function faltaParcial(d, mid, n){
+  const antes = Faculdade.registro(fac(), d, mid), m = materiaDe(mid);
+  if(!antes || antes.status !== 'falta' || antes.temposFaltados === n) return;
+  definirRegistro(d, mid, { ...antes, temposFaltados: n, marcadoEm: new Date().toISOString() });
+  snack(`Falta registrada em ${m.nome} (${Faculdade.tempos(n)})`, () => definirRegistro(d, mid, antes));
+}
+function atualizarFolhaFac(){
+  if(!$('overlay').classList.contains('show')) return;
+  const el = $('sheet').querySelector('[data-folha]');
+  if(el && el.dataset.folha === 'pendentes') desenharPendentes();
+  else if(el && el.dataset.folha === 'dia') desenharFolhaDia();
+}
+function desenharPendentes(){
+  const lista = Faculdade.pendentes(fac(), hoje()).filter(ativaNaLista);
+  if(!lista.length){ if($('overlay').classList.contains('show')) fecharSheet(); return; }
+  abrirSheetOuAtualizar(`<h2 data-folha="pendentes">${lista.length === 1 ? '1 aula sem marcação' : lista.length + ' aulas sem marcação'}</h2>
+    <p class="hint">Aulas sem marcação contam como presença.</p>
+    <button class="btn ghost" onclick="marcarPendentesPresente()">Marcar todas como presente</button>
+    ${lista.slice(0, 60).map(p => { const m = materiaDe(p.materiaId); return `<div class="pend" style="${tintaMat(m)}"><p><i class="ponto"></i><b>${esc(m.nome)}</b><small>${Regras.dataCurta(p.data)} · ${Faculdade.rotuloTempos(p.posicoes)}</small></p>${blocoPresenca(p.data, m, { registro: null, tempos: p.tempos })}</div>`; }).join('')}`);
+}
+function marcarPendentesPresente(){
+  const f = fac(), lista = Faculdade.pendentes(f, hoje()).filter(ativaNaLista), agora = new Date().toISOString();
+  lista.forEach(p => { f.aulas[p.data] = { ...(f.aulas[p.data] || {}), [p.materiaId]: { status: 'presente', marcadoEm: agora } }; });
+  salvar(); aposMudarFaltas(); fecharSheet(); render();
+  snack(lista.length === 1 ? '1 aula marcada como presente' : lista.length + ' aulas marcadas como presente', () => {
+    lista.forEach(p => { if(f.aulas[p.data]){ delete f.aulas[p.data][p.materiaId]; if(!Object.keys(f.aulas[p.data]).length) delete f.aulas[p.data]; } });
+    salvar(); aposMudarFaltas(); render();
+  });
+}
 function facMaterias(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
 function facGrade(){
   const f = fac(), vig = Faculdade.gradeVigente(f, hoje());
