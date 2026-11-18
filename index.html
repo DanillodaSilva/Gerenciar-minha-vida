@@ -748,6 +748,16 @@
   .hoje-tit h1,.festa-cartao-txt h2,.retro h2{text-wrap:balance}
   html.com-previa #app{padding-top:calc(var(--touch) + var(--space-6))}
   .previa-banner button{min-height:var(--touch);padding:0 var(--space-3);color:var(--snack-action);font-weight:var(--w-medium);border-radius:var(--radius-chip)}
+  :root{--p-arvore-tronco:#7C5A3A; --p-arvore-tronco-e:#C9A27E; --p-arvore-folha-1:#2E7D4F; --p-arvore-folha-1e:#7FCB9A; --p-arvore-folha-2:#4C9A63; --p-arvore-folha-2e:#9BD9AE;
+    --p-arvore-folha-3:#6DB07A; --p-arvore-folha-3e:#B6E5C2; --p-arvore-fruto:#E8590C; --p-arvore-fruto-e:#FF922B; --p-arvore-terra:#B8A88A; --p-arvore-terra-e:#5A5146;
+    --arvore-tronco:var(--p-arvore-tronco); --arvore-folha-1:var(--p-arvore-folha-1); --arvore-folha-2:var(--p-arvore-folha-2); --arvore-folha-3:var(--p-arvore-folha-3);
+    --arvore-flor:var(--primary); --arvore-fruto:var(--p-arvore-fruto); --arvore-terra:var(--p-arvore-terra)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-tronco:var(--p-arvore-tronco-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)} }
+  :root[data-theme="dark"]{--arvore-tronco:var(--p-arvore-tronco-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)}
+  svg.arvore{display:block;width:auto;height:100%;max-width:100%;overflow:visible}
+  .arv-folha{transform-box:fill-box;transform-origin:center}
+  .arv-luz{display:none}
+  :root[data-festa="natal"][data-fase="auge"] .arv-luz{display:inline}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -799,6 +809,7 @@
 <script src="faculdade.js?v=1.5.0"></script>
 <script src="fotos.js?v=1.5.0"></script>
 <script src="festas.js?v=1.5.0"></script>
+<script src="arvore.js?v=1.6.0"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -3819,6 +3830,45 @@ function sairPrevia(){
   const b = $('previa-banner'); if(b) b.remove();
   document.documentElement.classList.remove('com-previa');
   render(true);
+}
+/* ---------- árvore ---------- */
+const ESQUELETOS = [
+  '<ellipse cx="100" cy="195" rx="7" ry="5" fill="var(--arvore-tronco)"/><path d="M95 192c2-3 8-3 10 0" fill="none" stroke="var(--arvore-folha-2)" stroke-width="1.6" stroke-linecap="round"/>',
+  '<path d="M100 200Q99 189 100 178" fill="none" stroke="var(--arvore-tronco)" stroke-width="2.6" stroke-linecap="round"/>',
+  '<path d="M100 200Q97 180 101 152" fill="none" stroke="var(--arvore-tronco)" stroke-width="3.6" stroke-linecap="round"/><path d="M100 174q-8-4-12-11" fill="none" stroke="var(--arvore-tronco)" stroke-width="2" stroke-linecap="round"/>',
+  '<path d="M100 200C99 180 101 160 100 138" fill="none" stroke="var(--arvore-tronco)" stroke-width="6" stroke-linecap="round"/><path d="M100 162q-14-8-24-22M100 152q14-6 22-20M100 142q-2-12 0-22" fill="none" stroke="var(--arvore-tronco)" stroke-width="3" stroke-linecap="round"/>',
+  '<path d="M100 200C98 176 102 150 100 122" fill="none" stroke="var(--arvore-tronco)" stroke-width="8" stroke-linecap="round"/><path d="M100 156q-20-8-34-28M100 146q20-6 32-26M100 132q-12-10-18-30M100 128q10-12 14-32" fill="none" stroke="var(--arvore-tronco)" stroke-width="3.6" stroke-linecap="round"/>',
+  '<path d="M100 200C97 172 103 140 100 108" fill="none" stroke="var(--arvore-tronco)" stroke-width="10" stroke-linecap="round"/><path d="M100 152q-26-8-44-32M100 142q26-6 42-30M100 126q-16-10-26-36M100 120q14-12 22-38M100 112q-2-18 0-34M64 128q-8-10-10-20M140 120q8-10 10-22" fill="none" stroke="var(--arvore-tronco)" stroke-width="4" stroke-linecap="round"/>',
+  '<path d="M100 200C96 168 104 136 100 100" fill="none" stroke="var(--arvore-tronco)" stroke-width="12" stroke-linecap="round"/><path d="M100 150q-34-8-58-34M100 140q34-6 56-32M100 124q-20-12-34-42M100 118q18-14 30-44M100 106q-2-20 0-40M52 124q-10-10-14-22M148 116q10-10 14-24M74 92q-6-12-4-24M126 88q6-12 4-24" fill="none" stroke="var(--arvore-tronco)" stroke-width="4.4" stroke-linecap="round"/>',
+];
+ESQUELETOS.push(ESQUELETOS[6], ESQUELETOS[6], ESQUELETOS[6].replace('stroke-width="12"', 'stroke-width="16"') + '<path d="M100 198q-16 3-30 9M100 198q16 3 32 7M96 199q-5 6-12 10M104 199q6 6 14 9" fill="none" stroke="var(--arvore-tronco)" stroke-width="3.4" stroke-linecap="round"/>');
+const COPAS = [null, null, null, [100, 124, 32, 22], [100, 110, 42, 31], [100, 96, 54, 39], [100, 86, 68, 48], [100, 84, 72, 52], [100, 84, 72, 52], [100, 84, 72, 52]];
+const CAPACIDADE = [0, 2, 6, 13, 29, 59, 120, 120, 120, 120];
+const pontoCopa = (k, n, giro, escala, estagio) => { const c = COPAS[estagio], a = k * 2.39996 + giro, raio = Math.sqrt((k + 0.5) / n) * escala; return { x: c[0] + c[2] * raio * Math.cos(a), y: c[1] + c[3] * raio * Math.sin(a) }; };
+const FOLHAS_CAULE = [[94, 182, -40], [106, 178, 40], [93, 168, -35], [107, 162, 35], [95, 154, -25], [105, 150, 25]];
+const FOLHA_D = 'M0-6C4-3 4 3 0 6C-4 3-4-3 0-6Z';
+function posicaoFolha(i, estagio){
+  const c = COPAS[estagio];
+  if(!c){ const p = FOLHAS_CAULE[i % FOLHAS_CAULE.length]; return { x: p[0], y: p[1] - Math.floor(i / FOLHAS_CAULE.length) * 6, r: p[2] }; }
+  const a = i * 2.39996, raio = Math.min(1, Math.sqrt((i + 0.5) / CAPACIDADE[estagio]));
+  return { x: c[0] + c[2] * raio * Math.cos(a), y: c[1] + c[3] * raio * Math.sin(a), r: (i * 73) % 120 - 60 };
+}
+const tamFolha = e => (e >= 6 ? 1.35 : e >= 3 ? 1.45 : 1.05);
+function svgFolha(i, estagio, extra = ''){
+  const p = posicaoFolha(i, estagio);
+  return `<path class="arv-folha" data-i="${i}" d="${FOLHA_D}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.r}) scale(${tamFolha(estagio)})" fill="var(--arvore-folha-${(i % 3) + 1})"${extra}/>`;
+}
+function desenharArvore(folhas, estagio, rotulo = true){
+  const n = Math.min(folhas, 120), partes = [];
+  for(let i = 0; i < n; i++) partes.push(svgFolha(i, estagio));
+  const extras = [];
+  if(estagio >= 7) for(let k = 0; k < 12; k++){ const p = pontoCopa(k, 12, 0.7, 0.92, estagio); extras.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.4" fill="var(--arvore-flor)"/><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="1.2" fill="var(--surface)"/>`); }
+  if(estagio >= 8) for(let k = 0; k < 9; k++){ const p = pontoCopa(k, 9, 2.1, 0.86, estagio); extras.push(`<circle cx="${p.x.toFixed(1)}" cy="${(p.y + 5).toFixed(1)}" r="3.8" fill="var(--arvore-fruto)"/>`); }
+  const luzes = COPAS[estagio] ? Array.from({ length: 10 }, (_, k) => { const p = posicaoFolha(k * 11 + 3, estagio); return `<circle class="arv-luz" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.2" fill="var(--festa-${(k % 3) + 1})"/>`; }).join('') : '';
+  const rot = rotulo ? `role="img" aria-label="Sua árvore: ${Arvore.NOMES[estagio]}, ${folhas} ${folhas === 1 ? 'folha' : 'folhas'}"` : 'aria-hidden="true"';
+  return `<svg class="arvore" viewBox="0 0 200 220" ${rot} focusable="false" data-estagio="${estagio}">
+    <ellipse cx="100" cy="203" rx="${36 + estagio * 5}" ry="8" fill="var(--arvore-terra)"/>
+    <g class="arv-esqueleto">${ESQUELETOS[estagio]}</g><g class="arv-folhas">${partes.join('')}</g><g class="arv-extras">${extras.join('')}${luzes}</g></svg>`;
 }
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
