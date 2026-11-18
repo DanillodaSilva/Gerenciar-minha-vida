@@ -5,15 +5,15 @@ Fonte única de verdade do visual. Todo valor de cor, tamanho, espaçamento, can
 - Produto: app de rotina e tarefas do dia, offline, instalado pelo Chrome (PWA).
 - Público: quem anota o dia no celular e quer ver rápido o que falta.
 - Ação principal: **Nova tarefa** (botão flutuante). Secundária: concluir tarefa.
-- Base: Material 3 com cores próprias. Cor semente `#2F6B4F`. **Sem roxo ou lavanda em nenhum lugar.**
+- Base: Material 3 com cores próprias. Cor semente `#6B3FA0`. Identidade roxa desde a versão 1.5.0 (decisão do dono do app, 18/11/2026). Categorias de seção continuam com as 8 cores, sem roxo.
 - Idioma: pt-BR.
 
 ## Arquitetura dos tokens
 
 ```
-Primitivo  (valor bruto, nunca usado direto em componente)   --p-green-600: #2F6B4F
+Primitivo  (valor bruto, nunca usado direto em componente)   --p-purple-600: #6B3FA0
    ↓
-Semântico  (função, muda entre claro e escuro)               --primary: var(--p-green-600)
+Semântico  (função, muda entre claro e escuro)               --primary: var(--p-purple-600)
    ↓
 Componente (peça específica)                                 --fab-bg: var(--primary)
 ```
@@ -36,10 +36,10 @@ Componente (peça específica)                                 --fab-bg: var(--p
 | `--border-strong` | `#92876D` | `#767168` | borda de campo, caixa de conclusão, chip (controles, 3:1) |
 | `--text-primary` | `#1C1B19` | `#F2F0EB` | texto principal |
 | `--text-secondary` | `#5F5B53` | `#B3AEA4` | linha secundária, cabeçalhos de seção |
-| `--primary` | `#2F6B4F` | `#6FBF95` | ação principal, seleção, anel, barra de hoje |
-| `--on-primary` | `#FFFFFF` | `#0E2A1C` | texto e ícone sobre `--primary` |
+| `--primary` | `#6B3FA0` | `#C3A6F0` | ação principal, seleção, anel, barra de hoje |
+| `--on-primary` | `#FFFFFF` | `#24123D` | texto e ícone sobre `--primary` |
 | `--danger` | `#B91C1C` | `#F87171` | excluir, erro, horário passado |
-| `--on-danger` | `#FFFFFF` | `#141413` | ícone e texto sobre `danger` sólido (fundo do gesto de excluir): 6,47:1 claro, 6,66:1 escuro; `onPrimary` sobre `primary` sólido (gesto de marcar): 6,29:1 e 7,00:1 |
+| `--on-danger` | `#FFFFFF` | `#141413` | ícone e texto sobre `danger` sólido (fundo do gesto de excluir): 6,47:1 claro, 6,66:1 escuro; `onPrimary` sobre `primary` sólido (gesto de marcar): 7,38:1 e 8,16:1 |
 | `--priority-high` | `#C0400C` | `#FB8B5B` | prioridade alta |
 | `--priority-medium` | `#9A5E07` | `#E6B84A` | prioridade média |
 | `--priority-low` | `#4B6B8A` | `#8FB3D9` | prioridade baixa |
@@ -64,7 +64,7 @@ O pastel vai nas superfícies, nunca no texto: texto em pastel não passa de 4,5
 
 | Token | Claro | Escuro | Uso |
 |---|---|---|---|
-| `--primary-container` | `#C2EBD8` | `#2E5644` | botão flutuante, chip selecionado, indicador da aba, trilho do anel, cartão "Tudo feito" |
+| `--primary-container` | `#E6DAF7` | `#4A3270` | botão flutuante, chip selecionado, indicador da aba, trilho do anel, cartão "Tudo feito" |
 | `--cat-green-container` | `#DFF1E9` | `#1E362B` | cartão da seção |
 | `--cat-blue-container` | `#DBE3F5` | `#1E2636` | cartão da seção |
 | `--cat-teal-container` | `#DBF5F3` | `#1E3634` | cartão da seção |
@@ -110,7 +110,7 @@ Mínimo exigido: 4,5:1 para texto, 3:1 para ícones, bordas de campo e controles
 |---|---|---|
 | `textPrimary` | 15.92 / 17.21 / 14.71 | 16.19 / 14.79 / 12.77 |
 | `textSecondary` | 6.25 / 6.76 / 5.78 | 8.35 / 7.63 / 6.59 |
-| `primary` | 5.82 / 6.29 / 5.38 | 8.39 / 7.67 / 6.62 |
+| `primary` | 6.83 / 7.38 / 6.31 | 8.81 / 8.05 / 6.95 |
 | `danger` | 5.99 / 6.47 / 5.53 | 6.66 / 6.09 / 5.26 |
 | `priorityHigh` | 4.88 / 5.28 / 4.51 | 7.85 / 7.18 / 6.20 |
 | `priorityMedium` | 4.88 / 5.28 / 4.51 | 9.94 / 9.08 / 7.84 |
@@ -123,14 +123,47 @@ Mínimo exigido: 4,5:1 para texto, 3:1 para ícones, bordas de campo e controles
 | cat `yellow` | 4.88 / 5.28 / 4.51 | 9.94 / 9.08 / 7.84 |
 | cat `brown` | 5.75 / 6.21 / 5.31 | 7.86 / 7.18 / 6.20 |
 | cat `gray` | 7.06 / 7.63 / 6.52 | 7.31 / 6.68 / 5.77 |
-| `onPrimary` sobre `primary` | 6.29 | 7.00 |
+| `onPrimary` sobre `primary` | 7.38 | 8.16 |
 | `borderStrong` sobre background / surface / surfaceVariant | 3.29 / 3.55 / 3.04 | 3.80 / 3.47 / 3.00 |
+
+### 1.4.1 Identidade roxa (versão 1.5.0)
+
+Primitivas novas: `--p-purple-50` `#F1EAFB`, `--p-purple-100` `#E6DAF7`, `--p-purple-300` `#C3A6F0`, `--p-purple-600` `#6B3FA0`, `--p-purple-700` `#5A3388`, `--p-purple-800` `#4A3270`, `--p-purple-950` `#24123D`. As `--p-green-*` continuam, usadas pela categoria verde.
+
+| Token | Claro (antes → agora) | Escuro (antes → agora) |
+|---|---|---|
+| `--primary` | `--p-green-600` → `--p-purple-600` | `--p-green-300` → `--p-purple-300` |
+| `--on-primary` | `--p-white` (igual) | `--p-green-950` → `--p-purple-950` |
+| `--primary-container` | `--p-green-100` → `--p-purple-100` | `--p-green-800` → `--p-purple-800` |
+| `--snack-action` | `--p-green-300` → `--p-purple-300` | `--p-green-600` → `--p-purple-600` |
+
+Não mudam: fundos e neutros, `--danger`, prioridades, as 8 categorias, o `theme-color` (areia `#F7F6F3` / `#141413`) e a conversão de `#7c5cff` para `blue` na importação.
+
+Contraste WCAG 2.x medido (mínimo 4,5:1 para texto e 3:1 para borda, ícone e foco):
+
+| Tema | Par | Cores | Contraste | Mínimo | Situação |
+|---|---|---|---|---|---|
+| claro | --primary sobre --background | `#6B3FA0` / `#F7F6F3` | 6,83:1 | 4,5:1 | ok |
+| claro | --primary sobre --surface | `#6B3FA0` / `#FFFFFF` | 7,38:1 | 4,5:1 | ok |
+| claro | --primary sobre --surface-variant | `#6B3FA0` / `#EFEDE8` | 6,31:1 | 4,5:1 | ok |
+| claro | --on-primary sobre --primary | `#FFFFFF` / `#6B3FA0` | 7,38:1 | 4,5:1 | ok |
+| claro | --text-primary sobre --primary-container | `#1C1B19` / `#E6DAF7` | 12,90:1 | 4,5:1 | ok |
+| claro | --primary sobre --primary-container | `#6B3FA0` / `#E6DAF7` | 5,53:1 | 3:1 | ok |
+| claro | --snack-action sobre o snackbar | `#C3A6F0` / `#1C1B19` | 8,22:1 | 4,5:1 | ok |
+| escuro | --primary sobre --background | `#C3A6F0` / `#141413` | 8,81:1 | 4,5:1 | ok |
+| escuro | --primary sobre --surface | `#C3A6F0` / `#1E1D1B` | 8,05:1 | 4,5:1 | ok |
+| escuro | --primary sobre --surface-variant | `#C3A6F0` / `#2A2926` | 6,95:1 | 4,5:1 | ok |
+| escuro | --on-primary sobre --primary | `#24123D` / `#C3A6F0` | 8,16:1 | 4,5:1 | ok |
+| escuro | --text-primary sobre --primary-container | `#F2F0EB` / `#4A3270` | 9,31:1 | 4,5:1 | ok |
+| escuro | --primary sobre --primary-container | `#C3A6F0` / `#4A3270` | 5,06:1 | 3:1 | ok |
+| escuro | --snack-action sobre o snackbar | `#6B3FA0` / `#F2F0EB` | 6,48:1 | 4,5:1 | ok |
 
 ### 1.5 Regras
 
 - Prioridade e situação nunca só pela cor: sempre há texto ou ícone junto.
 - Texto colorido (`danger`, prioridades, categorias) só sobre `background`, `surface` ou `surfaceVariant`.
-- Proibido roxo ou lavanda, inclusive tons padrão do Material.
+- Identidade roxa desde a versão 1.5.0 (decisão do dono do app, 18/11/2026). Categorias de seção continuam com as 8 cores, sem roxo.
+- A cor festiva (`--festa-*`) só pinta decoração e partícula, nunca texto, botão, chave, aba ou foco, que continuam em `--primary`.
 
 ## 2. Tipografia
 
