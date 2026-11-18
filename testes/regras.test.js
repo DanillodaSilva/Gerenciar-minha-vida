@@ -343,7 +343,7 @@ describe('migração v2 → v3 (lembretes)', () => {
     tarefas: [{ id: 'a', title: 'A', notes: null, dueDate: '2026-11-18', dueTime: '10:00', priority: 'medium', categoryId: null, completedAt: null, createdAt: '2026-11-10T12:00:00.000Z', updatedAt: '2026-11-10T12:00:00.000Z' }] };
   test('adiciona lembreteMin e reminderOffsetMin nulos, mantendo o resto', () => {
     const { dados, migrou, deVersao } = R.migrar(JSON.stringify(v2));
-    assert.equal(migrou, true); assert.equal(deVersao, 2); assert.equal(dados.schemaVersion, 3);
+    assert.equal(migrou, true); assert.equal(deVersao, 2); assert.equal(dados.schemaVersion, R.SCHEMA);
     assert.equal(dados.secoes[0].itens[0].lembreteMin, null);
     assert.equal(dados.tarefas[0].reminderOffsetMin, null);
     assert.equal(dados.ajustes.tema, 'dark');
@@ -500,5 +500,45 @@ describe('marcos de sequência', () => {
     assert.equal(R.maiorSequencia(d, HOJE), 4);
     assert.equal(R.inicioSequencia({ secoes: [], feitos: {} }, HOJE), null);
     assert.equal(R.maiorSequencia({ secoes: [], feitos: {} }, HOJE), 0);
+  });
+});
+
+describe('migração v3 → v4 (faculdade)', () => {
+  const v3 = { schemaVersion: 3, ajustes: { tema: 'dark', nome: 'Ana' }, secoes: [{ id: 's', nome: 'X', corToken: 'teal', itens: [{ id: 'i', nome: 'Item', detalhe: '', criadoEm: '2026-11-01', notas: null, horario: '08:00', dias: [1, 2, 3], lembreteMin: 10 }] }],
+    feitos: { '2026-11-16': ['i'] }, tarefas: [{ id: 'a', title: 'A', notes: null, dueDate: '2026-11-18', dueTime: null, priority: 'high', categoryId: null, completedAt: null, reminderOffsetMin: null }] };
+  test('dado antigo ganha a faculdade padrão sem mudar o resto', () => {
+    const { dados, migrou, deVersao } = R.migrar(JSON.stringify(v3));
+    assert.equal(migrou, true); assert.equal(deVersao, 3); assert.equal(dados.schemaVersion, 4);
+    assert.deepEqual(dados.faculdade, {
+      semestre: null, temposPorDia: { 1: 5, 2: 5, 3: 5, 4: 5, 5: 4, 6: 0, 7: 0 }, horario: { inicio: null, duracaoMin: null, intervalos: [] },
+      limiteFaltas: 25, alertasAtivos: true, materias: [], grades: [], aulas: {}, anotacoes: [], alertasEnviados: {}, semestresAnteriores: [], permissaoPedida: false,
+    });
+    const { faculdade, schemaVersion, ...resto } = dados;
+    const { schemaVersion: _v, ...antes } = v3;
+    assert.deepEqual(resto.secoes, antes.secoes);
+    assert.deepEqual(resto.feitos, antes.feitos);
+    assert.deepEqual(resto.tarefas, antes.tarefas);
+    assert.equal(resto.ajustes.nome, 'Ana');
+  });
+  test('rodar duas vezes dá o mesmo resultado', () => {
+    const uma = R.migrar(JSON.stringify(v3)).dados;
+    const duas = R.migrar(JSON.stringify(uma));
+    assert.equal(duas.migrou, false);
+    assert.deepEqual(duas.dados, uma);
+  });
+  test('faculdade existente é mantida e valores inválidos voltam ao padrão', () => {
+    const fac = { semestre: { nome: '2026.1', inicio: '2026-02-02', fim: '2026-05-22', diasSemAula: [{ data: '2026-02-18', motivo: 'Cinzas' }, { data: 'x' }] },
+      temposPorDia: { 1: 5, 5: 3, 6: 99 }, limiteFaltas: 70, alertasAtivos: false,
+      materias: [{ id: 'm1', nome: 'Cálculo', cor: 'roxo', totalManual: 72 }], grades: [{ validaDesde: '2026-02-02', dias: { 1: ['m1', 'm1', 'm1', null, null] } }],
+      aulas: { '2026-02-02': { m1: { status: 'falta', temposFaltados: 1, marcadoEm: '2026-02-02T12:00:00.000Z' } } } };
+    const f = R.migrar(JSON.stringify({ ...v3, faculdade: fac })).dados.faculdade;
+    assert.deepEqual(f.semestre.diasSemAula, [{ data: '2026-02-18', motivo: 'Cinzas' }]);
+    assert.equal(f.temposPorDia[5], 3); assert.equal(f.temposPorDia[6], 0);
+    assert.equal(f.limiteFaltas, 25); assert.equal(f.alertasAtivos, false);
+    assert.equal(f.materias[0].cor, 'gray'); assert.equal(f.materias[0].totalManual, 72); assert.equal(f.materias[0].arquivada, false);
+    assert.deepEqual(f.aulas, fac.aulas); assert.deepEqual(f.grades, fac.grades);
+  });
+  test('semestre com fim antes do início vira nulo', () => {
+    assert.equal(R.normalizarFaculdade({ semestre: { nome: 'x', inicio: '2026-05-01', fim: '2026-04-01' } }).semestre, null);
   });
 });

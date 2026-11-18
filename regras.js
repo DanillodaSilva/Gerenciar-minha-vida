@@ -178,12 +178,40 @@
     return null;
   }
 
-  const SCHEMA = 3;
+  const SCHEMA = 4;
   const ANTECEDENCIAS = [0, 10, 30, 60];
   const antecedencia = v => (ANTECEDENCIAS.includes(v) ? v : null);
   const TODOS_OS_DIAS = [1, 2, 3, 4, 5, 6, 7];
   const ehObjeto = x => x !== null && typeof x === 'object' && !Array.isArray(x);
-  const vazio = () => ({ schemaVersion: SCHEMA, secoes: [], feitos: {}, tarefas: [], ajustes: normalizarAjustes({}, false) });
+  const vazio = () => ({ schemaVersion: SCHEMA, secoes: [], feitos: {}, tarefas: [], ajustes: normalizarAjustes({}, false), faculdade: normalizarFaculdade(null) });
+  const TEMPOS_PADRAO = { 1: 5, 2: 5, 3: 5, 4: 5, 5: 4, 6: 0, 7: 0 };
+  const ehInteiro = (v, min, max) => Number.isInteger(v) && v >= min && v <= max;
+  const lista = v => (Array.isArray(v) ? v : []);
+  const texto = v => (typeof v === 'string' ? v : '');
+  function normalizarFaculdade(f) {
+    const x = ehObjeto(f) ? f : {};
+    const t = ehObjeto(x.temposPorDia) ? x.temposPorDia : {};
+    const h = ehObjeto(x.horario) ? x.horario : {};
+    const s = x.semestre;
+    const semestre = ehObjeto(s) && ehData(s.inicio) && ehData(s.fim) && s.fim >= s.inicio
+      ? { ...s, nome: texto(s.nome), diasSemAula: lista(s.diasSemAula).filter(d => ehObjeto(d) && ehData(d.data)) } : null;
+    return {
+      ...x,
+      semestre,
+      temposPorDia: Object.fromEntries(TODOS_OS_DIAS.map(d => [String(d), ehInteiro(t[d], 0, 10) ? t[d] : TEMPOS_PADRAO[d]])),
+      horario: { ...h, inicio: ehHora(h.inicio) ? h.inicio : null, duracaoMin: ehInteiro(h.duracaoMin, 1, 300) ? h.duracaoMin : null, intervalos: lista(h.intervalos) },
+      limiteFaltas: ehInteiro(x.limiteFaltas, 1, 50) ? x.limiteFaltas : 25,
+      alertasAtivos: typeof x.alertasAtivos === 'boolean' ? x.alertasAtivos : true,
+      materias: lista(x.materias).filter(m => ehObjeto(m) && typeof m.id === 'string' && m.id).map(m => ({ ...m, nome: texto(m.nome), professor: texto(m.professor), sala: texto(m.sala),
+        cor: CORES.includes(m.cor) ? m.cor : 'gray', totalManual: ehInteiro(m.totalManual, 1, 100000) ? m.totalManual : null, arquivada: m.arquivada === true })),
+      grades: lista(x.grades).filter(g => ehObjeto(g) && ehData(g.validaDesde) && ehObjeto(g.dias)),
+      aulas: ehObjeto(x.aulas) ? x.aulas : {},
+      anotacoes: lista(x.anotacoes).filter(a => ehObjeto(a) && typeof a.id === 'string' && a.id),
+      alertasEnviados: ehObjeto(x.alertasEnviados) ? x.alertasEnviados : {},
+      semestresAnteriores: lista(x.semestresAnteriores),
+      permissaoPedida: x.permissaoPedida === true,
+    };
+  }
 
   function diasValidos(dias) {
     if (!Array.isArray(dias)) return null;
@@ -218,6 +246,7 @@
       feitos,
       tarefas: (Array.isArray(d.tarefas) ? d.tarefas : []).map(t => (ehObjeto(t) ? { ...t, reminderOffsetMin: antecedencia(t.reminderOffsetMin) } : t)),
       ajustes: normalizarAjustes(ajustes, temDados),
+      faculdade: normalizarFaculdade(d.faculdade),
       secoes: d.secoes.filter(ehObjeto).map(s => ({
         ...s,
         corToken: corTokenDe(s),
@@ -320,7 +349,7 @@
   const textoComemoracao = (feitos, sequencia) => feitos + ' de ' + feitos + ' feitos · sequência de ' + sequencia + (sequencia === 1 ? ' dia' : ' dias');
   const contarTarefas = d => d.secoes.reduce((a, s) => a + s.itens.length, 0) + (d.tarefas || []).length;
 
-  const Regras = { normalizarAjustes, CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
+  const Regras = { normalizarAjustes, normalizarFaculdade, TEMPOS_PADRAO, CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
     APP, montarBackup, lerBackup, contarTarefas,
