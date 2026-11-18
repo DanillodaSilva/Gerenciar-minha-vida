@@ -758,6 +758,38 @@
   .arv-folha{transform-box:fill-box;transform-origin:center}
   .arv-luz{display:none}
   :root[data-festa="natal"][data-fase="auge"] .arv-luz{display:inline}
+  .folhinha{position:fixed;z-index:6;width:calc(var(--touch) + var(--space-2));height:calc(var(--touch) + var(--space-2));padding:0;border-radius:var(--radius-full);
+    left:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-3) + env(safe-area-inset-left));bottom:calc(var(--nav-h) + var(--space-3) + env(safe-area-inset-bottom));
+    filter:drop-shadow(0 2px 3px var(--sombra-cor));transition:opacity var(--dur-rapida) var(--ease-saida)}
+  .folhinha svg{width:100%;height:100%;display:block;overflow:visible}
+  .fo-cabo{transform-box:view-box;transform-origin:24px 52px;animation:balancar 3s var(--ease-movimento) infinite alternate}
+  @keyframes balancar{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+  .fo-broto{transform-box:fill-box;transform-origin:right top}
+  .fo-olhos{transform-box:fill-box;transform-origin:center;transition:transform var(--dur-toque) var(--ease-saida)}
+  .folhinha.piscando .fo-olhos{transform:scaleY(.12)}
+  .fo-pupilas,.fo-corpo{transition:transform var(--dur-base) var(--ease-saida)}
+  .fo-aberta,.fo-tristeza{opacity:0}
+  .folhinha[data-estado="falando"] .fo-sorriso{animation:boca-fechada .26s steps(1) infinite}
+  .folhinha[data-estado="falando"] .fo-aberta{animation:boca-aberta .26s steps(1) infinite}
+  @keyframes boca-aberta{0%{opacity:1}50%{opacity:0}}
+  @keyframes boca-fechada{0%{opacity:0}50%{opacity:1}}
+  .folhinha[data-estado="triste"] .fo-sorriso{opacity:0}
+  .folhinha[data-estado="triste"] .fo-tristeza{opacity:1}
+  .folhinha[data-estado="triste"] .fo-pupilas{transform:translateY(1.6px)}
+  .folhinha[data-estado="triste"] .fo-corpo{transform:translateY(2px)}
+  .folhinha[data-estado="comemorando"] .fo-olhos{transform:scaleY(.6)}
+  html.oculto .fo-cabo{animation-play-state:paused}
+  :root[data-animacoes="reduzidas"] .fo-cabo,:root[data-animacoes="reduzidas"] .folhinha[data-estado="falando"] .fo-sorriso,:root[data-animacoes="reduzidas"] .folhinha[data-estado="falando"] .fo-aberta{animation:none}
+  @media (prefers-reduced-motion: reduce){ .fo-cabo,.folhinha[data-estado="falando"] .fo-sorriso,.folhinha[data-estado="falando"] .fo-aberta{animation:none} }
+  .balao-fo{position:fixed;z-index:6;max-width:min(280px, calc(100vw - var(--space-4) * 2));display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);
+    left:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-3) + env(safe-area-inset-left));bottom:calc(var(--nav-h) + var(--space-3) + var(--touch) + var(--space-4) + env(safe-area-inset-bottom));
+    padding:var(--space-3) var(--space-3) var(--space-1) var(--space-4);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-card);box-shadow:var(--shadow-fab)}
+  .balao-fo::after{content:'';position:absolute;left:var(--space-6);bottom:calc(var(--space-2) * -1 + 1px);width:var(--space-4);height:var(--space-4);background:var(--surface);transform:rotate(45deg);border-radius:0 0 var(--space-1) 0}
+  .balao-fo[hidden]{display:none}
+  .balao-texto{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);min-height:var(--lh-body);overflow-wrap:anywhere;cursor:pointer}
+  .balao-fo .btn{position:relative;z-index:1;align-self:flex-end;min-height:var(--touch)}
+  html.travado:not(.na-abertura) .folhinha,html.travado:not(.na-abertura) .balao-fo,html.teclado-aberto .folhinha,html.teclado-aberto .balao-fo,
+  .toast.show ~ .folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ .folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -970,6 +1002,7 @@ if(window.visualViewport){
     const vv = window.visualViewport;
     const teclado = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop));
     document.documentElement.style.setProperty('--teclado', (teclado > 80 ? teclado : 0) + 'px');
+    document.documentElement.classList.toggle('teclado-aberto', teclado > 80);
   };
   visualViewport.addEventListener('resize', ajustarTeclado);
   visualViewport.addEventListener('scroll', ajustarTeclado);
@@ -3870,6 +3903,77 @@ function desenharArvore(folhas, estagio, rotulo = true){
     <ellipse cx="100" cy="203" rx="${36 + estagio * 5}" ry="8" fill="var(--arvore-terra)"/>
     <g class="arv-esqueleto">${ESQUELETOS[estagio]}</g><g class="arv-folhas">${partes.join('')}</g><g class="arv-extras">${extras.join('')}${luzes}</g></svg>`;
 }
+/* ---------- Folhinha ---------- */
+const FOLHINHA_SVG = `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+  <g class="fo-cabo"><path d="M24 52q-6 6-13 8" fill="none" stroke="var(--arvore-tronco)" stroke-width="2.6" stroke-linecap="round"/><path class="fo-broto" d="M12 60c-5-1-7-5-6-8 4 0 6 4 6 8z" fill="var(--arvore-folha-2)"/></g>
+  <g class="fo-corpo"><path d="M24 53C10 41 12 18 32 5c20 13 22 36 8 48-5 5-11 5-16 0z" fill="var(--arvore-folha-1)"/>
+    <path d="M32 9v44" stroke="var(--arvore-folha-3)" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+    <g class="fo-olhos"><ellipse cx="26" cy="29" rx="3.6" ry="4.6" fill="var(--p-white)"/><ellipse cx="38" cy="29" rx="3.6" ry="4.6" fill="var(--p-white)"/>
+      <g class="fo-pupilas"><circle cx="26.6" cy="30" r="2" fill="var(--p-ink-900)"/><circle cx="38.6" cy="30" r="2" fill="var(--p-ink-900)"/></g></g>
+    <path class="fo-boca fo-sorriso" d="M27 38q5 4.5 10 0" fill="none" stroke="var(--p-ink-900)" stroke-width="1.8" stroke-linecap="round"/>
+    <ellipse class="fo-boca fo-aberta" cx="32" cy="39.5" rx="3.4" ry="2.6" fill="var(--p-ink-900)"/>
+    <path class="fo-boca fo-tristeza" d="M27.5 41.5q4.5-3.6 9 0" fill="none" stroke="var(--p-ink-900)" stroke-width="1.8" stroke-linecap="round"/></g></svg>`;
+const Folhinha = {
+  el: null, balao: null, timerFala: null, timerFechar: null, timerPiscar: null, aoTocar: null,
+  montar(){
+    if(this.el) return;
+    const b = document.createElement('button');
+    b.id = 'folhinha'; b.className = 'folhinha'; b.dataset.estado = 'parada';
+    b.setAttribute('aria-label', 'Folhinha: toque para ver uma dica');
+    b.innerHTML = FOLHINHA_SVG;
+    b.addEventListener('click', () => { if(this.balao && !this.balao.hidden) return this.fechar(); if(this.aoTocar) this.aoTocar(); });
+    const balao = document.createElement('div');
+    balao.id = 'balao-fo'; balao.className = 'balao-fo'; balao.hidden = true;
+    balao.innerHTML = '<p class="balao-texto" aria-hidden="true"></p><p class="sr" role="status" id="balao-sr"></p><button class="btn text">Entendi</button>';
+    balao.querySelector('.balao-texto').addEventListener('click', () => this.completar());
+    balao.querySelector('button').addEventListener('click', () => this.fechar());
+    document.body.append(b, balao);
+    this.el = b; this.balao = balao;
+    this.piscar();
+  },
+  definir(estado){ if(this.el) this.el.dataset.estado = estado; },
+  piscar(){
+    clearTimeout(this.timerPiscar);
+    this.timerPiscar = setTimeout(() => {
+      if(this.el && !document.hidden){ this.el.classList.add('piscando'); setTimeout(() => this.el && this.el.classList.remove('piscando'), 140); }
+      this.piscar();
+    }, 4000 + Math.random() * 3000);
+  },
+  falar(texto, { estado = 'parada', fixo = false } = {}){
+    this.montar();
+    clearInterval(this.timerFala); clearTimeout(this.timerFechar);
+    const p = this.balao.querySelector('.balao-texto');
+    this.balao.hidden = false; this.texto = texto; this.estadoFinal = estado;
+    $('balao-sr').textContent = ''; setTimeout(() => { $('balao-sr').textContent = texto; }, 30);
+    if(Animacoes.reduzido()){ p.textContent = texto; this.terminar(); }
+    else {
+      this.definir('falando'); p.textContent = '';
+      const letras = Array.from(texto), t0 = performance.now();
+      this.timerFala = setInterval(() => { const k = Math.min(letras.length, Math.ceil((performance.now() - t0) / 600 * letras.length)); p.textContent = letras.slice(0, k).join(''); if(k >= letras.length) this.terminar(); }, 30);
+      if(!Animacoes.reduzido()) this.balao.animate([{ opacity: 0, transform: 'translateY(6px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
+    }
+    if(!fixo) this.timerFechar = setTimeout(() => this.fechar(), 6000);
+  },
+  completar(){ if(!this.balao || this.balao.hidden) return; this.balao.querySelector('.balao-texto').textContent = this.texto; this.terminar(); },
+  terminar(){
+    clearInterval(this.timerFala);
+    this.definir(this.estadoFinal);
+    if(this.estadoFinal === 'comemorando') this.pular();
+  },
+  pular(){
+    if(Animacoes.reduzido() || !this.el) return;
+    this.el.querySelector('svg').animate([{ transform: 'none' }, { transform: 'translateY(-8px)', offset: 0.35 }, { transform: 'none', offset: 0.7 }, { transform: 'translateY(-4px)', offset: 0.85 }, { transform: 'none' }], { duration: 700, easing: Animacoes.MOV.movimento });
+    this.el.querySelector('.fo-broto').animate([{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], { duration: 700, easing: Animacoes.MOV.saida });
+  },
+  fechar(){
+    clearInterval(this.timerFala); clearTimeout(this.timerFechar);
+    if(!this.balao || this.balao.hidden) return;
+    this.balao.hidden = true;
+    if(this.el && this.el.dataset.estado !== 'triste') this.definir('parada');
+  },
+  remover(){ if(!this.el) return; clearTimeout(this.timerPiscar); this.fechar(); this.el.remove(); this.balao.remove(); this.el = this.balao = null; },
+};
+document.addEventListener('visibilitychange', () => document.documentElement.classList.toggle('oculto', document.hidden));
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
