@@ -796,10 +796,11 @@ function comemorarDiaCompleto(total, depois){
   vibrar([15, 40, 15, 40, 30]);
   if(dados.ajustes.sons) Animacoes.tocar('comemoracao');
   const anelEl = document.querySelector('#app .anel .circ');
-  if(anelEl && !Animacoes.reduzido()){
-    const r = anelEl.getBoundingClientRect();
+  if(!Animacoes.reduzido()){
+    const r = anelEl ? anelEl.getBoundingClientRect() : { left: 0, top: -1, width: 0, height: 0, bottom: -1 };
     const cor = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-    Animacoes.confete(r.left + r.width / 2, r.top + r.height / 2, ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor));
+    const visivel = r.bottom > 0 && r.top < innerHeight;
+    Animacoes.confete(visivel ? r.left + r.width / 2 : innerWidth / 2, visivel ? r.top + r.height / 2 : innerHeight * 0.3, ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor));
   }
   mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), ic('hoje'), depois);
 }
