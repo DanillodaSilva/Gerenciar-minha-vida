@@ -737,6 +737,15 @@
   .festa-ambiente{position:fixed;z-index:4;overflow:hidden;pointer-events:none}
   .festa-ambiente .amb{position:absolute;top:0;display:block}
   .festa-ambiente .amb svg{width:100%;height:100%;display:block}
+  .aparencia{display:flex;flex-direction:column;gap:var(--space-2)}
+  .aparencia .rotulo-grupo{font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary);margin-top:var(--space-2)}
+  .aparencia label{font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary);display:flex;flex-direction:column;gap:var(--space-2)}
+  .aparencia h2{margin-bottom:var(--space-1)}
+  .interruptor:disabled{opacity:.55;cursor:default}
+  .previa-banner{position:fixed;left:var(--space-4);right:var(--space-4);top:calc(var(--space-2) + env(safe-area-inset-top));z-index:9;max-width:var(--content-max);margin:0 auto;display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;
+    padding:var(--space-1) var(--space-1) var(--space-1) var(--space-4);border-radius:var(--radius-card);background:var(--snack-bg);color:var(--snack-fg);font-size:var(--fs-label);line-height:var(--lh-label);box-shadow:var(--shadow-fab)}
+  html.com-previa #app{padding-top:calc(var(--touch) + var(--space-6))}
+  .previa-banner button{min-height:var(--touch);padding:0 var(--space-3);color:var(--snack-action);font-weight:var(--w-medium);border-radius:var(--radius-chip)}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -1975,11 +1984,13 @@ function telaAjustes(){
       ${temVibracao ? interruptor('vibracao', 'Vibração') : ''}
       ${interruptor('sons', 'Sons')}
     </div>
-    <div class="card">
-      <h2 id="rot-tema">Tema</h2>
+    <div class="card aparencia">
+      <h2>Aparência</h2>
+      <span class="rotulo-grupo" id="rot-tema">Tema</span>
       <div class="opcoes" role="radiogroup" aria-labelledby="rot-tema">
         ${opcao('system', 'Automático (sistema)')}${opcao('light', 'Claro')}${opcao('dark', 'Escuro')}
       </div>
+      ${blocoFestasAjustes()}
     </div>
     ${cartaoAjustesFaculdade()}
     <div class="card">
@@ -3635,7 +3646,8 @@ function cartaoFestivoHtml(f){
 }
 function fecharCartaoFestivo(){
   const f = festaAtual();
-  if(!f || previaFesta) return;
+  if(previaFesta) return sairPrevia();
+  if(!f) return;
   dados.ajustes.festas.cartaoFechadoEm = hojeFesta() + ':' + f.id;
   salvar(); render();
 }
@@ -3735,6 +3747,74 @@ function efeitoAmbiente(){
   setTimeout(pararAmbiente, M.ambienteDuracao + 100);
 }
 document.addEventListener('visibilitychange', () => { if(document.hidden) pararAmbiente(); });
+const NOME_PREVIA = { ...Festas.NOMES, aniversario: 'aniversário' };
+function blocoFestasAjustes(){
+  const fz = dados.ajustes.festas, [mes, dia] = fz.aniversario ? fz.aniversario.split('-').map(Number) : [0, 0];
+  const opc = (v, r, s) => `<option value="${v}" ${s ? 'selected' : ''}>${r}</option>`;
+  return `<button class="interruptor" role="switch" aria-checked="${fz.ativas}" onclick="alternarFestas()"><span>Datas comemorativas</span><span class="sw" aria-hidden="true"></span></button>
+    <button class="btn ghost" onclick="escolherDatas()" ${fz.ativas ? '' : 'disabled'}>Escolher datas</button>
+    <span class="rotulo-grupo" id="rot-aniv">Seu aniversário</span>
+    <div class="row" role="group" aria-labelledby="rot-aniv">
+      <label>Dia<select id="aniv-dia" name="aniversario-dia" onchange="mudarAniversario()">${opc(0, '—', !dia)}${Array.from({ length: 31 }, (_, i) => opc(i + 1, i + 1, dia === i + 1)).join('')}</select></label>
+      <label>Mês<select id="aniv-mes" name="aniversario-mes" onchange="mudarAniversario()">${opc(0, '—', !mes)}${Festas.MESES.map((m, i) => opc(i + 1, m, mes === i + 1)).join('')}</select></label>
+    </div>
+    <p class="erro" role="alert" id="aniv-erro"></p>
+    ${fz.aniversario ? '<button class="btn text inicio" onclick="removerAniversario()">Remover</button>' : ''}
+    <button class="btn text inicio" onclick="abrirPrevias()">Ver prévia</button>`;
+}
+function alternarFestas(){ dados.ajustes.festas.ativas = !dados.ajustes.festas.ativas; salvar(); render(); }
+function mudarAniversario(){
+  const d = Number($('aniv-dia').value), m = Number($('aniv-mes').value), err = $('aniv-erro');
+  if(!d || !m){ err.textContent = ''; return; }
+  const v = String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  if(!Regras.aniversarioValido(v)){ err.textContent = 'Essa data não existe. Escolha outro dia.'; return; }
+  err.textContent = '';
+  dados.ajustes.festas.aniversario = v; salvar(); render(); toast('Aniversário salvo');
+}
+function removerAniversario(){
+  const antes = dados.ajustes.festas.aniversario;
+  dados.ajustes.festas.aniversario = null; salvar(); render();
+  snack('Aniversário removido', () => { dados.ajustes.festas.aniversario = antes; salvar(); render(); });
+}
+function escolherDatas(){
+  const fz = dados.ajustes.festas;
+  abrirSheetOuAtualizar(`<h2 data-folha="datas">Escolher datas</h2>
+    <p class="hint">Desligue as datas que você não quer ver.</p>
+    ${Festas.IDS.map(id => { const semData = id === 'aniversario' && !fz.aniversario, on = !semData && !fz.desligadas.includes(id);
+      return `<button class="interruptor" role="switch" aria-checked="${on}" ${semData ? 'disabled aria-describedby="aniv-dica"' : ''} onclick="alternarData('${id}')"><span>${Festas.NOMES[id]}</span><span class="sw" aria-hidden="true"></span></button>${semData ? '<p class="hint" id="aniv-dica">Informe seu aniversário para ativar</p>' : ''}`; }).join('')}
+    <button class="btn text" onclick="fecharSheet()">Fechar</button>`);
+}
+function alternarData(id){
+  const fz = dados.ajustes.festas;
+  fz.desligadas = fz.desligadas.includes(id) ? fz.desligadas.filter(x => x !== id) : fz.desligadas.concat(id);
+  salvar(); escolherDatas(); render();
+}
+let timerPrevia = null;
+function abrirPrevias(){
+  abrirSheetOuAtualizar(`<h2>Ver prévia</h2><p class="hint">Mostra o tema na tela Hoje por 30 segundos. Nada é gravado.</p>
+    ${Festas.IDS.map(id => `<button class="btn ghost" onclick="iniciarPrevia('${id}')">${Festas.NOMES[id]}</button>`).join('')}
+    <button class="btn text" onclick="fecharSheet()">Fechar</button>`);
+}
+function iniciarPrevia(id){
+  const ano = agoraFesta().getFullYear();
+  previaFesta = { id, fase: 'auge', diasPara: 0, ano: id === 'ano-novo' ? ano + 1 : ano };
+  ambienteFeito = false; pararAmbiente();
+  clearTimeout(timerPrevia); timerPrevia = setTimeout(sairPrevia, 30000);
+  let b = $('previa-banner');
+  document.documentElement.classList.add('com-previa');
+  if(!b){ b = document.createElement('div'); b.id = 'previa-banner'; b.className = 'previa-banner'; b.setAttribute('role', 'status'); document.body.appendChild(b); }
+  b.innerHTML = `<span>Prévia do tema de ${esc(NOME_PREVIA[id])}</span><span aria-hidden="true">·</span><button onclick="sairPrevia()">Sair da prévia</button>`;
+  if($('overlay').classList.contains('show')) fecharSheet();
+  setTimeout(() => { if(tela !== 'rotina') irPara('rotina'); else render(true); scrollTo(0, 0); }, 120);
+}
+function sairPrevia(){
+  clearTimeout(timerPrevia);
+  if(!previaFesta) return;
+  previaFesta = null; pararAmbiente();
+  const b = $('previa-banner'); if(b) b.remove();
+  document.documentElement.classList.remove('com-previa');
+  render(true);
+}
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
