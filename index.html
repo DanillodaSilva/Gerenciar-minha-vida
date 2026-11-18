@@ -649,6 +649,7 @@
 <script src="regras.js?v=1.3.0"></script>
 <script src="animacoes.js?v=1.3.0"></script>
 <script src="faculdade.js?v=1.4.0"></script>
+<script src="fotos.js?v=1.4.0"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -1374,7 +1375,7 @@ function render(refazer = false, semFlip = false){
     app.innerHTML = html; telaDesenhada = chaveTela;
     if(!abasVistas.has(tela)){ abasVistas.add(tela); cascata(app); }
   }
-  if(tela === 'ajustes') atualizarEstadoNotif();
+  if(tela === 'ajustes'){ atualizarEstadoNotif(); atualizarEspacoFotos(); }
   marcarDuasLinhas();
   talvezMostrarDica();
   document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
@@ -2706,7 +2707,28 @@ function cartaoAjustesFaculdade(){
     ${f.semestresAnteriores.length ? `<h3 class="sub">Semestres anteriores</h3>${f.semestresAnteriores.map((s, i) => `<button class="btn text inicio" onclick="verSemestreAnterior(${i})">${esc(s.semestre.nome)}</button>`).join('')}` : ''}
   </div>`;
 }
-const espacoFotosHtml = () => '';
+const AVISO_COTA = 'O espaço para fotos está quase cheio. Exporte um backup e apague fotos antigas.';
+const formatarMB = b => { const mb = b / 1048576; return String(mb >= 10 ? Math.round(mb) : Math.round(mb * 10) / 10).replace('.', ',') + ' MB'; };
+const espacoFotosHtml = () => '<p class="hint" id="espaco-fotos" aria-live="polite">Fotos da faculdade: calculando…</p><p class="erro" id="espaco-aviso"></p>';
+async function atualizarEspacoFotos(){
+  const el = $('espaco-fotos');
+  if(!el) return;
+  try{
+    const e = await Fotos.espaco();
+    el.textContent = 'Fotos da faculdade: ' + formatarMB(e.fotos);
+    const av = $('espaco-aviso');
+    if(av) av.textContent = e.cota && e.usado / e.cota > 0.8 ? AVISO_COTA : '';
+  }catch(err){ el.textContent = 'Fotos da faculdade: não foi possível calcular.'; }
+}
+const fotosEmUso = new Set();
+function fotosReferenciadas(){
+  const ids = new Set(fotosEmUso);
+  const somar = d => { const f = d && d.faculdade; if(!f) return; [f, ...(f.semestresAnteriores || [])].forEach(s => (s.anotacoes || []).forEach(a => (a.fotoIds || []).forEach(i => ids.add(i)))); };
+  somar(dados);
+  ['backup_pre_import', 'backup_pre_v4'].forEach(k => { try{ somar(JSON.parse(localStorage.getItem(k))); }catch(e){} });
+  return ids;
+}
+function limparFotosOrfas(){ if(window.indexedDB && dados) Fotos.limparOrfas(fotosReferenciadas()).catch(e => console.error('Falha na limpeza das fotos:', e && e.message)); }
 function alternarAlertasFac(){
   const f = fac();
   f.alertasAtivos = !f.alertasAtivos; salvar(); render();
@@ -3091,6 +3113,7 @@ function iniciar(){
   aplicarTema(); montarNav(); render();
   iniciarLembretes();
   if(deveMostrarBoasVindas()) mostrarBoasVindas();
+  setTimeout(limparFotosOrfas, 3000);
   const pedida = new URLSearchParams(location.search).get('materia');
   if(pedida){ history.replaceState(null, '', location.pathname); if(materiaDe(pedida)) setTimeout(() => verMateria(pedida), 100); }
 }
