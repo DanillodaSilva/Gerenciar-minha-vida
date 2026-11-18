@@ -668,6 +668,32 @@
   :root[data-theme="dark"][data-festa="natal"]{--festa-1:var(--p-natal-1e);--festa-2:var(--p-natal-2e);--festa-3:var(--p-natal-3e);--festa-4:var(--p-natal-4e)}
   :root[data-theme="dark"][data-festa="ano-novo"]{--festa-1:var(--p-ano-novo-1e);--festa-2:var(--p-ano-novo-2e);--festa-3:var(--p-ano-novo-3e);--festa-4:var(--p-ano-novo-4e)}
   :root[data-theme="dark"][data-fase="auge"]{--background:color-mix(in srgb, var(--festa-1) 6%, var(--p-night-950))}
+  :root{--p-carnaval-1:#D6336C; --p-carnaval-2:#1E88E5; --p-carnaval-3:#BA8B00; --p-carnaval-4:#27A569; --p-carnaval-1e:#F48FB1; --p-carnaval-2e:#82B7F5; --p-carnaval-3e:#F7D560; --p-carnaval-4e:#7FD8A8;
+    --p-pascoa-1:#CD8317; --p-pascoa-2:#559AC7; --p-pascoa-3:#D175A4; --p-pascoa-4:#6B4226; --p-pascoa-1e:#F3C77A; --p-pascoa-2e:#A9CCE6; --p-pascoa-3e:#ECB3CF; --p-pascoa-4e:#C49A7A;
+    --p-namorados-1:#D6336C; --p-namorados-2:#F06092; --p-namorados-3:#C2255C; --p-namorados-4:#929292; --p-namorados-1e:#F48FB1; --p-namorados-2e:#F7A8C4; --p-namorados-3e:#E6779F; --p-namorados-4e:#F2F0EB;
+    --p-junina-1:#E03131; --p-junina-2:#CA8300; --p-junina-3:#1C7ED6; --p-junina-4:#2F9E44; --p-junina-1e:#FF8787; --p-junina-2e:#FFC94D; --p-junina-3e:#74B6F2; --p-junina-4e:#7BD389}
+  :root[data-festa="carnaval"]{--festa-1:var(--p-carnaval-1);--festa-2:var(--p-carnaval-2);--festa-3:var(--p-carnaval-3);--festa-4:var(--p-carnaval-4)}
+  :root[data-festa="pascoa"]{--festa-1:var(--p-pascoa-1);--festa-2:var(--p-pascoa-2);--festa-3:var(--p-pascoa-3);--festa-4:var(--p-pascoa-4)}
+  :root[data-festa="namorados"]{--festa-1:var(--p-namorados-1);--festa-2:var(--p-namorados-2);--festa-3:var(--p-namorados-3);--festa-4:var(--p-namorados-4)}
+  :root[data-festa="junina"]{--festa-1:var(--p-junina-1);--festa-2:var(--p-junina-2);--festa-3:var(--p-junina-3);--festa-4:var(--p-junina-4)}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"])[data-festa="carnaval"]{--festa-1:var(--p-carnaval-1e);--festa-2:var(--p-carnaval-2e);--festa-3:var(--p-carnaval-3e);--festa-4:var(--p-carnaval-4e)}
+    :root:not([data-theme="light"])[data-festa="pascoa"]{--festa-1:var(--p-pascoa-1e);--festa-2:var(--p-pascoa-2e);--festa-3:var(--p-pascoa-3e);--festa-4:var(--p-pascoa-4e)}
+    :root:not([data-theme="light"])[data-festa="namorados"]{--festa-1:var(--p-namorados-1e);--festa-2:var(--p-namorados-2e);--festa-3:var(--p-namorados-3e);--festa-4:var(--p-namorados-4e)}
+    :root:not([data-theme="light"])[data-festa="junina"]{--festa-1:var(--p-junina-1e);--festa-2:var(--p-junina-2e);--festa-3:var(--p-junina-3e);--festa-4:var(--p-junina-4e)}
+  }
+  :root[data-theme="dark"][data-festa="carnaval"]{--festa-1:var(--p-carnaval-1e);--festa-2:var(--p-carnaval-2e);--festa-3:var(--p-carnaval-3e);--festa-4:var(--p-carnaval-4e)}
+  :root[data-theme="dark"][data-festa="pascoa"]{--festa-1:var(--p-pascoa-1e);--festa-2:var(--p-pascoa-2e);--festa-3:var(--p-pascoa-3e);--festa-4:var(--p-pascoa-4e)}
+  :root[data-theme="dark"][data-festa="namorados"]{--festa-1:var(--p-namorados-1e);--festa-2:var(--p-namorados-2e);--festa-3:var(--p-namorados-3e);--festa-4:var(--p-namorados-4e)}
+  :root[data-theme="dark"][data-festa="junina"]{--festa-1:var(--p-junina-1e);--festa-2:var(--p-junina-2e);--festa-3:var(--p-junina-3e);--festa-4:var(--p-junina-4e)}
+  .festa-varal-cheio{left:0;right:0;width:100%}
+  .festa-lateral{position:absolute;top:var(--space-5);bottom:var(--space-3);width:var(--space-3);height:auto;z-index:0;pointer-events:none}
+  .festa-esq{left:var(--space-1)}
+  .festa-dir{right:var(--space-1)}
+  .festa-canto{position:absolute;right:var(--space-2);bottom:var(--space-1);display:flex;align-items:flex-end;gap:0;z-index:0;pointer-events:none}
+  .festa-ovos .ovo-g{width:calc(var(--space-6) * 1.3);height:calc(var(--space-6) * 1.3)}
+  .festa-ovos .ovo-m{width:var(--space-6);height:var(--space-6)}
+  .festa-ovos .ovo-p{width:calc(var(--space-6) * .75);height:calc(var(--space-6) * .75)}
   .hoje-top.festa-auge{padding-top:calc(var(--space-4) + var(--space-5))}
   .festa-varal{position:absolute;top:0;left:var(--space-4);right:var(--space-4);width:calc(100% - var(--space-4) * 2);height:var(--space-6);z-index:0;pointer-events:none}
   .luz{animation:piscar 2.4s var(--ease-movimento) infinite alternate}
@@ -3512,7 +3538,7 @@ const varalLuzes = () => {
   return SVG('0 0 320 26', `<path d="M0 5 Q40 16 80 7 T160 7 T240 7 T320 5" fill="none" stroke="var(--text-secondary)" stroke-opacity=".55" stroke-width="1.2"/>${luzes}`, 'festa-varal');
 };
 const ramoPinheiro = () => SVG('0 0 64 44', `<path d="M64 6 C46 12 30 22 14 40" fill="none" stroke="var(--festa-4-traco, var(--festa-2))" stroke-width="2.4" stroke-linecap="round"/>${[[56, 9], [48, 13], [40, 18], [32, 24], [24, 30]].map(([x, y]) => `<path d="M${x} ${y} l-7 -9 M${x} ${y} l-1 11 M${x} ${y} l-9 2" stroke="var(--festa-2)" stroke-width="2" stroke-linecap="round" fill="none"/>`).join('')}<circle cx="30" cy="34" r="4" fill="var(--festa-1)"/><circle cx="47" cy="24" r="3.4" fill="var(--festa-3)"/>`, 'festa-ramo');
-const ceuEstrelas = () => [[6, 8, 10, 1], [22, 4, 7, 2], [38, 10, 9, 1], [55, 5, 6, 2], [70, 9, 8, 1], [88, 4, 7, 2], [79, 70, 10, 1], [92, 58, 7, 2], [86, 86, 8, 2]]
+const ceuEstrelas = () => [[4, 6, 16, 1], [20, 3, 11, 2], [36, 8, 14, 1], [53, 3, 10, 2], [68, 7, 13, 1], [86, 3, 11, 2], [74, 80, 14, 1], [94, 86, 11, 2], [86, 92, 9, 2]]
   .map(([x, y, t, c]) => `<span class="festa-astro" style="left:${x}%;top:${y}%;width:${t}px;height:${t}px;color:var(--festa-${c})">${SVG('0 0 24 24', `<path d="${FAISCA}" fill="currentColor"/>`)}</span>`).join('');
 const DECO = {
   natal: {
@@ -3526,6 +3552,43 @@ const DECO = {
     cartao: () => SVG('0 0 48 48', `<path transform="translate(4 6) scale(1.2)" d="${FAISCA}" fill="var(--festa-1)"/><path transform="translate(26 2) scale(.7)" d="${FAISCA}" fill="var(--festa-2)"/><path transform="translate(28 26) scale(.6)" d="${FAISCA}" fill="var(--festa-3)"/>`),
   },
 };
+const espalhados = (pontos, desenho) => pontos.map(([x, y, t, c, g = 0]) => `<span class="festa-astro" style="left:${x}%;top:${y}%;width:${t}px;height:${t}px;color:var(--festa-${c});transform:rotate(${g}deg)">${SVG('0 0 24 24', desenho)}</span>`).join('');
+const FORMA = {
+  serpentina: c => `<path d="M7 3c5 2 5 6 0 8s-5 6 0 8 5 4 2 6" fill="none" stroke="var(--festa-${c})" stroke-width="2.4" stroke-linecap="round"/>`,
+  confete: '<rect x="8" y="4" width="8" height="16" rx="2" fill="currentColor"/>',
+  ovo: (a, b, c) => `<ellipse cx="12" cy="13" rx="7.5" ry="9.5" fill="var(--festa-${a})"/><path d="M4.8 11.5h14.4M4.6 15.5h14.8" stroke="var(--festa-${b})" stroke-width="2"/><circle cx="9" cy="7.5" r="1.3" fill="var(--festa-${c})"/><circle cx="15" cy="7.5" r="1.3" fill="var(--festa-${c})"/><circle cx="12" cy="19.3" r="1.3" fill="var(--festa-${c})"/>`,
+  coracao: '<path d="M12 21C5 15.5 2 12.3 2 8.5 2 5.4 4.4 3 7.4 3c1.8 0 3.5.9 4.6 2.3C13.1 3.9 14.8 3 16.6 3 19.6 3 22 5.4 22 8.5c0 3.8-3 7-10 12.5z" fill="currentColor"/>',
+  bandeiras: '<path d="M1 5h22" stroke="var(--text-secondary)" stroke-width="1"/><path d="M2 5h6l-3 9z" fill="var(--festa-1)"/><path d="M9 5h6l-3 9z" fill="var(--festa-2)"/><path d="M16 5h6l-3 9z" fill="var(--festa-3)"/>',
+};
+const varalBandeiras = () => {
+  const cores = [1, 2, 3, 4];
+  const bandeiras = Array.from({ length: 12 }, (_, i) => { const x = 4 + i * 30; return `<path d="M${x} 4h22l-11 18z" fill="var(--festa-${cores[i % 4]})"/>`; }).join('');
+  return `<svg class="festa-varal festa-varal-cheio" viewBox="0 0 364 24" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 4h364" stroke="var(--text-secondary)" stroke-opacity=".55" stroke-width="1.2"/>${bandeiras}</svg>`;
+};
+Object.assign(DECO, {
+  carnaval: {
+    chegando: () => SVG('0 0 24 24', FORMA.serpentina(1) + `<g transform="translate(8 0)">${FORMA.serpentina(2)}</g>`, 'festa-mini'),
+    auge: () => SVG('0 0 24 120', `<path d="M14 0c-9 10 9 20 0 30s9 20 0 30 9 20 0 30 9 20 0 30" fill="none" stroke="var(--festa-1)" stroke-width="3" stroke-linecap="round"/>`, 'festa-lateral festa-esq')
+      + SVG('0 0 24 120', `<path d="M10 0c9 10-9 20 0 30s-9 20 0 30-9 20 0 30-9 20 0 30" fill="none" stroke="var(--festa-2)" stroke-width="3" stroke-linecap="round"/>`, 'festa-lateral festa-dir')
+      + `<div class="festa-ceu">${espalhados([[12, 4, 9, 3, 20], [30, 2, 8, 4, -30], [47, 6, 9, 1, 60], [62, 2, 8, 2, 10], [80, 5, 9, 3, -50], [76, 84, 9, 4, 30], [90, 74, 8, 1, -20]], FORMA.confete)}</div>`,
+    cartao: () => SVG('0 0 48 48', `<g transform="translate(6 6) scale(1.4)">${FORMA.serpentina(1)}</g><g transform="translate(20 4) scale(1.4)">${FORMA.serpentina(2)}</g><rect x="36" y="8" width="5" height="9" rx="1" fill="var(--festa-3)" transform="rotate(25 38 12)"/><rect x="34" y="30" width="5" height="9" rx="1" fill="var(--festa-4)" transform="rotate(-20 36 34)"/>`),
+  },
+  pascoa: {
+    chegando: () => SVG('0 0 24 24', FORMA.ovo(1, 4, 2), 'festa-mini'),
+    auge: () => `<div class="festa-canto festa-ovos">${SVG('0 0 24 24', FORMA.ovo(1, 4, 3), 'ovo-g')}${SVG('0 0 24 24', FORMA.ovo(2, 3, 4), 'ovo-m')}${SVG('0 0 24 24', FORMA.ovo(3, 1, 4), 'ovo-p')}</div>`,
+    cartao: () => SVG('0 0 48 48', `<g transform="translate(2 6) scale(1.5)">${FORMA.ovo(1, 4, 2)}</g><g transform="translate(26 18) scale(1)">${FORMA.ovo(3, 1, 4)}</g>`),
+  },
+  namorados: {
+    chegando: () => SVG('0 0 24 24', FORMA.coracao.replace('currentColor', 'var(--festa-1)'), 'festa-mini'),
+    auge: () => `<div class="festa-ceu">${espalhados([[6, 4, 12, 1, -12], [24, 2, 9, 2, 10], [42, 6, 11, 3, -8], [58, 2, 9, 1, 14], [74, 5, 12, 2, -10], [90, 3, 9, 3, 8], [78, 76, 13, 1, 12], [92, 86, 10, 2, -14]], FORMA.coracao)}</div>`,
+    cartao: () => SVG('0 0 48 48', `<g transform="translate(4 8) scale(1.4)">${FORMA.coracao.replace('currentColor', 'var(--festa-1)')}</g><g transform="translate(28 4) scale(.75)">${FORMA.coracao.replace('currentColor', 'var(--festa-2)')}</g>`),
+  },
+  junina: {
+    chegando: () => SVG('0 0 24 24', FORMA.bandeiras, 'festa-mini'),
+    auge: () => varalBandeiras(),
+    cartao: () => SVG('0 0 48 48', `<g transform="scale(2)">${FORMA.bandeiras}</g><path d="M24 30c-4 4-6 8-2 12 6 0 8-6 2-12z" fill="var(--festa-1)"/><path d="M24 35c-2 2-2 4 0 6 2-1 2-3 0-6z" fill="var(--festa-2)"/>`),
+  },
+});
 const decoDe = (f, parte) => (DECO[f.id] && DECO[f.id][parte] ? DECO[f.id][parte]() : '');
 const chipFesta = f => `<p class="festa-chip">${decoDe(f, 'chegando')}<span>${esc(Festas.textoChegando(f))}</span></p>`;
 function cartaoFestivo(f){
