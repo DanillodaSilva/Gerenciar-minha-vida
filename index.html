@@ -689,6 +689,7 @@
   .festa-cartao .btn{min-height:var(--touch)}
   :root[data-animacoes="reduzidas"] .luz{animation:none}
   @media (prefers-reduced-motion: reduce){ .luz{animation:none} }
+  .festa-estrela-h1{width:1em;height:1em;margin-left:var(--space-2);vertical-align:-.1em}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -736,7 +737,7 @@
 <input type="file" id="arquivo" accept="application/json" hidden>
 
 <script src="regras.js?v=1.4.0"></script>
-<script src="animacoes.js?v=1.4.0"></script>
+<script src="animacoes.js?v=1.5.0"></script>
 <script src="faculdade.js?v=1.4.0"></script>
 <script src="fotos.js?v=1.4.0"></script>
 <script src="festas.js?v=1.5.0"></script>
@@ -1476,6 +1477,7 @@ function render(refazer = false, semFlip = false){
   carregarMiniaturas();
 }
 setInterval(() => {
+  if(dados){ if(verificarVirada()) return; agendarVirada(); }
   const topo = document.querySelector('#app .hoje-top');
   if(!topo || gesto || document.getElementById('overlay').classList.contains('show')) return;
   if(topo.dataset.desenho !== chaveDesenho()) return render();
@@ -1701,7 +1703,7 @@ function telaHoje(){
             <button class="icon-btn" onclick="mudarDia(1)" ${ehHoje ? 'disabled' : ''} aria-label="Próximo dia">${ic('proximo')}</button>
           </span>
         </div>
-        <h1>${esc(fzAuge ? Festas.saudacaoFesta(fz, hojeFesta(), dados.ajustes.nome) : Regras.saudacao(horaAgora(), dados.ajustes.nome))}</h1>
+        <h1>${esc(fzAuge ? Festas.saudacaoFesta(fz, hojeFesta(), dados.ajustes.nome) : Regras.saudacao(horaAgora(), dados.ajustes.nome))}${fzAuge && fz.id === 'ano-novo' && hojeFesta().endsWith('-01-01') && Animacoes.reduzido() ? SVG('0 0 24 24', `<path d="${FAISCA}" fill="var(--festa-1)"/>`, 'festa-estrela-h1') : ''}</h1>
         ${fzAuge ? `<p class="saud-hora">${esc(Regras.saudacao(horaAgora(), dados.ajustes.nome))}</p>` : ''}
         <p class="frase" aria-live="polite">${Regras.fraseProgresso({ feitos: r.feitas, total: r.total, ehHoje })}</p>
         ${fz && fz.fase === 'chegando' ? chipFesta(fz) : ''}
@@ -3532,6 +3534,42 @@ function fecharCartaoFestivo(){
   dados.ajustes.festas.cartaoFechadoEm = hojeFesta() + ':' + f.id;
   salvar(); render();
 }
+let timerVirada = null, diaFestaVisto = null;
+function verificarVirada(){
+  const d = hojeFesta(), virou = !!diaFestaVisto && diaFestaVisto.endsWith('-12-31') && d.endsWith('-01-01');
+  diaFestaVisto = d;
+  if(virou) virada();
+  return virou;
+}
+function agendarVirada(){
+  clearTimeout(timerVirada);
+  const a = agoraFesta();
+  if(a.getMonth() !== 11 || a.getDate() !== 31) return;
+  timerVirada = setTimeout(verificarVirada, new Date(a.getFullYear() + 1, 0, 1) - a + 50);
+}
+function anunciar(texto){
+  let el = $('anuncio');
+  if(!el){ el = document.createElement('p'); el.id = 'anuncio'; el.className = 'sr'; el.setAttribute('aria-live', 'polite'); document.body.appendChild(el); }
+  el.textContent = ''; setTimeout(() => { el.textContent = texto; }, 50);
+}
+const coresFesta = () => { const s = getComputedStyle(document.documentElement); return [1, 2, 3, 4].map(i => s.getPropertyValue('--festa-' + i).trim()).filter(Boolean); };
+function soltarFogos(){
+  const topo = document.querySelector('#app .hoje-top'), r = topo ? topo.getBoundingClientRect() : { left: 0, width: innerWidth, top: 0, height: innerHeight / 3 };
+  const cores = coresFesta();
+  [[0.3, 0.45], [0.7, 0.35], [0.5, 0.6]].forEach(([fx, fy], i) => setTimeout(() => {
+    if(document.hidden) return;
+    Animacoes.faiscas(r.left + r.width * fx, Math.max(40, r.top + r.height * fy), cores);
+    if(dados.ajustes.sons){ Animacoes.prepararAudio(); Animacoes.tocar('estouro'); }
+  }, i * 1000));
+}
+function virada(){
+  festaCache.chave = '';
+  const ano = agoraFesta().getFullYear(), naHoje = tela === 'rotina' && !document.hidden && !$('overlay').classList.contains('show');
+  if(tela === 'rotina') render(true);
+  anunciar('Feliz ' + ano + '!');
+  if(naHoje && !Animacoes.reduzido()) soltarFogos();
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden && dados){ diaFestaVisto = hojeFesta(); agendarVirada(); } });
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
@@ -3685,6 +3723,8 @@ function iniciar(){
   aplicarTema(); montarNav(); render();
   iniciarLembretes();
   if(deveMostrarBoasVindas()) mostrarBoasVindas();
+  diaFestaVisto = hojeFesta();
+  agendarVirada();
   setTimeout(limparFotosOrfas, 3000);
   const pedida = new URLSearchParams(location.search).get('materia');
   if(pedida){ history.replaceState(null, '', location.pathname); if(materiaDe(pedida)) setTimeout(() => verMateria(pedida), 100); }
