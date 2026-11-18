@@ -233,6 +233,24 @@
       boasVindasVista: typeof ajustes.boasVindasVista === 'boolean' ? ajustes.boasVindasVista : (!!temDados || ajustes.boasVindasOk === true),
       ultimaComemoracao: ehData(ajustes.ultimaComemoracao) ? ajustes.ultimaComemoracao : null,
       ultimoMarco: marco,
+      festas: normalizarFestas(ajustes.festas),
+    };
+  }
+  const IDS_FESTAS = ['natal', 'ano-novo', 'carnaval', 'pascoa', 'namorados', 'junina', 'halloween', 'aniversario'];
+  function aniversarioValido(s) {
+    if (typeof s !== 'string' || !/^\d{2}-\d{2}$/.test(s)) return false;
+    const [m, d] = s.split('-').map(Number);
+    return m >= 1 && m <= 12 && d >= 1 && d <= new Date(2024, m, 0).getDate();
+  }
+  function normalizarFestas(f) {
+    const x = ehObjeto(f) ? f : {};
+    return {
+      ...x,
+      ativas: typeof x.ativas === 'boolean' ? x.ativas : true,
+      desligadas: Array.isArray(x.desligadas) ? [...new Set(x.desligadas.filter(i => IDS_FESTAS.includes(i)))] : [],
+      aniversario: aniversarioValido(x.aniversario) ? x.aniversario : null,
+      cartaoFechadoEm: typeof x.cartaoFechadoEm === 'string' && /^\d{4}-\d{2}-\d{2}:[a-z-]+$/.test(x.cartaoFechadoEm) ? x.cartaoFechadoEm : null,
+      retrospectivaVista: Number.isInteger(x.retrospectivaVista) ? x.retrospectivaVista : null,
     };
   }
 
@@ -365,7 +383,7 @@
   const textoComemoracao = (feitos, sequencia) => feitos + ' de ' + feitos + ' feitos · sequência de ' + sequencia + (sequencia === 1 ? ' dia' : ' dias');
   const contarTarefas = d => d.secoes.reduce((a, s) => a + s.itens.length, 0) + (d.tarefas || []).length;
 
-  const Regras = { normalizarAjustes, normalizarFaculdade, TEMPOS_PADRAO, CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
+  const Regras = { normalizarAjustes, normalizarFestas, aniversarioValido, normalizarFaculdade, TEMPOS_PADRAO, CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
     APP, montarBackup, lerBackup, lerBackupCompleto, contarTarefas,

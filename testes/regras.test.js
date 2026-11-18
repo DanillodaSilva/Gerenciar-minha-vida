@@ -461,7 +461,7 @@ describe('comemoração do dia', () => {
 
 describe('normalizarAjustes', () => {
   test('objeto vazio recebe todos os padrões da 5.16', () => {
-    assert.deepEqual(R.normalizarAjustes({}, false), { tema: 'system', nome: '', animacoes: 'auto', vibracao: true, sons: false, dicaGestoVista: false, boasVindasVista: false, ultimaComemoracao: null, ultimoMarco: null });
+    assert.deepEqual(R.normalizarAjustes({}, false), { tema: 'system', nome: '', animacoes: 'auto', vibracao: true, sons: false, dicaGestoVista: false, boasVindasVista: false, ultimaComemoracao: null, ultimoMarco: null, festas: { ativas: true, desligadas: [], aniversario: null, cartaoFechadoEm: null, retrospectivaVista: null } });
   });
   test('com dados existentes, boasVindasVista = true (e o campo antigo do APK também conta)', () => {
     assert.equal(R.normalizarAjustes({}, true).boasVindasVista, true);
