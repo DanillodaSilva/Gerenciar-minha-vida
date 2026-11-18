@@ -708,7 +708,7 @@
   .festa-baloes svg{width:calc(var(--space-6) * 2.2);height:calc(var(--space-6) * 1.85)}
   .hoje-top.festa-auge{padding-top:calc(var(--space-4) + var(--space-5))}
   .festa-varal{position:absolute;top:0;left:var(--space-4);right:var(--space-4);width:calc(100% - var(--space-4) * 2);height:var(--space-6);z-index:0;pointer-events:none}
-  .luz{animation:piscar 2.4s var(--ease-movimento) infinite alternate}
+  .luz{animation:piscar 2.4s var(--ease-movimento) 2 alternate}
   @keyframes piscar{from{opacity:1}to{opacity:.6}}
   .festa-ramo{position:absolute;right:0;bottom:0;width:calc(var(--space-6) * 2.4);height:calc(var(--space-6) * 1.65);z-index:0;pointer-events:none}
   .festa-ceu{position:absolute;inset:0;z-index:-1;pointer-events:none}
@@ -744,6 +744,8 @@
   .interruptor:disabled{opacity:.55;cursor:default}
   .previa-banner{position:fixed;left:var(--space-4);right:var(--space-4);top:calc(var(--space-2) + env(safe-area-inset-top));z-index:9;max-width:var(--content-max);margin:0 auto;display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;
     padding:var(--space-1) var(--space-1) var(--space-1) var(--space-4);border-radius:var(--radius-card);background:var(--snack-bg);color:var(--snack-fg);font-size:var(--fs-label);line-height:var(--lh-label);box-shadow:var(--shadow-fab)}
+  @media (hover: hover) and (pointer: fine){ .previa-banner button:hover{text-decoration:underline} .festa-cartao .btn:hover,.retro .btn:hover{text-decoration:underline} }
+  .hoje-tit h1,.festa-cartao-txt h2,.retro h2{text-wrap:balance}
   html.com-previa #app{padding-top:calc(var(--touch) + var(--space-6))}
   .previa-banner button{min-height:var(--touch);padding:0 var(--space-3);color:var(--snack-action);font-weight:var(--w-medium);border-radius:var(--radius-chip)}
   #assist-tit:focus{outline:none}
@@ -1541,7 +1543,7 @@ setInterval(() => {
   if(!topo || gesto || document.getElementById('overlay').classList.contains('show')) return;
   if(topo.dataset.desenho !== chaveDesenho()) return render();
   const contagem = document.getElementById('contagem-virada');
-  if(contagem) contagem.textContent = Festas.contagemAnoNovo(agoraFesta());
+  if(contagem) contagem.textContent = textoVirada();
 }, 60000);
 
 function seletorDia(){
@@ -3636,12 +3638,13 @@ function cartaoFestivo(f){
   if(dados.ajustes.festas.cartaoFechadoEm === hojeFesta() + ':' + f.id) return '';
   return cartaoFestivoHtml(f);
 }
+const textoVirada = () => Festas.contagemAnoNovo(agoraFesta()).replace(/(d) (h|min)/g, '$1 $2');
 function cartaoFestivoHtml(f){
   const d = hojeFesta(), virada = f.id === 'ano-novo' && d.endsWith('-12-31');
   return `<section class="card festa-cartao" role="region" aria-label="Data comemorativa" data-chave="festa-cartao">
     <div class="festa-cartao-deco" aria-hidden="true">${decoDe(f, 'cartao')}</div>
-    <div class="festa-cartao-txt"><h2>${esc(Festas.saudacaoFesta(f, d, dados.ajustes.nome))}</h2>${virada ? `<p id="contagem-virada">${Festas.contagemAnoNovo(agoraFesta())}</p>` : ''}</div>
-    <button class="btn text" onclick="fecharCartaoFestivo()">Fechar</button>
+    <div class="festa-cartao-txt"><h2>${esc(Festas.saudacaoFesta(f, d, dados.ajustes.nome))}</h2>${virada ? `<p id="contagem-virada">${textoVirada()}</p>` : ''}</div>
+    <button class="btn text" onclick="fecharCartaoFestivo()" aria-label="Fechar cartão da data comemorativa">Fechar</button>
   </section>`;
 }
 function fecharCartaoFestivo(){
@@ -3705,7 +3708,7 @@ function cartaoRetro(){
     <h2>Seu ${r.ano} na rotina</h2>
     <div class="retro-nums">${num(r.diasContaram, 'Dias que contaram')}${num(r.maiorSequencia, 'Maior sequência')}${num(r.itensConcluidos, 'Itens concluídos')}
       <div class="retro-num"><b>${esc(r.mesMaisConstante || '—')}</b><span>Mês mais constante</span></div></div>
-    <button class="btn text" onclick="fecharRetro(${r.ano})">Fechar</button>
+    <button class="btn text" onclick="fecharRetro(${r.ano})" aria-label="Fechar retrospectiva">Fechar</button>
   </section>`;
 }
 function animarRetro(){
@@ -3745,6 +3748,7 @@ function efeitoAmbiente(){
       { duration: dur, delay: Math.random() * (M.ambienteDuracao - dur), easing: 'linear', fill: 'both' });
   }
   setTimeout(pararAmbiente, M.ambienteDuracao + 100);
+  document.addEventListener('pointerdown', pararAmbiente, { once: true });
 }
 document.addEventListener('visibilitychange', () => { if(document.hidden) pararAmbiente(); });
 const NOME_PREVIA = { ...Festas.NOMES, aniversario: 'aniversário' };
@@ -3755,8 +3759,8 @@ function blocoFestasAjustes(){
     <button class="btn ghost" onclick="escolherDatas()" ${fz.ativas ? '' : 'disabled'}>Escolher datas</button>
     <span class="rotulo-grupo" id="rot-aniv">Seu aniversário</span>
     <div class="row" role="group" aria-labelledby="rot-aniv">
-      <label>Dia<select id="aniv-dia" name="aniversario-dia" onchange="mudarAniversario()">${opc(0, '—', !dia)}${Array.from({ length: 31 }, (_, i) => opc(i + 1, i + 1, dia === i + 1)).join('')}</select></label>
-      <label>Mês<select id="aniv-mes" name="aniversario-mes" onchange="mudarAniversario()">${opc(0, '—', !mes)}${Festas.MESES.map((m, i) => opc(i + 1, m, mes === i + 1)).join('')}</select></label>
+      <label>Dia<select id="aniv-dia" name="aniversario-dia" autocomplete="bday-day" onchange="mudarAniversario()">${opc(0, '—', !dia)}${Array.from({ length: 31 }, (_, i) => opc(i + 1, i + 1, dia === i + 1)).join('')}</select></label>
+      <label>Mês<select id="aniv-mes" name="aniversario-mes" autocomplete="bday-month" onchange="mudarAniversario()">${opc(0, '—', !mes)}${Festas.MESES.map((m, i) => opc(i + 1, m, mes === i + 1)).join('')}</select></label>
     </div>
     <p class="erro" role="alert" id="aniv-erro"></p>
     ${fz.aniversario ? '<button class="btn text inicio" onclick="removerAniversario()">Remover</button>' : ''}
