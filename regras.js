@@ -276,7 +276,7 @@
   const ehHora = s => typeof s === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s);
   const ehIso = s => typeof s === 'string' && !isNaN(Date.parse(s));
   function montarBackup(dados, agoraIso) {
-    return { app: APP, schemaVersion: SCHEMA, exportedAt: agoraIso, secoes: dados.secoes, feitos: dados.feitos, tarefas: dados.tarefas || [], ajustes: dados.ajustes || {} };
+    return { app: APP, schemaVersion: SCHEMA, exportedAt: agoraIso, secoes: dados.secoes, feitos: dados.feitos, tarefas: dados.tarefas || [], ajustes: dados.ajustes || {}, faculdade: dados.faculdade || normalizarFaculdade(null) };
   }
   function tarefaValida(t) {
     return ehObjeto(t) && typeof t.id === 'string' && t.id && !validarTitulo(t.title)
@@ -287,7 +287,21 @@
       && (t.reminderOffsetMin === null || t.reminderOffsetMin === undefined || ANTECEDENCIAS.includes(t.reminderOffsetMin));
   }
   const itemValido = i => ehObjeto(i) && typeof i.id === 'string' && i.id && typeof i.nome === 'string' && i.nome.trim() && ehData(i.criadoEm);
-  function lerBackup(texto) {
+  const STATUS_AULA = ['presente', 'falta', 'sem_aula'];
+  const opcional = (v, ok) => v === undefined || ok(v);
+  function faculdadeValida(f) {
+    if (f === undefined) return true;
+    if (!ehObjeto(f)) return false;
+    return opcional(f.semestre, s => s === null || (ehObjeto(s) && ehData(s.inicio) && ehData(s.fim) && s.fim >= s.inicio))
+      && opcional(f.materias, l => Array.isArray(l) && l.every(m => ehObjeto(m) && typeof m.id === 'string' && m.id && typeof m.nome === 'string'))
+      && opcional(f.grades, l => Array.isArray(l) && l.every(g => ehObjeto(g) && ehData(g.validaDesde) && ehObjeto(g.dias) && Object.values(g.dias).every(s => Array.isArray(s) && s.every(x => x === null || typeof x === 'string'))))
+      && opcional(f.aulas, a => ehObjeto(a) && Object.entries(a).every(([d, r]) => ehData(d) && ehObjeto(r) && Object.values(r).every(x => ehObjeto(x) && STATUS_AULA.includes(x.status) && (x.status !== 'falta' || ehInteiro(x.temposFaltados, 1, 10)))))
+      && opcional(f.anotacoes, l => Array.isArray(l) && l.every(a => ehObjeto(a) && typeof a.id === 'string' && a.id && typeof a.materiaId === 'string' && ehData(a.data) && typeof a.texto === 'string' && Array.isArray(a.fotoIds) && a.fotoIds.length <= 10))
+      && opcional(f.semestresAnteriores, Array.isArray);
+  }
+  const fotoValida = f => ehObjeto(f) && typeof f.id === 'string' && f.id && typeof f.anotacaoId === 'string' && /^image\//.test(f.tipo) && typeof f.dados === 'string' && /^[A-Za-z0-9+/]*={0,2}$/.test(f.dados);
+  const lerBackup = texto => lerBackupCompleto(texto).dados;
+  function lerBackupCompleto(texto) {
     const invalido = () => new Error('Arquivo de backup inválido.');
     let obj;
     try { obj = JSON.parse(texto); } catch (e) { throw invalido(); }
@@ -295,11 +309,13 @@
     if (obj.tarefas !== undefined && !Array.isArray(obj.tarefas)) throw invalido();
     if (!obj.secoes.every(s => ehObjeto(s) && typeof s.id === 'string' && (s.itens === undefined || (Array.isArray(s.itens) && s.itens.every(itemValido))))) throw invalido();
     if (!(obj.tarefas || []).every(tarefaValida)) throw invalido();
-    const { app, exportedAt, ...resto } = obj;
+    if (!faculdadeValida(obj.faculdade)) throw invalido();
+    if (obj.fotos !== undefined && !(Array.isArray(obj.fotos) && obj.fotos.every(fotoValida))) throw invalido();
+    const { app, exportedAt, fotos, ...resto } = obj;
     let r;
     try { r = migrar(JSON.stringify(resto)); } catch (e) { throw invalido(); }
     r.dados.tarefas = r.dados.tarefas.map(t => ({ notes: null, dueDate: null, dueTime: null, priority: 'medium', categoryId: null, completedAt: null, ...t }));
-    return r.dados;
+    return { dados: r.dados, fotos: fotos || [] };
   }
   const LIMITE_LEMBRETE_MS = 30 * 864e5;
   function idNotificacao(chave) {
@@ -352,7 +368,7 @@
   const Regras = { normalizarAjustes, normalizarFaculdade, TEMPOS_PADRAO, CORES, COR_ANTIGA, SCHEMA, TODOS_OS_DIAS, fmt, parseDia, somaDias, curto, nomeDia, dataExtenso, dataCurta, rotuloDia, ordenarItens, corTokenDe, DIAS_CURTOS, diaSemana, repeteNoDia, resumoDias, itensDoDia, feito, resumoDia, sequencia, vazio, migrar, LIMITE_SECOES, validarTitulo, validarNomeSecao, semAcento,
     dataLocal, tarefaFeitaAte, atrasada, ordenarTarefasDia, ordenarAtrasadas, ordenarConcluidas, ordenarDia, tarefasDoDia, cabecalhoProximo, gruposProximos, buscarTarefas,
     DIAS_LONGOS, semanaDe, concluidasNoDia, barrasSemana, taxaSemana, totalConcluidas, textoSequencia, textoTaxa,
-    APP, montarBackup, lerBackup, contarTarefas,
+    APP, montarBackup, lerBackup, lerBackupCompleto, contarTarefas,
     ANTECEDENCIAS, idNotificacao, lembretesPendentes, periodo, saudacao, fraseProgresso, deveComemorarDia, textoComemoracao, inicioSequencia, maiorSequencia, MARCOS, marcoParaComemorar };
   if (typeof module !== 'undefined' && module.exports) module.exports = Regras;
   else raiz.Regras = Regras;

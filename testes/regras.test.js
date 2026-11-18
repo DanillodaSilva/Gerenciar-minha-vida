@@ -542,3 +542,40 @@ describe('migração v3 → v4 (faculdade)', () => {
     assert.equal(R.normalizarFaculdade({ semestre: { nome: 'x', inicio: '2026-05-01', fim: '2026-04-01' } }).semestre, null);
   });
 });
+
+describe('backup com a faculdade', () => {
+  const fac = { semestre: { nome: '2026.1', inicio: '2026-02-02', fim: '2026-05-22', diasSemAula: [] }, materias: [{ id: 'm1', nome: 'Cálculo', cor: 'blue' }],
+    grades: [{ validaDesde: '2026-02-02', dias: { 1: ['m1', 'm1', 'm1', null, null] } }], aulas: { '2026-02-02': { m1: { status: 'falta', temposFaltados: 2, marcadoEm: '2026-02-02T12:00:00.000Z' } } },
+    anotacoes: [{ id: 'a1', materiaId: 'm1', data: '2026-02-02', titulo: 'Limites', texto: 'x', fotoIds: ['f1'], paraProximaAula: '', criadoEm: '2026-02-02T12:00:00.000Z', atualizadoEm: '2026-02-02T12:00:00.000Z' }] };
+  const dados = () => R.migrar(JSON.stringify({ schemaVersion: 4, secoes: [], feitos: {}, tarefas: [], faculdade: fac })).dados;
+  test('exportar e importar devolve a faculdade igual', () => {
+    const d = dados();
+    const b = R.montarBackup(d, '2026-11-18T12:00:00.000Z');
+    assert.deepEqual(b.faculdade, d.faculdade);
+    assert.deepEqual(R.lerBackup(JSON.stringify(b)), d);
+  });
+  test('backup com fotos devolve as fotos separadas', () => {
+    const b = { ...R.montarBackup(dados(), '2026-11-18T12:00:00.000Z'), fotos: [{ id: 'f1', anotacaoId: 'a1', tipo: 'image/webp', largura: 10, altura: 10, bytes: 3, criadoEm: '2026-02-02T12:00:00.000Z', dados: 'AAEC' }] };
+    const r = R.lerBackupCompleto(JSON.stringify(b));
+    assert.equal(r.fotos.length, 1);
+    assert.equal(r.dados.fotos, undefined);
+    assert.equal(r.dados.faculdade.anotacoes[0].fotoIds[0], 'f1');
+  });
+  test('backup antigo sem faculdade recebe a estrutura padrão', () => {
+    const d = R.lerBackup(JSON.stringify({ app: 'minha-rotina', schemaVersion: 3, secoes: [], feitos: {}, tarefas: [] }));
+    assert.equal(d.faculdade.semestre, null);
+    assert.equal(d.faculdade.limiteFaltas, 25);
+  });
+  test('faculdade ou fotos inválidas recusam o arquivo inteiro', () => {
+    const msg = { message: 'Arquivo de backup inválido.' };
+    const b = () => JSON.parse(JSON.stringify(R.montarBackup(dados(), '2026-11-18T12:00:00.000Z')));
+    const com = f => JSON.stringify(f(b()));
+    assert.throws(() => R.lerBackup(com(x => { x.faculdade.aulas['2026-02-02'].m1.status = 'talvez'; return x; })), msg);
+    assert.throws(() => R.lerBackup(com(x => { x.faculdade.aulas['2026-02-02'].m1.temposFaltados = 0; return x; })), msg);
+    assert.throws(() => R.lerBackup(com(x => { x.faculdade.semestre.fim = '2026-01-01'; return x; })), msg);
+    assert.throws(() => R.lerBackup(com(x => { x.faculdade.anotacoes[0].fotoIds = Array(11).fill('f'); return x; })), msg);
+    assert.throws(() => R.lerBackup(com(x => { x.faculdade.grades[0].dias[1] = 'm1'; return x; })), msg);
+    assert.throws(() => R.lerBackup(com(x => ({ ...x, fotos: [{ id: 'f1', anotacaoId: 'a1', tipo: 'text/plain', dados: 'AAEC' }] }))), msg);
+    assert.throws(() => R.lerBackup(com(x => ({ ...x, fotos: [{ id: 'f1', anotacaoId: 'a1', tipo: 'image/webp', dados: 'não é base64' }] }))), msg);
+  });
+});

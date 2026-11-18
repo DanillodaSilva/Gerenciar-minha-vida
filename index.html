@@ -683,8 +683,8 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="arquivo" accept="application/json" hidden>
 
-<script src="regras.js?v=1.3.0"></script>
-<script src="animacoes.js?v=1.3.0"></script>
+<script src="regras.js?v=1.4.0"></script>
+<script src="animacoes.js?v=1.4.0"></script>
 <script src="faculdade.js?v=1.4.0"></script>
 <script src="fotos.js?v=1.4.0"></script>
 <script>
@@ -1875,11 +1875,12 @@ function telaAjustes(){
     </div>
     <div class="card">
       <h2>Backup</h2>
-      <p class="hint">Seus dados ficam só neste celular. Se limpar os dados do navegador ou trocar de celular, eles somem. Faça um backup de vez em quando.</p>
+      <p class="hint">Seus dados ficam só neste celular. Se limpar os dados do navegador ou trocar de celular, eles somem. Faça um backup de vez em quando. O backup comum não leva as fotos da faculdade: use Exportar com fotos para levar tudo.</p>
       <div class="row mt">
-        <button class="btn" onclick="exportar()">Exportar tarefas</button>
+        <button class="btn" onclick="exportar()">Exportar backup</button>
         <button class="btn ghost" onclick="importarBackup()">Importar backup</button>
       </div>
+      <button class="btn ghost mt" onclick="exportarComFotos()">Exportar com fotos</button>
       ${podeCompartilhar() ? '<button class="btn text mt" onclick="compartilharBackup()">Compartilhar backup</button>' : ''}
     </div>
     <div class="card">
@@ -2414,20 +2415,71 @@ function importarBackup(){ finalizarSnack(); document.getElementById('arquivo').
 document.getElementById('arquivo').addEventListener('change', async e => {
   const f = e.target.files[0]; e.target.value = '';
   if(!f) return;
-  let novo;
-  try{ novo = Regras.lerBackup(await f.text()); }
+  let novo, fotos;
+  try{ ({ dados: novo, fotos } = Regras.lerBackupCompleto(await f.text())); }
   catch(err){ toast('Arquivo de backup inválido.'); return; }
   const atuais = Regras.contarTarefas(dados), doBackup = Regras.contarTarefas(novo);
+  const resumoFac = d => { const x = d.faculdade; return `${x.materias.length} ${x.materias.length === 1 ? 'matéria' : 'matérias'} e ${x.anotacoes.length} ${x.anotacoes.length === 1 ? 'anotação' : 'anotações'}`; };
+  const temFac = dados.faculdade.materias.length || dados.faculdade.anotacoes.length || novo.faculdade.materias.length;
   mostrarDialogo({
     titulo: `Substituir suas ${atuais} ${atuais === 1 ? 'tarefa' : 'tarefas'} pelas ${doBackup} do backup?`,
+    texto: [temFac ? `Faculdade: ${resumoFac(dados)} hoje; o backup traz ${resumoFac(novo)}.` : '', fotos.length ? `O backup traz ${fotos.length} ${fotos.length === 1 ? 'foto' : 'fotos'}.` : ''].filter(Boolean).join(' '),
     cancelar: 'Cancelar', ok: 'Substituir', perigo: true,
-    acao: () => {
+    acao: async () => {
       try{ localStorage.setItem('backup_pre_import', JSON.stringify(dados)); }
       catch(err){ toast('Não consegui guardar a cópia de segurança. Nada foi alterado.'); return; }
-      dados = novo; ocultos.clear(); salvar(); render(); toast('Backup importado');
+      if(fotos.length){
+        toast('Restaurando as fotos…');
+        try{
+          for(const x of fotos){
+            const blob = Fotos.deBase64(x.dados, x.tipo);
+            await Fotos.salvar({ id: x.id, anotacaoId: x.anotacaoId, blob, tipo: x.tipo, largura: x.largura || 0, altura: x.altura || 0, bytes: blob.size, criadoEm: x.criadoEm || new Date().toISOString() });
+            revogarFoto(x.id);
+          }
+        }catch(err){ toast('Não foi possível restaurar as fotos. Nada foi alterado.'); return; }
+      }
+      const antigo = dados;
+      dados = novo; ocultos.clear(); gradeRasc = null; assist = null;
+      if(!salvar()){ dados = antigo; render(); return; }
+      if(tela.startsWith('fac-')) tela = 'faculdade';
+      render(true); toast('Backup importado');
     },
   });
 });
+async function exportarComFotos(){
+  finalizarSnack();
+  let fotos;
+  try{ const refs = fotosReferenciadas(); fotos = (await Fotos.todos()).filter(x => refs.has(x.id)); }
+  catch(e){ return toast('Não foi possível ler as fotos.'); }
+  if(!fotos.length) return toast('Não há fotos para exportar. Use Exportar backup.');
+  const base = JSON.stringify(Regras.montarBackup(dados, new Date().toISOString()));
+  const mb = (base.length + fotos.reduce((a, x) => a + x.bytes * 4 / 3 + 300, 0)) / 1048576;
+  mostrarDialogo({ titulo: 'Exportar com fotos?', texto: `O arquivo terá cerca de ${formatarMB(mb * 1048576)}.`, cancelar: 'Cancelar', ok: 'Exportar', acao: () => gerarBackupComFotos(base, fotos) });
+}
+async function gerarBackupComFotos(base, fotos){
+  toast('Preparando o backup…');
+  try{
+    const partes = [base.slice(0, -1) + ',"fotos":['];
+    for(let i = 0; i < fotos.length; i++){
+      const x = fotos[i];
+      partes.push((i ? ',' : '') + JSON.stringify({ id: x.id, anotacaoId: x.anotacaoId, tipo: x.tipo, largura: x.largura, altura: x.altura, bytes: x.bytes, criadoEm: x.criadoEm, dados: await Fotos.paraBase64(x.blob) }));
+    }
+    partes.push(']}');
+    const nome = 'rotina-backup-com-fotos-' + hoje() + '.json';
+    if(NATIVO){
+      const FS = plugin('Filesystem');
+      const r = await FS.writeFile({ path: nome, data: partes[0], directory: 'CACHE', encoding: 'utf8' });
+      for(const p of partes.slice(1)) await FS.appendFile({ path: nome, data: p, directory: 'CACHE', encoding: 'utf8' });
+      await plugin('Share').share({ title: 'Backup da rotina com fotos', dialogTitle: 'Salvar ou enviar o backup', files: [r.uri] });
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(partes, { type: 'application/json' })); a.download = nome;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Backup com fotos salvo em Downloads');
+  }catch(e){ if(!/cancel/i.test(String(e && (e.message || e)))) toast('Não foi possível exportar o backup com fotos.'); }
+}
 
 // quando o app volta do segundo plano num dia novo, atualiza o "Hoje"
 let ultimoHoje = hoje();
