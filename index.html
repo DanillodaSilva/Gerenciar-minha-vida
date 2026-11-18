@@ -654,6 +654,41 @@
     .dia-cal:hover span{box-shadow:0 0 0 var(--border-width) var(--border-strong)}
     .visor-acoes button:hover,.visor .icon-btn:hover,.alerta-fac .linhas button:hover{text-decoration:underline}
   }
+  :root{--festa-1:var(--primary);--festa-2:var(--primary);--festa-3:var(--primary);--festa-4:var(--primary);
+    --p-natal-1:#C62828; --p-natal-2:#2E7D4F; --p-natal-3:#B8860B; --p-natal-4:#FFFFFF; --p-natal-1e:#F28B82; --p-natal-2e:#7FCB9A; --p-natal-3e:#E8C468; --p-natal-4e:#F2F0EB;
+    --p-ano-novo-1:#B8860B; --p-ano-novo-2:#8A8F98; --p-ano-novo-3:#6B3FA0; --p-ano-novo-4:#1C1B19; --p-ano-novo-1e:#E8C468; --p-ano-novo-2e:#C9CDD3; --p-ano-novo-3e:#C3A6F0; --p-ano-novo-4e:#F2F0EB}
+  :root[data-festa="natal"]{--festa-1:var(--p-natal-1);--festa-2:var(--p-natal-2);--festa-3:var(--p-natal-3);--festa-4:var(--p-natal-4)}
+  :root[data-festa="ano-novo"]{--festa-1:var(--p-ano-novo-1);--festa-2:var(--p-ano-novo-2);--festa-3:var(--p-ano-novo-3);--festa-4:var(--p-ano-novo-4)}
+  :root[data-fase="auge"]{--background:color-mix(in srgb, var(--festa-1) 4%, var(--p-sand-50))}
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"])[data-festa="natal"]{--festa-1:var(--p-natal-1e);--festa-2:var(--p-natal-2e);--festa-3:var(--p-natal-3e);--festa-4:var(--p-natal-4e)}
+    :root:not([data-theme="light"])[data-festa="ano-novo"]{--festa-1:var(--p-ano-novo-1e);--festa-2:var(--p-ano-novo-2e);--festa-3:var(--p-ano-novo-3e);--festa-4:var(--p-ano-novo-4e)}
+    :root:not([data-theme="light"])[data-fase="auge"]{--background:color-mix(in srgb, var(--festa-1) 6%, var(--p-night-950))}
+  }
+  :root[data-theme="dark"][data-festa="natal"]{--festa-1:var(--p-natal-1e);--festa-2:var(--p-natal-2e);--festa-3:var(--p-natal-3e);--festa-4:var(--p-natal-4e)}
+  :root[data-theme="dark"][data-festa="ano-novo"]{--festa-1:var(--p-ano-novo-1e);--festa-2:var(--p-ano-novo-2e);--festa-3:var(--p-ano-novo-3e);--festa-4:var(--p-ano-novo-4e)}
+  :root[data-theme="dark"][data-fase="auge"]{--background:color-mix(in srgb, var(--festa-1) 6%, var(--p-night-950))}
+  .hoje-top.festa-auge{padding-top:calc(var(--space-4) + var(--space-5))}
+  .festa-varal{position:absolute;top:0;left:var(--space-4);right:var(--space-4);width:calc(100% - var(--space-4) * 2);height:var(--space-6);z-index:0;pointer-events:none}
+  .luz{animation:piscar 2.4s var(--ease-movimento) infinite alternate}
+  @keyframes piscar{from{opacity:1}to{opacity:.6}}
+  .festa-ramo{position:absolute;right:0;bottom:0;width:calc(var(--space-6) * 2.4);height:calc(var(--space-6) * 1.65);z-index:0;pointer-events:none}
+  .festa-ceu{position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .festa-astro{position:absolute;display:block}
+  .festa-astro svg{width:100%;height:100%;display:block}
+  .hoje-tit,.hoje-top .anel{position:relative;z-index:1}
+  .saud-hora{margin:0;color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium)}
+  .festa-chip{display:inline-flex;align-items:center;gap:var(--space-2);margin:var(--space-2) 0 0;padding:var(--space-1) var(--space-3) var(--space-1) var(--space-2);border-radius:var(--radius-full);
+    background:var(--surface);border:var(--border-width) solid var(--border);color:var(--text-primary);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium)}
+  .festa-mini{width:var(--icon);height:var(--icon);flex:none}
+  .festa-cartao{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap}
+  .festa-cartao-deco svg{width:var(--touch);height:var(--touch);display:block}
+  .festa-cartao-txt{flex:1 1 0;min-width:calc(var(--touch) * 3)}
+  .festa-cartao-txt h2{margin:0;color:var(--text-primary);font-size:var(--fs-section);line-height:var(--lh-section);overflow-wrap:anywhere}
+  .festa-cartao-txt p{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .festa-cartao .btn{min-height:var(--touch)}
+  :root[data-animacoes="reduzidas"] .luz{animation:none}
+  @media (prefers-reduced-motion: reduce){ .luz{animation:none} }
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -704,6 +739,7 @@
 <script src="animacoes.js?v=1.4.0"></script>
 <script src="faculdade.js?v=1.4.0"></script>
 <script src="fotos.js?v=1.4.0"></script>
+<script src="festas.js?v=1.5.0"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -1411,6 +1447,7 @@ addEventListener('popstate', () => {
 let telaDesenhada = '';
 function render(refazer = false, semFlip = false){
   if(!dados) return;
+  aplicarFesta();
   ABAS.forEach(([t]) => {
     const on = t === tela || (t==='rotina' && tela==='secao') || (t==='faculdade' && tela.startsWith('fac-'));
     const b = document.getElementById('tab-'+t);
@@ -1441,7 +1478,9 @@ function render(refazer = false, semFlip = false){
 setInterval(() => {
   const topo = document.querySelector('#app .hoje-top');
   if(!topo || gesto || document.getElementById('overlay').classList.contains('show')) return;
-  if(topo.dataset.periodo !== Regras.periodo(horaAgora()) || !topo.querySelector('h1').textContent.startsWith(Regras.saudacao(horaAgora()))) render();
+  if(topo.dataset.desenho !== chaveDesenho()) return render();
+  const contagem = document.getElementById('contagem-virada');
+  if(contagem) contagem.textContent = Festas.contagemAnoNovo(agoraFesta());
 }, 60000);
 
 function seletorDia(){
@@ -1649,9 +1688,11 @@ function telaHoje(){
     </section>` : '';
     corpo = tudo + blocoAtrasadas + grupos.join('') + listaConcl;
   }
+  const fz = festaAtual(), fzAuge = !!fz && fz.fase === 'auge';
   return `
-    <header class="hoje-top" data-periodo="${Regras.periodo(horaAgora())}">
+    <header class="hoje-top${fz ? ' festa-' + fz.fase : ''}" data-desenho="${esc(chaveDesenho())}" data-periodo="${Regras.periodo(horaAgora())}">
       <span class="ceu manha" aria-hidden="true"></span><span class="ceu tarde" aria-hidden="true"></span><span class="ceu noite" aria-hidden="true"></span>
+      ${fzAuge ? decoDe(fz, 'auge') : ''}
       <div class="hoje-tit">
         <div class="hoje-data">
           <span>${ehHoje ? Regras.dataExtenso(diaSel) : Regras.rotuloDia(diaSel, hoje()) === 'Ontem' ? 'Ontem · ' + Regras.dataExtenso(diaSel) : Regras.dataExtenso(diaSel)}</span>
@@ -1660,12 +1701,15 @@ function telaHoje(){
             <button class="icon-btn" onclick="mudarDia(1)" ${ehHoje ? 'disabled' : ''} aria-label="Próximo dia">${ic('proximo')}</button>
           </span>
         </div>
-        <h1>${esc(Regras.saudacao(horaAgora(), dados.ajustes.nome))}</h1>
+        <h1>${esc(fzAuge ? Festas.saudacaoFesta(fz, hojeFesta(), dados.ajustes.nome) : Regras.saudacao(horaAgora(), dados.ajustes.nome))}</h1>
+        ${fzAuge ? `<p class="saud-hora">${esc(Regras.saudacao(horaAgora(), dados.ajustes.nome))}</p>` : ''}
         <p class="frase" aria-live="polite">${Regras.fraseProgresso({ feitos: r.feitas, total: r.total, ehHoje })}</p>
+        ${fz && fz.fase === 'chegando' ? chipFesta(fz) : ''}
       </div>
       ${anel(r.feitas, r.total)}
     </header>
     ${faixaSemana()}
+    ${cartaoFestivo(fz)}
     ${cartoesFaculdadeHoje()}
     ${corpo}
     <button class="btn text nova-secao" data-chave="nova-secao" onclick="sheetSecao()">${ic('add')} Nova seção</button>
@@ -3418,6 +3462,75 @@ function cartoesFaculdadeHoje(){
       ${blocoPresenca(diaSel, m, a)}
       <button class="btn text inicio" onclick="abrirAnotacao('${m.id}','${diaSel}')">${ic('editar')} Anotar aula</button></div>`; }).join('')}</section>` : '';
   return alerta + cartao;
+}
+/* ---------- datas comemorativas ---------- */
+const SIM_FESTA = NATIVO ? null : Festas.lerSimulacao(location.hostname, location.search);
+const DESLOC_FESTA = (() => {
+  if(!SIM_FESTA) return 0;
+  const agora = new Date(), alvo = SIM_FESTA.data ? Regras.parseDia(SIM_FESTA.data) : new Date(agora);
+  const [h, m] = SIM_FESTA.hora ? SIM_FESTA.hora.split(':').map(Number) : [agora.getHours(), agora.getMinutes()];
+  alvo.setHours(h, m, SIM_FESTA.hora ? 0 : agora.getSeconds(), 0);
+  return alvo - agora;
+})();
+const agoraFesta = () => new Date(Date.now() + DESLOC_FESTA);
+const hojeFesta = () => Regras.fmt(agoraFesta());
+let previaFesta = null, festaCache = { chave: '', valor: null };
+function festaAtual(){
+  if(!dados) return null;
+  if(previaFesta) return previaFesta;
+  const d = hojeFesta(), aj = dados.ajustes.festas, chave = d + JSON.stringify(aj);
+  if(chave !== festaCache.chave) festaCache = { chave, valor: Festas.festaAtiva(d, aj) };
+  return festaCache.valor;
+}
+function aplicarFesta(){
+  const f = festaAtual(), raiz = document.documentElement;
+  if(f){ raiz.setAttribute('data-festa', f.id); raiz.setAttribute('data-fase', f.fase); }
+  else { raiz.removeAttribute('data-festa'); raiz.removeAttribute('data-fase'); }
+}
+const chaveDesenho = () => { const f = festaAtual(); return [Regras.periodo(horaAgora()), Regras.saudacao(horaAgora(), dados.ajustes.nome), hojeFesta(), f ? f.id + ':' + f.fase : ''].join('|'); };
+const SVG = (vb, corpo, cls = '') => `<svg class="${cls}" viewBox="${vb}" aria-hidden="true" focusable="false">${corpo}</svg>`;
+const ESTRELA = 'M12 2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.5L12 16.8 6.1 20l1.3-6.5L2.5 8.9l6.6-.8z';
+const FAISCA = 'M12 1.5c.6 4.6 1.9 5.9 6.5 6.5-4.6.6-5.9 1.9-6.5 6.5-.6-4.6-1.9-5.9-6.5-6.5 4.6-.6 5.9-1.9 6.5-6.5z';
+const varalLuzes = () => {
+  const cores = ['var(--festa-1)', 'var(--festa-2)', 'var(--festa-3)'], atrasos = [0, 1.1, 0.5, 1.7, 0.2, 1.4, 0.8, 2, 0.35];
+  const luzes = atrasos.map((a, i) => { const x = 16 + i * 36, y = 9 + (i % 2 ? 4 : 1); return `<rect x="${x - 2}" y="${y - 3}" width="4" height="4" rx="1" fill="var(--text-secondary)"/><ellipse class="luz" style="animation-delay:-${a}s" cx="${x}" cy="${y + 5}" rx="4" ry="5.5" fill="${cores[i % 3]}"/>`; }).join('');
+  return SVG('0 0 320 26', `<path d="M0 5 Q40 16 80 7 T160 7 T240 7 T320 5" fill="none" stroke="var(--text-secondary)" stroke-opacity=".55" stroke-width="1.2"/>${luzes}`, 'festa-varal');
+};
+const ramoPinheiro = () => SVG('0 0 64 44', `<path d="M64 6 C46 12 30 22 14 40" fill="none" stroke="var(--festa-4-traco, var(--festa-2))" stroke-width="2.4" stroke-linecap="round"/>${[[56, 9], [48, 13], [40, 18], [32, 24], [24, 30]].map(([x, y]) => `<path d="M${x} ${y} l-7 -9 M${x} ${y} l-1 11 M${x} ${y} l-9 2" stroke="var(--festa-2)" stroke-width="2" stroke-linecap="round" fill="none"/>`).join('')}<circle cx="30" cy="34" r="4" fill="var(--festa-1)"/><circle cx="47" cy="24" r="3.4" fill="var(--festa-3)"/>`, 'festa-ramo');
+const ceuEstrelas = () => [[6, 8, 10, 1], [22, 4, 7, 2], [38, 10, 9, 1], [55, 5, 6, 2], [70, 9, 8, 1], [88, 4, 7, 2], [79, 70, 10, 1], [92, 58, 7, 2], [86, 86, 8, 2]]
+  .map(([x, y, t, c]) => `<span class="festa-astro" style="left:${x}%;top:${y}%;width:${t}px;height:${t}px;color:var(--festa-${c})">${SVG('0 0 24 24', `<path d="${FAISCA}" fill="currentColor"/>`)}</span>`).join('');
+const DECO = {
+  natal: {
+    chegando: () => SVG('0 0 24 24', `<path d="${ESTRELA}" fill="var(--festa-3)"/>`, 'festa-mini'),
+    auge: () => varalLuzes() + ramoPinheiro(),
+    cartao: () => SVG('0 0 48 48', `<path d="M24 6 L36 26 H29 L38 40 H10 L19 26 H12 Z" fill="var(--festa-2)"/><rect x="21" y="40" width="6" height="5" rx="1" fill="var(--festa-3)"/><path transform="translate(17 -1) scale(.58)" d="${ESTRELA}" fill="var(--festa-3)"/><circle cx="20" cy="30" r="2.2" fill="var(--festa-1)"/><circle cx="29" cy="35" r="2.2" fill="var(--festa-1)"/><circle cx="26" cy="22" r="1.8" fill="var(--festa-1)"/>`),
+  },
+  'ano-novo': {
+    chegando: () => SVG('0 0 24 24', `<path d="${FAISCA}" fill="var(--festa-1)"/>`, 'festa-mini'),
+    auge: () => `<div class="festa-ceu">${ceuEstrelas()}</div>`,
+    cartao: () => SVG('0 0 48 48', `<path transform="translate(4 6) scale(1.2)" d="${FAISCA}" fill="var(--festa-1)"/><path transform="translate(26 2) scale(.7)" d="${FAISCA}" fill="var(--festa-2)"/><path transform="translate(28 26) scale(.6)" d="${FAISCA}" fill="var(--festa-3)"/>`),
+  },
+};
+const decoDe = (f, parte) => (DECO[f.id] && DECO[f.id][parte] ? DECO[f.id][parte]() : '');
+const chipFesta = f => `<p class="festa-chip">${decoDe(f, 'chegando')}<span>${esc(Festas.textoChegando(f))}</span></p>`;
+function cartaoFestivo(f){
+  if(!f || f.fase !== 'auge' || previaFesta) return previaFesta ? cartaoFestivoHtml(f) : '';
+  if(dados.ajustes.festas.cartaoFechadoEm === hojeFesta() + ':' + f.id) return '';
+  return cartaoFestivoHtml(f);
+}
+function cartaoFestivoHtml(f){
+  const d = hojeFesta(), virada = f.id === 'ano-novo' && d.endsWith('-12-31');
+  return `<section class="card festa-cartao" role="region" aria-label="Data comemorativa" data-chave="festa-cartao">
+    <div class="festa-cartao-deco" aria-hidden="true">${decoDe(f, 'cartao')}</div>
+    <div class="festa-cartao-txt"><h2>${esc(Festas.saudacaoFesta(f, d, dados.ajustes.nome))}</h2>${virada ? `<p id="contagem-virada">${Festas.contagemAnoNovo(agoraFesta())}</p>` : ''}</div>
+    <button class="btn text" onclick="fecharCartaoFestivo()">Fechar</button>
+  </section>`;
+}
+function fecharCartaoFestivo(){
+  const f = festaAtual();
+  if(!f || previaFesta) return;
+  dados.ajustes.festas.cartaoFechadoEm = hojeFesta() + ':' + f.id;
+  salvar(); render();
 }
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
