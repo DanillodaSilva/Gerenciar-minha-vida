@@ -120,7 +120,7 @@
     const c = document.createElement('canvas');
     c.className = 'confete';
     c.setAttribute('aria-hidden', 'true');
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = 1;
     c.width = innerWidth * dpr; c.height = innerHeight * dpr;
     document.body.appendChild(c);
     const ctx = c.getContext('2d');

@@ -855,10 +855,11 @@ function concluirEntrada(tipo, id){
   const secaoCompletou = valor && s && antesSecao.total && antesSecao.feitas < antesSecao.total && depoisSecao.feitas === depoisSecao.total;
   clearTimeout(timersMarcar.get(id));
   if(valor) segurando.add(id); else segurando.delete(id);
-  render();
-  if(secaoCompletou) comemorarSecao(s.id);
-  if(comemorarDia) setTimeout(() => comemorarDiaCompleto(depoisDia.total, marco ? () => comemorarMarco(marco) : null), Animacoes.MOV.rapida);
-  else if(marco) setTimeout(() => comemorarMarco(marco), Animacoes.MOV.rapida);
+  render(false, valor);
+  const noProximoQuadro = fn => requestAnimationFrame(() => requestAnimationFrame(fn));
+  if(secaoCompletou) noProximoQuadro(() => comemorarSecao(s.id));
+  if(comemorarDia) setTimeout(() => noProximoQuadro(() => comemorarDiaCompleto(depoisDia.total, marco ? () => comemorarMarco(marco) : null)), Animacoes.MOV.rapida);
+  else if(marco) setTimeout(() => noProximoQuadro(() => comemorarMarco(marco)), Animacoes.MOV.rapida);
   if(valor && !comemorarDia && dados.ajustes.sons) Animacoes.tocar('tique');
   if(valor){
     if(!secaoCompletou && !comemorarDia) vibrar();
@@ -1243,7 +1244,7 @@ addEventListener('popstate', () => {
 
 /* ---------- telas ---------- */
 let telaDesenhada = '';
-function render(refazer = false){
+function render(refazer = false, semFlip = false){
   if(!dados) return;
   ABAS.forEach(([t]) => {
     const on = t === tela || (t==='rotina' && tela==='secao');
@@ -1257,7 +1258,10 @@ function render(refazer = false){
   const html = tela === 'rotina' ? telaHoje() : tela === 'proximos' ? telaProximos() : tela === 'secao' ? telaSecao()
     : tela === 'constancia' ? telaProgresso() : telaAjustes();
   const chaveTela = tela + ':' + (secaoAberta || '') + ':' + diaSel;
-  if(!refazer && telaDesenhada === chaveTela) Animacoes.flip(app, () => Animacoes.mesclarHtml(app, html));
+  if(!refazer && telaDesenhada === chaveTela){
+    if(semFlip) Animacoes.mesclarHtml(app, html);
+    else Animacoes.flip(app, () => Animacoes.mesclarHtml(app, html));
+  }
   else {
     app.innerHTML = html; telaDesenhada = chaveTela;
     if(!abasVistas.has(tela)){ abasVistas.add(tela); cascata(app); }
