@@ -1,0 +1,13 @@
+import { cpSync, mkdirSync, rmSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const raiz = join(dirname(fileURLToPath(import.meta.url)), '..');
+const destino = join(raiz, 'www');
+const arquivos = ['index.html', 'regras.js', 'animacoes.js', 'faculdade.js', 'fotos.js', 'manifest.webmanifest', 'sw.js', 'icons'];
+
+rmSync(destino, { recursive: true, force: true });
+mkdirSync(destino);
+for (const a of arquivos) cpSync(join(raiz, a), join(destino, a), { recursive: true });
+cpSync(join(raiz, 'node_modules', '@capacitor', 'core', 'dist', 'capacitor.js'), join(destino, 'capacitor.js'));
+console.log('www/ pronto com: ' + arquivos.join(', ') + ', capacitor.js');

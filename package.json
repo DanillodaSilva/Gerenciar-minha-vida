@@ -1,0 +1,23 @@
+{
+  "name": "minha-rotina",
+  "version": "1.4.0",
+  "private": true,
+  "description": "App de rotina e tarefas do dia, offline. Site (PWA) e APK Android (Capacitor).",
+  "scripts": {
+    "test": "node --test",
+    "build": "node scripts/copiar-web.mjs",
+    "sync": "npm run build && npx cap sync android",
+    "apk:debug": "npm run sync && cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/filesystem": "8.1.5",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/share": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.2"
+  }
+}
