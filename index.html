@@ -3638,7 +3638,7 @@ function cartaoFestivo(f){
   if(dados.ajustes.festas.cartaoFechadoEm === hojeFesta() + ':' + f.id) return '';
   return cartaoFestivoHtml(f);
 }
-const textoVirada = () => Festas.contagemAnoNovo(agoraFesta()).replace(/(d) (h|min)/g, '$1 $2');
+const textoVirada = () => Festas.contagemAnoNovo(agoraFesta()).replace(/(\d) (h|min)/g, '$1\u00a0$2');
 function cartaoFestivoHtml(f){
   const d = hojeFesta(), virada = f.id === 'ano-novo' && d.endsWith('-12-31');
   return `<section class="card festa-cartao" role="region" aria-label="Data comemorativa" data-chave="festa-cartao">
