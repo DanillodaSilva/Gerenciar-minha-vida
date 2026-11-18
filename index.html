@@ -534,6 +534,37 @@
   .toast.show{opacity:1;transform:none}
   .toast.com-acao{pointer-events:auto;padding-right:var(--space-2)}
   .toast .snack-acao{color:var(--snack-action);font-weight:var(--w-medium);min-height:var(--touch);padding:0 var(--space-3);border-radius:var(--radius-chip);flex:none}
+  .fac-seg button{font-size:var(--fs-meta);min-width:0;padding:0 var(--space-1)}
+  .assist-passos{margin:0 0 var(--space-1);font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary)}
+  #assist-tit:focus{outline:none}
+  .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
+  .assist-acoes .btn{flex:1}
+  h3.sub{margin:var(--space-2) 0 0;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-semibold);color:var(--text-primary)}
+  .erro{margin:0;color:var(--danger);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .erro:empty{display:none}
+  .lista-simples{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-2)}
+  .lista-simples li{display:flex;align-items:center;gap:var(--space-2);min-height:var(--touch);padding-left:var(--space-3);background:var(--surface-variant);border-radius:var(--radius-card)}
+  .lista-simples li>span{flex:1;min-width:0;overflow-wrap:anywhere}
+  .lista-simples small{display:block;color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta)}
+  .ponto{display:inline-block;width:var(--space-3);height:var(--space-3);border-radius:var(--radius-full);background:var(--c);flex:none}
+  .linha-tempos{display:flex;align-items:center;justify-content:space-between;min-height:var(--touch)}
+  .stepper{display:flex;align-items:center}
+  .stepper b{min-width:var(--space-6);text-align:center;font-variant-numeric:tabular-nums}
+  .stepper .icon-btn{font-size:var(--fs-title);line-height:1}
+  .grade{width:calc(100% + var(--space-2));margin:0 calc(var(--space-1) * -1);border-collapse:separate;border-spacing:var(--space-1);table-layout:fixed}
+  .grade th{padding:0;font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium);color:var(--text-secondary)}
+  .grade thead th:first-child{width:calc(var(--space-6) + var(--space-1))}
+  .grade td{padding:0}
+  .celula{display:block;width:100%;min-height:var(--touch);padding:0 var(--space-1);border-radius:var(--radius-chip);background:var(--cc);color:var(--text-primary);
+    border:var(--border-width) solid color-mix(in srgb, var(--c) 30%, transparent);font-size:var(--fs-meta);line-height:var(--lh-meta);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .celula.vago{background:none;border:var(--border-width) dashed var(--border-strong);color:var(--text-secondary)}
+  .celula.sel{box-shadow:0 0 0 var(--border-focus) var(--primary)}
+  .celula:disabled{background:var(--surface-variant);border:0;opacity:.5;cursor:default}
+  .escolha{display:flex;flex-direction:column;gap:var(--space-2);background:var(--surface-variant);border-radius:var(--radius-card);padding:var(--space-3)}
+  .escolha p{margin:0;overflow-wrap:anywhere}
+  .escolha .chip>span{background:var(--surface);max-width:100%;overflow-wrap:anywhere}
+  .fac-form{display:flex;flex-direction:column;gap:var(--space-3)}
+  .fac-form label{font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--w-medium);color:var(--text-secondary);display:flex;flex-direction:column;gap:var(--space-2)}
 </style>
 </head>
 <body>
@@ -553,6 +584,7 @@
 
 <script src="regras.js?v=1.3.0"></script>
 <script src="animacoes.js?v=1.3.0"></script>
+<script src="faculdade.js?v=1.4.0"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -634,11 +666,14 @@ const ICONES = {
   ajustesCheio:'M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z',
   ajustesVazio:'M19.43 12.98c.04-.32.07-.64.07-.98 0-.34-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.09-.16-.26-.25-.44-.25-.06 0-.12.01-.17.03l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.06-.02-.12-.03-.18-.03-.17 0-.34.09-.43.25l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.09.16.26.25.44.25.06 0 .12-.01.17-.03l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.06.02.12.03.18.03.17 0 .34-.09.43-.25l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zm-1.98-1.71c.04.31.05.52.05.73 0 .21-.02.43-.05.73l-.14 1.13.89.7 1.08.84-.7 1.21-1.27-.51-1.04-.42-.9.68c-.43.32-.84.56-1.25.73l-1.06.43-.16 1.13-.2 1.35h-1.4l-.19-1.35-.16-1.13-1.06-.43c-.43-.18-.83-.41-1.23-.71l-.91-.7-1.06.43-1.27.51-.7-1.21 1.08-.84.89-.7-.14-1.13c-.03-.31-.05-.54-.05-.74s.02-.43.05-.73l.14-1.13-.89-.7-1.08-.84.7-1.21 1.27.51 1.04.42.9-.68c.43-.32.84-.56 1.25-.73l1.06-.43.16-1.13.2-1.35h1.39l.19 1.35.16 1.13 1.06.43c.43.18.83.41 1.23.71l.91.7 1.06-.43 1.27-.51.7 1.21-1.07.85-.89.7.14 1.13zM12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z',
   reordenar:'M20 9H4v2h16V9zM4 15h16v-2H4v2z',
+  capeloCheio:'M12 3 1 8.5 12 14l9-4.5V16h2V8.5L12 3zM5 12.2V16c1.8 1.9 4.3 3 7 3s5.2-1.1 7-3v-3.8L12 15.7l-7-3.5z',
+  capeloVazio:'M12 3 1 8.5 12 14l9-4.5V16h2V8.5L12 3zm0 2.24 6.53 3.26L12 11.76 5.47 8.5 12 5.24zM5 12.2V16c1.8 1.9 4.3 3 7 3s5.2-1.1 7-3v-3.8l-2 1v1.97A7.9 7.9 0 0 1 12 17a7.9 7.9 0 0 1-5-1.83V13.2l-2-1z',
+  alerta:'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
   fogo:'M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z',
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
-const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['constancia','grafico','Progresso'], ['ajustes','ajustes','Ajustes']];
-const ORDEM_ABA = { rotina: 0, secao: 0, proximos: 1, constancia: 2, ajustes: 3 };
+const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['faculdade','capelo','Faculdade'], ['constancia','grafico','Progresso'], ['ajustes','ajustes','Ajustes']];
+const ORDEM_ABA = { rotina: 0, secao: 0, proximos: 1, faculdade: 2, 'fac-materia': 2, 'fac-anotacao': 2, constancia: 3, ajustes: 4 };
 const rolagemAba = {};
 const abasVistas = new Set();
 function montarNav(){
@@ -677,6 +712,7 @@ const feito = (dia, idItem) => Regras.feito(dados, dia, idItem);
 const resumoDia = (dia, secao) => Regras.resumoDia(visao(), dia, secaoVisivel(secao));
 
 let dados = null;
+let facVersao = 0;
 let tela = 'rotina';        // rotina | secao | constancia | ajustes
 let secaoAberta = null;     // id da seção aberta
 let diaSel = hoje();        // dia que está sendo marcado
@@ -694,6 +730,7 @@ function carregar(){
 }
 function salvar(){
   if(!dados) return;
+  facVersao++;
   agendarReconciliacao();
   try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); }
   catch(e){ toast('Não consegui salvar 😕'); }
@@ -1209,9 +1246,13 @@ function teclaAdicao(e, sid){
 /* ---------- navegação (botão voltar do Android funciona) ---------- */
 function irPara(t){
   if(t === tela){ scrollTo({ top: 0, behavior: Animacoes.reduzido() ? 'auto' : 'smooth' }); return; }
-  const deHoje = tela === 'rotina';
-  const volta = tela === 'secao' || t === 'rotina';
-  rolagemAba[tela === 'secao' ? 'rotina' : tela] = scrollY;
+  let voltas = 0, empurrar = false;
+  if(tela === 'secao'){ voltas = 1; empurrar = t !== 'rotina'; }
+  else if(tela.startsWith('fac-')) voltas = (pilhaFac[0] && pilhaFac[0].tela === 'rotina' ? 0 : 1) + pilhaFac.length - (t === 'rotina' ? 0 : 1);
+  else if(t === 'rotina') voltas = 1;
+  else if(tela === 'rotina') empurrar = true;
+  pilhaFac = [];
+  rolagemAba[tela === 'secao' ? 'rotina' : tela.startsWith('fac-') ? 'faculdade' : tela] = scrollY;
   const dir = ORDEM_ABA[t] >= ORDEM_ABA[tela] ? 1 : -1;
   const primeira = !abasVistas.has(t);
   const trocar = () => { tela = t; secaoAberta = null; render(); scrollTo(0, rolagemAba[t] || 0); };
@@ -1219,10 +1260,11 @@ function irPara(t){
     document.documentElement.style.setProperty('--dir-aba', dir);
     document.startViewTransition(trocar);
   } else trocar();
-  if(volta){
-    ignorarPop = true; history.back();
-    if(t !== 'rotina') setTimeout(() => history.pushState({aba:t}, ''), 60);
-  } else if(deHoje) history.pushState({aba:t}, '');
+  if(voltas){
+    ignorarPop = true; history.go(-voltas);
+    if(empurrar) setTimeout(() => history.pushState({aba:t}, ''), 60);
+  } else if(empurrar) history.pushState({aba:t}, '');
+  if(t === 'faculdade' && !fac().semestre) setTimeout(() => { if(tela === 'faculdade' && !$('overlay').classList.contains('show')) abrirAssistente(); }, 150);
 }
 function abrirSecao(id){
   secaoAberta = id; tela = 'secao';
@@ -1240,6 +1282,7 @@ addEventListener('popstate', () => {
     if(ed && editorAlterado()){ history.pushState({sheet:true}, ''); pedirDescartar(); return; }
     ed = null; fecharSheet(true); return;
   }
+  if(tela.startsWith('fac-')){ voltarFac(); return; }
   if(tela !== 'rotina'){ tela = 'rotina'; secaoAberta = null; render(); scrollTo(0,0); }
 });
 
@@ -1248,7 +1291,7 @@ let telaDesenhada = '';
 function render(refazer = false, semFlip = false){
   if(!dados) return;
   ABAS.forEach(([t]) => {
-    const on = t === tela || (t==='rotina' && tela==='secao');
+    const on = t === tela || (t==='rotina' && tela==='secao') || (t==='faculdade' && tela.startsWith('fac-'));
     const b = document.getElementById('tab-'+t);
     b.classList.toggle('on', on);
     if(on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
@@ -1257,8 +1300,8 @@ function render(refazer = false, semFlip = false){
   const app = document.getElementById('app');
   app.classList.toggle('com-fab', tela === 'rotina' || tela === 'proximos');
   const html = tela === 'rotina' ? telaHoje() : tela === 'proximos' ? telaProximos() : tela === 'secao' ? telaSecao()
-    : tela === 'constancia' ? telaProgresso() : telaAjustes();
-  const chaveTela = tela + ':' + (secaoAberta || '') + ':' + diaSel;
+    : tela === 'constancia' ? telaProgresso() : tela === 'faculdade' ? telaFaculdade() : tela === 'fac-materia' ? telaMateria() : tela === 'fac-anotacao' ? telaAnotacao() : telaAjustes();
+  const chaveTela = tela + ':' + (secaoAberta || '') + ':' + diaSel + (tela.startsWith('fac') ? ':' + facAba + ':' + facDia + ':' + facMateria : '');
   if(!refazer && telaDesenhada === chaveTela){
     if(semFlip) Animacoes.mesclarHtml(app, html);
     else Animacoes.flip(app, () => Animacoes.mesclarHtml(app, html));
@@ -1747,7 +1790,7 @@ function telaAjustes(){
 }
 function pedirApagarTudo(){
   mostrarDialogo({ titulo: 'Apagar tudo?', texto: 'Apaga todas as seções, tarefas e o histórico. Não dá para desfazer.', cancelar: 'Cancelar', ok: 'Apagar tudo', perigo: true,
-    acao: () => { finalizarSnack(); dados = { ...Regras.vazio(), ajustes: dados.ajustes }; salvar(); render(); toast('Tudo apagado'); } });
+    acao: () => { finalizarSnack(); dados = { ...Regras.vazio(), ajustes: dados.ajustes, faculdade: dados.faculdade }; salvar(); render(); toast('Tudo apagado'); } });
 }
 function textoExcluirSecao(s){
   const n = s.itens.length, m = dados.tarefas.filter(t => t.categoryId === s.id).length;
@@ -2291,6 +2334,230 @@ function agendarMeiaNoite(){
 }
 agendarMeiaNoite();
 document.addEventListener('visibilitychange', () => { if(!document.hidden) conferirDia(); });
+
+/* ---------- faculdade ---------- */
+const fac = () => dados.faculdade;
+let facAba = 'hoje', facDia = hoje(), facMateria = null, pilhaFac = [], estChave = '', estCache = {}, gradeRasc = null, assist = null;
+function estFac(){ const k = facVersao + ':' + hoje(); if(k !== estChave){ estCache = Faculdade.estatisticas(fac(), hoje()); estChave = k; } return estCache; }
+const materiaDe = id => fac().materias.find(m => m.id === id);
+const tintaMat = m => `--c:var(--cat-${m.cor});--cc:var(--cat-${m.cor}-container)`;
+const clonar = x => JSON.parse(JSON.stringify(x));
+const DIAS_MIN = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
+const naDia = d => (d >= 6 ? 'no ' : 'na ') + DIAS_MIN[d - 1];
+const ILUSTRA_CAPELO = '<svg class="ilustra" viewBox="0 0 120 120" aria-hidden="true"><circle class="fundo-il" cx="60" cy="60" r="56"/><path class="bloco-il" d="M60 30 18 48l42 18 42-18z"/><path class="traco-il" d="M60 30 18 48l42 18 42-18zM34 56v18c7 7 16 10 26 10s19-3 26-10V56M96 50v22"/><circle class="detalhe-il" cx="96" cy="76" r="4"/></svg>';
+function irFacAba(a){ if(a === facAba) return; facAba = a; render(true); }
+function abrirSubFac(nova){ pilhaFac.push({ tela, facMateria, y: scrollY }); history.pushState({ fac: nova }, ''); tela = nova; render(); scrollTo(0, 0); }
+function voltarFac(){ const a = pilhaFac.pop() || { tela: 'faculdade', facMateria: null, y: 0 }; tela = a.tela; facMateria = a.facMateria; render(); scrollTo(0, a.y); }
+function telaFaculdade(){
+  const f = fac();
+  if(!f.semestre) return `<header class="top"><h1>Faculdade</h1></header>
+    <div class="vazio" data-chave="fac-vazio">${ILUSTRA_CAPELO}<h2>Configure seu semestre</h2><p>Monte a grade, marque presença e acompanhe suas faltas.</p><button class="btn" onclick="abrirAssistente()">Configurar semestre</button></div>`;
+  const abas = [['hoje', 'Hoje'], ['materias', 'Matérias'], ['grade', 'Grade'], ['anotacoes', 'Anotações']];
+  return `<header class="top"><h1>Faculdade</h1><span class="hint">${esc(f.semestre.nome)}</span></header>
+    <div class="seg fac-seg" role="tablist" aria-label="Partes da faculdade">${abas.map(([id, r]) => `<button role="tab" aria-selected="${facAba === id}" class="${facAba === id ? 'on' : ''}" onclick="irFacAba('${id}')">${r}</button>`).join('')}</div>
+    ${facAba === 'hoje' ? facHoje() : facAba === 'materias' ? facMaterias() : facAba === 'grade' ? facGrade() : facAnotacoes()}`;
+}
+function facHoje(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+function facMaterias(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+function facGrade(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+function facAnotacoes(){ return '<div class="vazio" data-chave="fac-breve"><p>Em breve.</p></div>'; }
+
+const PASSOS = ['Semestre', 'Matérias', 'Grade da semana', 'Faltas'];
+const formVazio = cor => ({ id: null, nome: '', professor: '', sala: '', cor: cor || 'blue' });
+function abrirAssistente(edicao = false){
+  const f = fac();
+  if(edicao || !assist || assist.edicao) assist = {
+    edicao, passo: 1, erro: '',
+    semestre: edicao ? clonar(f.semestre) : { nome: '', inicio: '', fim: '', diasSemAula: [] },
+    materias: edicao ? clonar(f.materias) : [],
+    tempos: { ...f.temposPorDia },
+    horario: edicao ? clonar(f.horario) : { inicio: null, duracaoMin: null, intervalos: [] },
+    limite: edicao ? f.limiteFaltas : 25, alertas: edicao ? f.alertasAtivos : true,
+    form: formVazio(), grade: { ctx: 'assist', dias: Faculdade.gradeVazia(f.temposPorDia), sel: null, erro: '', ad: {} },
+  };
+  desenharAssistente();
+}
+function desenharAssistente(){
+  const a = assist, n = a.passo;
+  const corpo = n === 1 ? passoSemestre() : n === 2 ? passoMaterias() : n === 3 ? passoGrade() : passoFaltas();
+  abrirSheetOuAtualizar(`<div><p class="assist-passos">Passo ${n} de 4</p><h2 id="assist-tit">${n === 3 && a.edicao ? 'Tempos e horário' : PASSOS[n - 1]}</h2></div>
+    ${corpo}
+    <p class="erro" role="alert">${esc(a.erro)}</p>
+    <div class="assist-acoes">${n > 1 ? '<button class="btn ghost" onclick="assistIr(-1)">Voltar</button>' : ''}<button class="btn" onclick="assistIr(1)">${n === 4 ? 'Concluir' : 'Próximo'}</button></div>`, true);
+}
+function passoSemestre(){
+  const s = assist.semestre;
+  const lista = s.diasSemAula.slice().sort((x, y) => x.data.localeCompare(y.data));
+  return `<label>Nome do semestre<input id="a-nome" name="semestre" autocomplete="off" maxlength="20" placeholder="Ex.: 2026.1" value="${esc(s.nome)}" oninput="assist.semestre.nome=this.value"></label>
+    <div class="row"><label>Início<input type="date" value="${s.inicio}" onchange="assist.semestre.inicio=this.value"></label>
+    <label>Fim<input type="date" value="${s.fim}" onchange="assist.semestre.fim=this.value"></label></div>
+    <h3 class="sub">Dias sem aula</h3>
+    <p class="hint">Feriados, recesso e provas sem aula.</p>
+    ${lista.length ? `<ul class="lista-simples">${lista.map(d => `<li><span>${Regras.dataCurta(d.data)}${d.motivo ? `<small>${esc(d.motivo)}</small>` : ''}</span><button class="icon-btn" onclick="removerDiaSemAula('${d.data}')" aria-label="Remover ${Regras.dataCurta(d.data)}">${ic('excluir')}</button></li>`).join('')}</ul>` : ''}
+    <div class="row"><label>Data<input type="date" id="a-dsa" min="${s.inicio}" max="${s.fim}"></label><label>Motivo<input id="a-dsa-m" name="motivo" autocomplete="off" maxlength="40" placeholder="Ex.: Carnaval"></label></div>
+    <button class="btn ghost" onclick="adicionarDiaSemAula()">${ic('add')} Adicionar dia sem aula</button>`;
+}
+function adicionarDiaSemAula(){
+  const d = $('a-dsa').value, m = $('a-dsa-m').value.trim().slice(0, 40), s = assist.semestre;
+  assist.erro = !d ? 'Escolha a data do dia sem aula.' : s.inicio && s.fim && (d < s.inicio || d > s.fim) ? 'Essa data está fora do semestre.' : '';
+  if(!assist.erro) s.diasSemAula = s.diasSemAula.filter(x => x.data !== d).concat({ data: d, motivo: m });
+  desenharAssistente();
+}
+function removerDiaSemAula(d){ assist.semestre.diasSemAula = assist.semestre.diasSemAula.filter(x => x.data !== d); desenharAssistente(); }
+const seletorCor = (atual, acao) => `<label>Cor<div class="colors" role="radiogroup" aria-label="Cor da matéria">${CORES.map(c => `<button role="radio" aria-checked="${atual === c}" aria-label="${NOME_COR[c]}" style="--c:var(--cat-${c})" class="${atual === c ? 'on' : ''}" onclick="${acao.replace('$', c)}"><i>${atual === c ? ic('check', 'sm') : ''}</i></button>`).join('')}</div></label>`;
+const metaMateria = m => [m.professor, m.sala && 'Sala ' + m.sala].filter(Boolean).join(' · ');
+function passoMaterias(){
+  const a = assist, fm = a.form, ativas = a.materias.filter(m => !m.arquivada);
+  return `${ativas.length ? `<ul class="lista-simples">${ativas.map(m => `<li style="${tintaMat(m)}"><i class="ponto"></i><span>${esc(m.nome)}${metaMateria(m) ? `<small>${esc(metaMateria(m))}</small>` : ''}</span>
+      <button class="icon-btn" onclick="editarMatAssist('${m.id}')" aria-label="Editar ${esc(m.nome)}">${ic('editar')}</button>
+      <button class="icon-btn" onclick="removerMatAssist('${m.id}')" aria-label="Remover ${esc(m.nome)}">${ic('excluir')}</button></li>`).join('')}</ul>` : '<p class="hint">Nenhuma matéria ainda.</p>'}
+    <label>Nome da matéria<input id="a-mat" name="materia" autocomplete="off" maxlength="40" placeholder="Ex.: Cálculo I" value="${esc(fm.nome)}" oninput="assist.form.nome=this.value"></label>
+    <div class="row"><label>Professor (opcional)<input name="professor" autocomplete="off" maxlength="40" value="${esc(fm.professor)}" oninput="assist.form.professor=this.value"></label>
+    <label>Sala (opcional)<input name="sala" autocomplete="off" maxlength="20" value="${esc(fm.sala)}" oninput="assist.form.sala=this.value"></label></div>
+    ${seletorCor(fm.cor, "assist.form.cor='$';desenharAssistente()")}
+    <button class="btn ghost" onclick="salvarMatAssist()">${fm.id ? 'Salvar matéria' : ic('add') + ' Adicionar matéria'}</button>
+    ${fm.id ? '<button class="btn text" onclick="assist.form=formVazio();desenharAssistente()">Cancelar edição</button>' : ''}`;
+}
+function salvarMatAssist(){
+  const a = assist, fm = a.form;
+  a.erro = Faculdade.validarMateria(fm.nome, a.materias, fm.id);
+  if(a.erro) return desenharAssistente();
+  const m = { nome: fm.nome.trim(), professor: fm.professor.trim().slice(0, 40), sala: fm.sala.trim().slice(0, 20), cor: fm.cor };
+  if(fm.id) Object.assign(a.materias.find(x => x.id === fm.id), m);
+  else a.materias.push({ id: uid(), ...m, totalManual: null, arquivada: false });
+  const usadas = a.materias.map(x => x.cor);
+  a.form = formVazio(CORES.find(c => !usadas.includes(c)));
+  desenharAssistente();
+  setTimeout(() => { const i = $('a-mat'); if(i) i.focus(); }, 50);
+}
+function editarMatAssist(id){ const m = assist.materias.find(x => x.id === id); assist.form = { id, nome: m.nome, professor: m.professor, sala: m.sala, cor: m.cor }; desenharAssistente(); }
+function removerMatAssist(id){
+  const a = assist;
+  if(a.edicao && !Faculdade.usoDaMateria(fac(), id).podeExcluir){
+    mostrarDialogo({ titulo: 'Essa matéria tem aulas ou anotações', texto: 'Ela não pode ser excluída. Quer arquivar? Ela some das listas, mas continua nas contas.', cancelar: 'Cancelar', ok: 'Arquivar',
+      acao: () => { a.materias.find(x => x.id === id).arquivada = true; desenharAssistente(); } });
+    return;
+  }
+  a.materias = a.materias.filter(x => x.id !== id);
+  Object.values(a.grade.dias).forEach(s => s.forEach((x, i) => { if(x === id) s[i] = null; }));
+  desenharAssistente();
+}
+const diaGradeNova = () => (hoje() > assist.semestre.inicio ? hoje() : assist.semestre.inicio);
+function passoGrade(){
+  const a = assist;
+  const tempos = `<h3 class="sub">Tempos por dia</h3>${[1, 2, 3, 4, 5, 6, 7].map(d => `<div class="linha-tempos"><span id="lt-${d}">${Faculdade.DIAS[d - 1]}</span><div class="stepper" role="group" aria-labelledby="lt-${d}">
+      <button class="icon-btn" onclick="mudarTempos(${d},-1)" ${a.tempos[d] <= 0 ? 'disabled' : ''} aria-label="Um tempo a menos ${naDia(d)}">−</button><b>${a.tempos[d]}</b>
+      <button class="icon-btn" onclick="mudarTempos(${d},1)" ${a.tempos[d] >= 10 ? 'disabled' : ''} aria-label="Um tempo a mais ${naDia(d)}">+</button></div></div>`).join('')}`;
+  const horario = `<h3 class="sub">Horário (opcional)</h3><div class="row"><label>Início do 1º tempo<input type="time" value="${a.horario.inicio || ''}" onchange="assist.horario.inicio=this.value||null"></label>
+    <label>Minutos por tempo<input type="number" inputmode="numeric" min="1" max="300" value="${a.horario.duracaoMin || ''}" onchange="assist.horario.duracaoMin=parseInt(this.value,10)||null"></label></div>`;
+  if(a.edicao) return tempos + horario + '<p class="hint">Para mudar as matérias de cada tempo, use a aba Grade.</p>';
+  return `<p class="hint">Toque num tempo para escolher a matéria.</p>${editorGrade(a.grade, a.tempos, a.materias)}${tempos}${horario}`;
+}
+const nomeRasc = id => ((assist ? assist.materias : fac().materias).find(m => m.id === id) || {}).nome || 'Matéria';
+const textoPerdas = perdas => perdas.map(p => `${nomeRasc(p.materiaId)} perde ${Faculdade.tempos(p.qtd)} ${naDia(p.dia)}`).join('. ') + '.';
+function mudarTempos(d, delta){
+  const a = assist, novo = { ...a.tempos, [d]: Math.max(0, Math.min(10, a.tempos[d] + delta)) };
+  const vig = a.edicao && Faculdade.gradeVigente(fac(), diaGradeNova());
+  const { dias, perdas } = Faculdade.ajustarTempos(a.edicao ? (vig ? vig.dias : {}) : a.grade.dias, novo);
+  const aplicar = () => { a.tempos = novo; if(!a.edicao) a.grade.dias = dias; a.grade.sel = null; desenharAssistente(); };
+  if(!perdas.length) return aplicar();
+  mostrarDialogo({ titulo: 'Algumas matérias vão perder tempos', texto: textoPerdas(perdas), cancelar: 'Cancelar', ok: 'Confirmar', acao: aplicar });
+}
+function editorGrade(ge, tempos, mats){
+  const dias = [1, 2, 3, 4, 5, 6, 7].filter(d => tempos[d] > 0);
+  if(!dias.length) return '<p class="hint">Nenhum dia com tempos.</p>';
+  const max = Math.max(...dias.map(d => tempos[d])), ativas = mats.filter(m => !m.arquivada), ad = ge.ad || {};
+  const celula = (d, i) => {
+    if(i >= tempos[d]) return '<td><button class="celula" disabled tabindex="-1" aria-label="Sem esse tempo"></button></td>';
+    const id = (ge.dias[d] || [])[i] || null, m = id && mats.find(x => x.id === id), sel = !!ge.sel && ge.sel.d === d && ge.sel.i === i;
+    return `<td><button class="celula ${m ? '' : 'vago'} ${sel ? 'sel' : ''}" style="${m ? tintaMat(m) : ''}" aria-pressed="${sel}" aria-label="${Faculdade.DIAS[d - 1]}, ${i + 1}º tempo: ${m ? esc(m.nome) : 'vago'}" onclick="selCelula('${ge.ctx}',${d},${i})">${m ? esc(m.nome) : 'Vago'}</button></td>`;
+  };
+  const opc = (v, r, s) => `<option value="${v}" ${s ? 'selected' : ''}>${r}</option>`;
+  return `<table class="grade"><thead><tr><th scope="col"><span class="sr">Tempo</span></th>${dias.map(d => `<th scope="col">${Regras.DIAS_CURTOS[d - 1]}</th>`).join('')}</tr></thead>
+    <tbody>${Array.from({ length: max }, (_, i) => `<tr><th scope="row">${i + 1}º</th>${dias.map(d => celula(d, i)).join('')}</tr>`).join('')}</tbody></table>
+    ${ge.sel ? escolhaCelula(ge, mats) : ''}
+    <div class="fac-form"><h3 class="sub">Adicionar matéria ao dia</h3>
+    <div class="row"><label>Dia<select id="ad-dia-${ge.ctx}">${dias.map(d => opc(d, Faculdade.DIAS[d - 1], ad.d === d)).join('')}</select></label>
+    <label>Tempos<select id="ad-qtd-${ge.ctx}">${Array.from({ length: max }, (_, i) => opc(i + 1, i + 1, ad.q === i + 1)).join('')}</select></label></div>
+    <label>Matéria<select id="ad-mat-${ge.ctx}">${ativas.map(m => opc(m.id, esc(m.nome), ad.m === m.id)).join('')}</select></label>
+    <button class="btn ghost" onclick="adicionarAoDiaUI('${ge.ctx}')">Adicionar</button>
+    ${ge.erro ? `<p class="erro" role="alert">${esc(ge.erro)}</p>` : ''}</div>`;
+}
+function escolhaCelula(ge, mats){
+  const { d, i } = ge.sel, atual = (ge.dias[d] || [])[i] || null, m = atual && mats.find(x => x.id === atual);
+  return `<div class="escolha" role="group" aria-labelledby="esc-tit"><p id="esc-tit"><b>${Faculdade.DIAS[d - 1]}, ${i + 1}º tempo</b>${m ? ': ' + esc(m.nome) : ''}</p>
+    <div class="chips">${mats.filter(x => !x.arquivada || x.id === atual).map(x => `<button class="chip ${x.id === atual ? 'on' : ''}" aria-pressed="${x.id === atual}" style="${tintaMat(x)}" onclick="definirCelula('${ge.ctx}','${x.id}')"><span><i class="ponto"></i>${esc(x.nome)}</span></button>`).join('')}
+    <button class="chip ${atual ? '' : 'on'}" aria-pressed="${!atual}" onclick="definirCelula('${ge.ctx}',null)"><span>Vago</span></button></div></div>`;
+}
+const geDe = ctx => (ctx === 'assist' ? assist.grade : gradeRasc);
+const redesenharGe = ctx => (ctx === 'assist' ? desenharAssistente() : render());
+function selCelula(ctx, d, i){ const ge = geDe(ctx); ge.sel = ge.sel && ge.sel.d === d && ge.sel.i === i ? null : { d, i }; ge.erro = ''; redesenharGe(ctx); }
+function definirCelula(ctx, id){ const ge = geDe(ctx); ge.dias[ge.sel.d][ge.sel.i] = id; ge.sel = null; redesenharGe(ctx); }
+function adicionarAoDiaUI(ctx){
+  const ge = geDe(ctx), d = Number($('ad-dia-' + ctx).value), m = $('ad-mat-' + ctx).value, q = Number($('ad-qtd-' + ctx).value);
+  ge.ad = { d, m, q };
+  if(!m) ge.erro = 'Cadastre uma matéria primeiro.';
+  else { const r = Faculdade.adicionarAoDia(ge.dias[d], m, q, d); ge.erro = r.erro || ''; if(!r.erro) ge.dias[d] = r.slots; }
+  redesenharGe(ctx);
+}
+const textoLimite = l => `Você reprova se faltar mais que ${parseInt(l, 10) || 25}% dos tempos de uma matéria. O app avisa antes de chegar lá.`;
+function passoFaltas(){
+  const a = assist;
+  return `<label>Limite de faltas (%)<input type="number" inputmode="numeric" min="1" max="50" value="${esc(a.limite)}" oninput="assist.limite=this.value;$('a-explica').textContent=textoLimite(this.value)"></label>
+    <button class="interruptor" role="switch" aria-checked="${a.alertas}" onclick="assist.alertas=!assist.alertas;this.setAttribute('aria-checked',assist.alertas)"><span>Alertas de faltas</span><span class="sw" aria-hidden="true"></span></button>
+    <p class="hint" id="a-explica">${textoLimite(a.limite)}</p>`;
+}
+function assistIr(delta){
+  const a = assist;
+  a.erro = '';
+  if(delta > 0 && a.passo === 1){
+    a.semestre.nome = a.semestre.nome.trim();
+    a.erro = Faculdade.validarSemestre(a.semestre);
+    if(a.erro) return desenharAssistente();
+    a.semestre.diasSemAula = a.semestre.diasSemAula.filter(d => d.data >= a.semestre.inicio && d.data <= a.semestre.fim);
+  }
+  if(delta > 0 && a.passo === 2){
+    if(a.form.nome.trim()){ salvarMatAssist(); if(a.erro) return; }
+    if(!a.materias.some(m => !m.arquivada)){ a.erro = 'Adicione pelo menos uma matéria.'; return desenharAssistente(); }
+  }
+  if(delta > 0 && a.passo === 4){
+    const l = Number(a.limite);
+    if(!Number.isInteger(l) || l < 1 || l > 50){ a.erro = 'Use um limite entre 1% e 50%.'; return desenharAssistente(); }
+    return concluirAssistente();
+  }
+  a.passo += delta; a.grade.sel = null;
+  desenharAssistente();
+  const sh = $('sheet'); sh.scrollTop = 0;
+  const h = $('assist-tit'); if(h){ h.tabIndex = -1; h.focus({ preventScroll: true }); }
+}
+function concluirAssistente(){
+  const a = assist, f = fac(), novo = !a.edicao;
+  if(novo){
+    f.temposPorDia = a.tempos;
+    f.grades = [{ validaDesde: a.semestre.inicio, dias: a.grade.dias }];
+    f.alertasEnviados = {};
+  } else {
+    const ids = new Set(a.materias.map(m => m.id));
+    const removidas = f.materias.filter(m => !ids.has(m.id)).map(m => m.id);
+    if(removidas.length) f.grades.forEach(g => Object.values(g.dias).forEach(s => s.forEach((x, i) => { if(removidas.includes(x)) s[i] = null; })));
+    if(JSON.stringify(a.tempos) !== JSON.stringify(f.temposPorDia)){
+      const ini = diaGradeNova(), vig = Faculdade.gradeVigente(f, ini);
+      f.temposPorDia = a.tempos;
+      f.grades = Faculdade.aplicarGrade(f.grades, Faculdade.ajustarTempos(vig ? vig.dias : {}, a.tempos).dias, ini);
+    }
+  }
+  f.semestre = { ...a.semestre };
+  f.materias = a.materias;
+  f.horario = { ...f.horario, inicio: a.horario.inicio || null, duracaoMin: a.horario.duracaoMin || null };
+  f.limiteFaltas = Number(a.limite);
+  f.alertasAtivos = a.alertas;
+  salvar();
+  assist = null; gradeRasc = null;
+  fecharSheet();
+  if(novo){ facAba = 'hoje'; facDia = hoje(); }
+  render(true);
+  toast(novo ? 'Semestre configurado' : 'Semestre atualizado');
+}
 
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
