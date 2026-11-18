@@ -268,3 +268,21 @@ Um conjunto só: **Material Icons** (Google, licença Apache 2.0), desenhados co
 | Cartão de comemoração | `surface`, `radius-sheet`, `shadow-sheet`, centrado, máx. `--dialog-max`, título `type-title`, linha `type-meta`, `aria-live="polite"` | entra com escala 0,9 → 1 e opacidade em `--dur-lenta` + `--ease-mola`; fecha em 2,5 s ou ao toque |
 | Alça da folha | 36×4 dp, `border`, raio `radius-full`, área de arrasto de 48 dp no topo da folha | — |
 | Barra do snackbar | 2 dp no rodapé do snackbar, `snackAction` | encolhe com `scaleX` 1 → 0 em 5 s, linear (contagem do Desfazer) |
+
+### 6.1 Faculdade (aba nova)
+
+Mesma arquitetura: os componentes abaixo só usam tokens que já existem. Nenhuma cor nova.
+
+**Cor de nível de faltas (`--nv`, semântico local):** `ok` → `primary`; `atencao` → `priorityMedium`; `perigo` → `priorityHigh`; `ultima_chance` e `ultrapassado` → `danger`. Texto em `--nv` só sobre `surface`/`background` (contraste da tabela 1.4). O nível nunca aparece só pela cor: sempre há o percentual e o selo em texto.
+
+| Componente | Tokens | Estados |
+|---|---|---|
+| Barra de faltas com marcas | trilho `surfaceVariant`, altura `space-2`, raio `radius-full`; preenchimento `--nv`; barra cheia = limite de faltas; duas marcas de 2 dp em `textSecondary` aos 60% e 80% do limite | preenche com `scaleX` em `--dur-lenta` + `--ease-saida`; passa do limite → fica cheia |
+| Selo de nível | `type-meta` peso médio, texto `textPrimary`, fundo `--nv` a 14% sobre `surface`, borda `--nv` a 45%, ponto de 8 dp em `--nv`, raio `radius-full` | Em dia · Atenção · Perigo · Última chance · Reprovado por falta |
+| Botões de presença | três botões de 48 dp em grade, `surfaceVariant`, `radius-chip`, `type-label`, `aria-pressed` | Presente: `primary`/`onPrimary`; Faltei: `danger`/`onDanger`; Sem aula: `textSecondary`/`surface`; pressionado: escala 0,97 em `--dur-toque` |
+| Célula da grade | botão de 48 dp, `radius-chip`, `type-meta`, fundo `--cc` (contêiner da cor da matéria), borda `--c` a 30%; nome com reticências | vago: sem fundo, borda tracejada `borderStrong`, texto `textSecondary`; selecionada: anel 2 dp `primary`; tempo inexistente (5º da sexta): `surfaceVariant`, opacidade 0,5, desativado |
+| Quadrado do calendário | alvo de 48 dp com quadrado visível de 40 dp, `radius-chip`, `type-meta` com números tabulares | presente: `--c`/`onPrimary`; falta: `danger`/`onDanger`; futuro: contorno `borderStrong`; sem aula: `surfaceVariant` riscado em `textSecondary`; sem marcação: `--cc` com borda tracejada `--c` |
+| Miniatura de foto | quadrada (`aspect-ratio: 1`), mínimo 84 dp na grade da anotação e 53 dp na lista, `radius-chip`, fundo `surfaceVariant`, `object-fit: cover` | processando: indicador giratório (borda `borderStrong`, topo `primary`, `--dur-esqueleto` linear) |
+| Visualizador de foto | tela cheia, fundo `p-night-950`, texto e ícones `p-white`, botões de 48 dp, áreas seguras respeitadas | abre/fecha por opacidade (`--dur-base`/`--dur-rapida`); pinça até 4x e arrastar quando ampliada; deslizar para os lados troca (limite 25% ou `GESTO.velocidade`), para baixo fecha; volta com `--ease-mola`; com movimento reduzido, só opacidade |
+| Cartão de alerta de faltas | `card` com fundo `--nv` a 10% sobre `surface`, borda `--nv` a 45%, ícone de alerta em `--nv`, linhas de 48 dp em `textPrimary` | aparece na tela Hoje enquanto alguma matéria estiver em perigo ou acima |
+| Diálogo de alerta | diálogo existente com ícone de alerta em `--nv` (`icon-lg`) acima do título | "Entendi" e "Ver matéria"; vários alertas entram em fila, do mais grave para o menos grave |
