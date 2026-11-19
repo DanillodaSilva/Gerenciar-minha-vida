@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_superficie">#FFFFFF</color>
+    <color name="widget_texto">#1C1B19</color>
+    <color name="widget_texto_suave">#5F5B53</color>
+    <color name="widget_check">#6B3FA0</color>
+    <color name="widget_nivel_ok">#6B3FA0</color>
+    <color name="widget_nivel_atencao">#9A5E07</color>
+    <color name="widget_nivel_perigo">#C0400C</color>
+    <color name="widget_nivel_critico">#B91C1C</color>
+    <dimen name="widget_raio">16dp</dimen>
+
+    <string name="widget_arvore_nome">Árvore da constância</string>
+    <string name="widget_arvore_descricao">Mostra o estágio da sua árvore, o progresso de hoje e a sequência de dias.</string>
+    <string name="widget_hoje_nome">Hoje</string>
+    <string name="widget_hoje_descricao">Lista as rotinas e tarefas de hoje e deixa marcar como feitas.</string>
+    <string name="widget_aula_nome">Próxima aula</string>
+    <string name="widget_aula_descricao">Mostra a próxima aula com horário, matéria, sala e faltas.</string>
+
+    <string name="widget_pct_hoje">%1$d%% hoje</string>
+    <string name="widget_sequencia_um">Sequência: %1$d dia</string>
+    <string name="widget_sequencia_varios">Sequência: %1$d dias</string>
+    <string name="widget_arvore_imagem">Árvore no estágio %1$s</string>
+    <string name="widget_hoje_titulo">Hoje</string>
+    <string name="widget_hoje_cabecalho">Hoje · %1$d de %2$d</string>
+    <string name="widget_hoje_vazio">Nada para hoje. Toque para abrir o app.</string>
+    <string name="widget_item_feito">%1$s, feito</string>
+    <string name="widget_item_pendente">%1$s, não feito</string>
+    <string name="widget_desatualizado">Abra o app para atualizar</string>
+    <string name="widget_aula_linha">%1$s, %2$s</string>
+    <string name="widget_aula_faltas">Faltas: %1$s</string>
+    <string name="widget_aula_configure">Configure a Faculdade no app</string>
+    <string name="widget_aula_desativada">Faculdade desativada no app</string>
+    <string name="widget_aula_sem">Sem aulas nos próximos 14 dias</string>
+    <string name="widget_previa_estagio">Arvoreta</string>
+    <string name="widget_previa_pct" formatted="false">75% hoje</string>
+    <string name="widget_previa_sequencia">Sequência: 6 dias</string>
+    <string name="widget_previa_cabecalho">Hoje · 2 de 4</string>
+    <string name="widget_previa_aula">Amanhã, 1º ao 3º tempo · Cálculo I · 204</string>
+    <string name="widget_previa_faltas" formatted="false">Faltas: 12,5%</string>
+    <string name="widget_dia_hoje">Hoje</string>
+    <string name="widget_dia_amanha">Amanhã</string>
+    <string-array name="widget_dias_semana">
+        <item>Dom</item>
+        <item>Seg</item>
+        <item>Ter</item>
+        <item>Qua</item>
+        <item>Qui</item>
+        <item>Sex</item>
+        <item>Sáb</item>
+    </string-array>
+</resources>
