@@ -857,6 +857,7 @@
   .nv-arvore .hint{margin:0}
   .nv .erro:empty{display:none}
   .nv .ab-widget{grid-template-columns:auto minmax(0,1fr) auto}
+  html.com-folhinha .wrap:not(.com-fab){padding-bottom:calc(var(--touch) + var(--space-2) + var(--space-6))}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -1654,7 +1655,9 @@ function render(refazer = false, semFlip = false){
   document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
   animarProgresso();
   animarRetro();
-  processarEventosArvore();
+  const evArvore = processarEventosArvore();
+  if(evArvore.length) reagirArvore(evArvore);
+  dicaDeAba();
   if(tela === 'rotina') efeitoAmbiente(); else pararAmbiente();
   carregarMiniaturas();
 }
@@ -2109,6 +2112,7 @@ function telaAjustes(){
       <div class="opcoes" role="radiogroup" aria-labelledby="rot-anim">${opcaoAnim('auto', 'Automático (segue o sistema)')}${opcaoAnim('reduzidas', 'Reduzidas')}</div>
       ${temVibracao ? interruptor('vibracao', 'Vibração') : ''}
       ${interruptor('sons', 'Sons')}
+      <button class="interruptor" role="switch" aria-checked="${aj.folhinha.ativa}" onclick="alternarFolhinha()"><span>Mostrar a Folhinha</span><span class="sw" aria-hidden="true"></span></button>
       <button class="btn text inicio" onclick="mostrarAbertura(true)">Rever a abertura</button>
     </div>
     <div class="card aparencia">
@@ -4175,6 +4179,7 @@ function mostrarAbertura(rever = false){
   let el = $('abertura');
   if(!el){ el = document.createElement('div'); el.id = 'abertura'; el.className = 'ab'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'ab-tit'); document.body.appendChild(el); }
   document.documentElement.classList.add('na-abertura');
+  Folhinha.fechar();
   $('app').setAttribute('inert', ''); document.querySelector('nav.tabs').setAttribute('inert', '');
   desenharAbertura();
   if(!Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
@@ -4320,7 +4325,7 @@ function concluirAbertura(){
   $('app').removeAttribute('inert'); document.querySelector('nav.tabs').removeAttribute('inert');
   const fim = () => { if(el) el.remove(); };
   if(el && !Animacoes.reduzido()) el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim; else fim();
-  montarNav(); diaSel = hoje(); tela = 'rotina'; render(true);
+  montarNav(); diaSel = hoje(); tela = 'rotina'; sincronizarFolhinha(); render(true);
 }
 let abArraste = null;
 document.addEventListener('pointerdown', e => { const c = e.target.closest('#ab-conteudo'); if(!c || e.target.closest('input, select, textarea, button')) return; abArraste = { x: e.clientX, y: e.clientY, t: e.timeStamp, id: e.pointerId }; });
@@ -4364,6 +4369,67 @@ function fecharNovidades(conhecer){
   salvar(); fecharSheet();
   if(conhecer) irPara('constancia');
 }
+const DICAS_ABA = {
+  rotina: 'Toque num item para marcar. Deslize para o lado para ver mais opções.',
+  proximos: 'Aqui ficam as tarefas dos próximos dias.',
+  faculdade: 'Marque a presença logo depois da aula. Eu aviso se as faltas apertarem.',
+  constancia: 'Esta é a sua árvore. Cada dia completo vira uma folha nova.',
+  ajustes: 'Faça um backup de vez em quando. Seus dados ficam só neste celular.',
+};
+const DICAS = [
+  ['Itens pequenos são mais fáceis de manter todo dia.'],
+  ['Dias com metade da rotina feita já contam para a sequência.'],
+  ['Completar o dia inteiro faz a árvore ganhar uma folha.'],
+  ['Abaixo da metade, a árvore perde uma folha.'],
+  ['Você pode mudar o tema em Ajustes.'],
+  ['No app Android, dá para marcar itens direto pelo widget.', () => NATIVO],
+  ['Exporte um backup antes de trocar de celular.'],
+  ['Anote a aula logo depois: a memória ainda está fresca.', () => dados.ajustes.mostrarFaculdade],
+];
+const folhinhaAtiva = () => dados && dados.ajustes.folhinha.ativa && !ab;
+function proximaDica(){
+  const fo = dados.ajustes.folhinha;
+  for(let k = 0; k < DICAS.length; k++){
+    const i = (fo.proximaDica + k) % DICAS.length, [texto, se] = DICAS[i];
+    if(!se || se()){ fo.proximaDica = (i + 1) % DICAS.length; salvar(); Folhinha.falar(texto); return; }
+  }
+}
+function textoEventosArvore(ev){
+  const de = t => ev.find(e => e.tipo === t), linhas = [];
+  const perdeu = de('perdeu'), voltou = de('voltouEstagio'), ganhou = de('ganhou'), subiu = de('subiuEstagio');
+  if(perdeu) linhas.push(`Ontem não deu: sua árvore perdeu ${perdeu.n} ${perdeu.n === 1 ? 'folha' : 'folhas'}. Bora recuperar hoje?`);
+  if(voltou) linhas.push(`Sua árvore voltou a ser ${voltou.nome}. Dá pra crescer de novo!`);
+  if(subiu) linhas.push(`Sua árvore virou ${subiu.nome}!`);
+  else if(ganhou) linhas.push('Dia completo! Sua árvore ganhou uma folha.');
+  return linhas.length ? { texto: linhas.join(' '), estado: subiu || ganhou ? 'comemorando' : 'triste' } : null;
+}
+function reagirArvore(ev){
+  const r = textoEventosArvore(ev);
+  if(!r) return;
+  const tentar = (n = 0) => {
+    if(document.querySelector('.comemoracao') || $('overlay').classList.contains('show') || $('dialogo').classList.contains('show')){ if(n < 20) setTimeout(() => tentar(n + 1), 500); return; }
+    if(folhinhaAtiva()){ Folhinha.falar(r.texto, { estado: r.estado }); dados.ajustes.folhinha.ultimaAparicao = hoje(); salvar(); }
+    else toast(r.texto);
+  };
+  setTimeout(tentar, Animacoes.MOV.lenta);
+}
+let timerDicaAba = null;
+function dicaDeAba(){
+  if(!folhinhaAtiva()) return;
+  const aba = tela === 'secao' ? 'rotina' : tela.startsWith('fac-') ? 'faculdade' : tela, fo = dados.ajustes.folhinha;
+  if(!DICAS_ABA[aba] || fo.dicasVistas.includes(aba) || fo.ultimaAparicao === hoje()) return;
+  clearTimeout(timerDicaAba);
+  timerDicaAba = setTimeout(() => {
+    if(tela !== aba && !(aba === 'rotina' && tela === 'secao') || (Folhinha.balao && !Folhinha.balao.hidden) || document.documentElement.classList.contains('travado')) return;
+    fo.dicasVistas.push(aba); fo.ultimaAparicao = hoje(); salvar();
+    Folhinha.falar(DICAS_ABA[aba]);
+  }, 900);
+}
+function sincronizarFolhinha(){
+  if(folhinhaAtiva()){ Folhinha.montar(); Folhinha.aoTocar = proximaDica; document.documentElement.classList.add('com-folhinha'); }
+  else { Folhinha.remover(); document.documentElement.classList.remove('com-folhinha'); }
+}
+function alternarFolhinha(){ dados.ajustes.folhinha.ativa = !dados.ajustes.folhinha.ativa; salvar(); sincronizarFolhinha(); render(); }
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
@@ -4438,6 +4504,7 @@ function iniciar(){
   iniciarLembretes();
   if(deveMostrarAbertura()) mostrarAbertura();
   else if(deveMostrarNovidades()) setTimeout(mostrarNovidades, Animacoes.MOV.lenta);
+  sincronizarFolhinha();
   diaFestaVisto = hojeFesta();
   agendarVirada();
   setTimeout(limparFotosOrfas, 3000);
