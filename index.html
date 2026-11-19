@@ -4468,9 +4468,9 @@ const WidgetPonte = {
       if(!lista.length) return;
       const r = Widget.aplicarPendencias(dados, lista, hoje());
       if(r.aplicadas && !salvar()) return;
-      if(r.ate) await plugin('Widget').limparPendentes({ ate: r.ate });
       if(r.aplicadas) render();
-      this.publicar();
+      await this.publicar();
+      if(r.ate) await plugin('Widget').limparPendentes({ ate: r.ate });
     }catch(e){ console.error('Falha ao ler as marcações do widget:', e && e.message); }
     finally{ this.ocupado = false; }
   },
