@@ -860,6 +860,8 @@
   .nv-arvore .hint{margin:0}
   .nv .erro:empty{display:none}
   .nv .ab-widget{grid-template-columns:auto minmax(0,1fr) auto}
+  .aj-widgets{display:flex;flex-direction:column;gap:var(--space-2)}
+  .aj-widgets .hint{margin:0}
   html.com-folhinha .wrap:not(.com-fab){padding-bottom:calc(var(--touch) + var(--space-2) + var(--space-6))}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
@@ -2156,6 +2158,7 @@ function telaAjustes(){
       <button class="interruptor mt" role="switch" aria-checked="${aj.lembreteDiario.ativo}" onclick="alternarLembreteDiario()"><span>Lembrete diário</span><span class="sw" aria-hidden="true"></span></button>
       ${aj.lembreteDiario.ativo ? `<label>Horário do lembrete<input type="time" name="hora-lembrete" autocomplete="off" value="${aj.lembreteDiario.hora}" onchange="dados.ajustes.lembreteDiario.hora=this.value||'08:00';salvar()"></label>` : ''}
     </div>` : ''}
+    ${cartaoWidgets()}
     <div class="card sobre"><b>Minha Rotina</b><span>Versão ${VERSAO}</span></div>
   `;
 }
@@ -4232,7 +4235,7 @@ function conteudoPasso(n){
   if(n === 7) return `<div class="ab-escolhas"><button class="btn" onclick="abFaculdade('agora')">Sim, configurar agora</button><button class="btn ghost" onclick="abFaculdade('depois')">Sim, depois</button><button class="btn ghost" onclick="abFaculdade('nao')">Não faço</button></div>`;
   if(n === 8) return `<button class="interruptor" role="switch" aria-checked="${aj.festas.ativas}" onclick="dados.ajustes.festas.ativas=!dados.ajustes.festas.ativas;salvar();desenharAbertura(true)"><span>Datas comemorativas</span><span class="sw" aria-hidden="true"></span></button>
     <button class="btn text" onclick="escolherDatas()" ${aj.festas.ativas ? '' : 'disabled'}>Escolher datas</button>`;
-  if(n === 9) return `<div class="ab-widgets">${[['arvore', 'Árvore', 'A árvore e o progresso do dia.'], ['hoje', 'Hoje', 'Os itens do dia, para marcar tocando.'], ['aula', 'Próxima aula', 'A próxima aula e o percentual de faltas.']].map(([t, nome, d]) => `<div class="ab-widget"><div class="ab-widget-previa" aria-hidden="true">${previaWidget(t)}</div><div><b>${nome}</b><p class="hint">${d}</p></div>${ab.fixar === false ? '' : `<button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">Adicionar</button>`}</div>`).join('')}</div>
+  if(n === 9) return `<div class="ab-widgets">${[['arvore', 'Árvore', 'A árvore e o progresso do dia.'], ['hoje', 'Hoje', 'Os itens do dia, para marcar tocando.'], ['aula', 'Próxima aula', 'A próxima aula e o percentual de faltas.']].map(([t, nome, d]) => `<div class="ab-widget"><div class="ab-widget-previa" aria-hidden="true">${previaWidget(t)}</div><div><b>${nome}</b><p class="hint">${d}</p></div>${WidgetPonte.podeFixar === false ? '' : `<button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">Adicionar</button>`}</div>`).join('')}</div>
     <p class="hint">Toque e segure na tela inicial, escolha Widgets e procure Minha Rotina.</p>`;
   if(n === 10){
     const secs = dados.secoes.length, itens = dados.secoes.reduce((s, x) => s + x.itens.length, 0);
@@ -4359,7 +4362,7 @@ function mostrarNovidades(){
     <div class="nv-arvore">${desenharArvore(a.folhas, a.estagio)}<p class="hint">${a.nomeEstagio} · ${folhasTxt(a.folhas)}</p></div>
     ${perguntaAniv ? `<span class="rotulo-grupo">Quando é seu aniversário?</span><div class="row">${MESES_OPC(0, 'nv-dia', 'ab-dia', 31, 'Dia')}${MESES_OPC(0, 'nv-mes', 'ab-mes', 12, 'Mês')}</div><p class="erro" role="alert" id="nv-erro"></p>` : ''}
     ${perguntaFac ? `<span class="rotulo-grupo" id="nv-fac">Você faz faculdade?</span><div class="chips" role="group" aria-labelledby="nv-fac"><button class="chip" aria-pressed="false" data-fac="sim" onclick="nvEscolherFac('sim')"><span>Sim</span></button><button class="chip" aria-pressed="false" data-fac="nao" onclick="nvEscolherFac('nao')"><span>Não faço</span></button></div>` : ''}
-    ${widgets ? `<span class="rotulo-grupo">Widgets na tela inicial</span><div class="ab-widgets">${[['arvore', 'Árvore'], ['hoje', 'Hoje'], ['aula', 'Próxima aula']].map(([t, nome]) => `<div class="ab-widget"><div class="ab-widget-previa" aria-hidden="true">${previaWidget(t)}</div><b>${nome}</b><button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">Adicionar</button></div>`).join('')}</div>` : ''}
+    ${widgets ? `<span class="rotulo-grupo">Widgets na tela inicial</span><div class="ab-widgets">${[['arvore', 'Árvore'], ['hoje', 'Hoje'], ['aula', 'Próxima aula']].map(([t, nome]) => `<div class="ab-widget"><div class="ab-widget-previa" aria-hidden="true">${previaWidget(t)}</div><b>${nome}</b>${WidgetPonte.podeFixar === false ? '' : `<button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">Adicionar</button>`}</div>`).join('')}</div>${WidgetPonte.podeFixar === false ? `<p class="hint">${WidgetPonte.DICA}</p>` : ''}` : ''}
     <button class="btn" onclick="fecharNovidades(true)">Conhecer minha árvore</button>
     <button class="btn text" onclick="fecharNovidades(false)">Agora não</button>
   </div>`);
@@ -4438,12 +4441,19 @@ function sincronizarFolhinha(){
 }
 function alternarFolhinha(){ dados.ajustes.folhinha.ativa = !dados.ajustes.folhinha.ativa; salvar(); sincronizarFolhinha(); render(); }
 /* ---------- widgets (só no APK) ---------- */
+function cartaoWidgets(){
+  if(!WidgetPonte.disponivel()) return '<div class="card" data-chave="aj-widgets"><h2>Widgets</h2><p class="hint">Os widgets estão disponíveis no app Android (APK).</p></div>';
+  const botoes = WidgetPonte.podeFixar === false ? `<p class="hint">${WidgetPonte.DICA}</p>` : [['arvore', 'Adicionar widget da árvore'], ['hoje', 'Adicionar widget de hoje'], ['aula', 'Adicionar widget da próxima aula']].map(([t, r]) => `<button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">${r}</button>`).join('');
+  return `<div class="card aj-widgets" data-chave="aj-widgets"><h2>Widgets</h2>${botoes}<p class="hint">Os nomes dos itens aparecem na tela inicial. Qualquer pessoa com o celular desbloqueado pode ver.</p></div>`;
+}
 const WidgetPonte = {
-  timer: null, timerDia: null, memo: {}, ocupado: false,
+  timer: null, timerDia: null, memo: {}, ocupado: false, podeFixar: null,
+  DICA: 'Toque e segure na tela inicial, escolha Widgets e procure Minha Rotina.',
   disponivel: () => NATIVO && !!(window.Capacitor && Capacitor.isPluginAvailable && Capacitor.isPluginAvailable('Widget')),
   async iniciar(){
     if(!this.disponivel()) return;
     const W = plugin('Widget');
+    try{ const s = await W.suportado(); this.podeFixar = !!(s && s.fixar); }catch(e){ this.podeFixar = false; }
     W.addListener('pendencias', () => this.sincronizar());
     W.addListener('aba', ev => this.abrirAba(ev && ev.aba));
     document.addEventListener('visibilitychange', () => { if(!document.hidden){ this.sincronizar(); this.agendarDia(); } });
@@ -4485,9 +4495,8 @@ const WidgetPonte = {
     if(tela !== t) irPara(t); else render();
   },
   async fixar(tipo){
-    const dica = 'Toque e segure na tela inicial, escolha Widgets e procure Minha Rotina.';
-    try{ const r = await plugin('Widget').pedirFixar({ tipo }); if(!r || !r.ok) toast(dica); }
-    catch(e){ toast(dica); }
+    try{ const r = await plugin('Widget').pedirFixar({ tipo }); if(!r || !r.ok) toast(this.DICA); }
+    catch(e){ toast(this.DICA); }
   },
 };
 /* ---------- lembretes (só no APK) ---------- */
