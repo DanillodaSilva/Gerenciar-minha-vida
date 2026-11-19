@@ -742,7 +742,7 @@
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-tronco:var(--p-arvore-tronco-e); --arvore-flor:var(--p-arvore-flor-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)} }
   :root[data-theme="dark"]{--arvore-tronco:var(--p-arvore-tronco-e); --arvore-flor:var(--p-arvore-flor-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)}
   svg.arvore{display:block;width:auto;height:100%;max-width:100%;overflow:visible}
-  .arv-folha{transform-box:fill-box;transform-origin:center}
+  .arv-folha,.arv-caindo{transform-box:fill-box;transform-origin:center}
   .arv-luz{display:none}
   :root[data-festa="natal"][data-fase="auge"] .arv-luz{display:inline}
   .folhinha{position:fixed;z-index:6;width:calc(var(--touch) + var(--space-2));height:calc(var(--touch) + var(--space-2));padding:0;border-radius:var(--radius-full);
@@ -4135,13 +4135,13 @@ function cairFolhas(n){
     const g = svg.querySelector('.arv-extras');
     for(let k = 0; k < n; k++){
       const i = a.folhas + k;
-      g.insertAdjacentHTML('beforeend', svgFolha(i, a.estagio));
-      const el = g.lastElementChild.querySelector('.arv-folha');
+      g.insertAdjacentHTML('beforeend', `<g class="arv-caindo">${svgFolha(i, a.estagio)}</g>`);
+      const el = g.lastElementChild;
       const lado = k % 2 ? 1 : -1;
       const anim = Animacoes.reduzido()
         ? el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.reduzida, fill: 'forwards' })
         : el.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${lado * 8}px, 40px) rotate(${lado * 70}deg)`, offset: 0.35 }, { transform: `translate(${lado * -6}px, 90px) rotate(${lado * 150}deg)`, offset: 0.7, opacity: 0.8 }, { transform: `translate(0, 150px) rotate(${lado * 230}deg)`, opacity: 0 }], { duration: 1200, delay: k * 120, easing: Animacoes.MOV.movimento, fill: 'forwards' });
-      anim.onfinish = () => g.lastElementChild && el.closest('g') && el.closest('g').remove();
+      anim.onfinish = () => el.remove();
     }
   });
 }
