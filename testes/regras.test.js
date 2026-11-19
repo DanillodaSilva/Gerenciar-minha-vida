@@ -607,3 +607,27 @@ describe('ajustes da abertura, Folhinha e árvore', () => {
     assert.equal(R.migrar(JSON.stringify(uma)).migrou, false);
   });
 });
+
+describe('lembrete diário', () => {
+  const agora = new Date(2026, 10, 18, 10, 0).getTime();
+  const it = { id: 'i', nome: 'Água', criadoEm: '2026-11-01', dias: [1, 2, 3, 4, 5, 6, 7], horario: null, lembreteMin: null };
+  const base = (ld, feitos = {}) => ({ secoes: [{ id: 's', nome: 'X', itens: [it] }], feitos, tarefas: [], ajustes: { lembreteDiario: ld } });
+  const diarios = d => R.lembretesPendentes(d, agora).filter(l => l.tipo === 'diario');
+  test('desligado não agenda nada', () => {
+    assert.equal(diarios(base({ ativo: false, hora: '08:00' })).length, 0);
+  });
+  test('agenda avisos únicos nos próximos 30 dias, a partir do próximo horário', () => {
+    const l = diarios(base({ ativo: true, hora: '08:00' }));
+    assert.equal(l.length, 30);
+    assert.equal(l[0].ref, '2026-11-19');
+    assert.equal(l[0].at, new Date(2026, 10, 19, 8, 0).getTime());
+    assert.equal(l[0].body, 'Bora cuidar da sua árvore hoje?');
+    assert.equal(new Set(l.map(x => x.id)).size, 30);
+  });
+  test('inclui hoje se o horário ainda não passou e pula dia já completo', () => {
+    const l = diarios(base({ ativo: true, hora: '20:00' }));
+    assert.equal(l[0].ref, '2026-11-18');
+    const c = diarios(base({ ativo: true, hora: '20:00' }, { '2026-11-18': ['i'] }));
+    assert.equal(c[0].ref, '2026-11-19');
+  });
+});

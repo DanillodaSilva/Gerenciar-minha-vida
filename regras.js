@@ -382,6 +382,12 @@
         break;
       }
     }));
+    const ld = dados.ajustes && dados.ajustes.lembreteDiario;
+    if (ld && ld.ativo && ehHora(ld.hora)) for (let k = 0; k <= 30; k++) {
+      const dia = somaDias(hoje, k), at = momento(dia, ld.hora), r = resumoDia(dados, dia);
+      if (at <= agoraMs || at > limite || (r.total && r.feitas >= r.total)) continue;
+      lista.push({ id: idNotificacao('diario:' + dia), tipo: 'diario', ref: dia, title: 'Minha Rotina', body: 'Bora cuidar da sua árvore hoje?', at });
+    }
     return lista.sort((a, b) => a.at - b.at);
   }
   const horaDe = hora => Number(String(hora).split(':')[0]);

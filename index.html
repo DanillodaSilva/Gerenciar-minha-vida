@@ -2148,6 +2148,8 @@ function telaAjustes(){
       <h2>Notificações</h2>
       <p class="hint" id="estado-notif" aria-live="polite">${estadoNotifTexto}</p>
       <button class="btn ghost mt" onclick="abrirConfigNotif()">Abrir configurações</button>
+      <button class="interruptor mt" role="switch" aria-checked="${aj.lembreteDiario.ativo}" onclick="alternarLembreteDiario()"><span>Lembrete diário</span><span class="sw" aria-hidden="true"></span></button>
+      ${aj.lembreteDiario.ativo ? `<label>Horário do lembrete<input type="time" name="hora-lembrete" autocomplete="off" value="${aj.lembreteDiario.hora}" onchange="dados.ajustes.lembreteDiario.hora=this.value||'08:00';salvar()"></label>` : ''}
     </div>` : ''}
     <div class="card sobre"><b>Minha Rotina</b><span>Versão ${VERSAO}</span></div>
   `;
@@ -4432,6 +4434,11 @@ function sincronizarFolhinha(){
 function alternarFolhinha(){ dados.ajustes.folhinha.ativa = !dados.ajustes.folhinha.ativa; salvar(); sincronizarFolhinha(); render(); }
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
+async function alternarLembreteDiario(){
+  const l = dados.ajustes.lembreteDiario;
+  if(!l.ativo && !(await pedirPermissaoNotif())) toast('Sem permissão de notificação, o lembrete não aparece.');
+  l.ativo = !l.ativo; salvar(); render();
+}
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
 async function permissaoNotif(){ try{ return (await plugin('LocalNotifications').checkPermissions()).display; }catch(e){ return 'denied'; } }
 async function pedirPermissaoNotif(){
