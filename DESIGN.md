@@ -349,3 +349,66 @@ Mesma arquitetura: os componentes abaixo só usam tokens que já existem. Nenhum
 | Folha "Escolher datas" | folha inferior com uma chave por festa (padrão do interruptor existente) e "Fechar" | Aniversário desativado (opacidade 0,55) com a dica "Informe seu aniversário para ativar" até existir data |
 | Banner de prévia | fixo no topo, fundo `snackBg`, texto `snackFg`, botão "Sair da prévia" em `snackAction` com 48 dp, `role="status"`; o conteúdo desce enquanto ele aparece | some ao tocar em "Sair da prévia" ou depois de 30 s; não grava nada |
 | Partículas | canvas existente (`Animacoes.confete`) com forma por festa (floco, faísca, ovo, coração, bandeirinha, morcego; confete retangular no Carnaval e no aniversário) e cores `--festa-1..4`; fogos com `Animacoes.faiscas` (até 60 por explosão, 1,4 s) | efeito ambiente (neve, confete, corações) com até 24 partículas por 8 s, uma vez por abertura, só `transform` e `opacity`, para quando a aba fica oculta; nada disso com movimento reduzido |
+
+### 6.3 Árvore, Folhinha, abertura e widgets (versão 1.6.0)
+
+**Árvore — tokens.** Primitivas `--p-arvore-*` (claro) e `--p-arvore-*-e` (escuro) → semânticos `--arvore-tronco`, `--arvore-folha-1..3`, `--arvore-flor`, `--arvore-fruto`, `--arvore-terra`, repetidos nos dois seletores de modo escuro. A flor usa `--primary` (a identidade roxa continua). O verde é só da árvore: não pinta texto, botão nem foco.
+
+| Token | Claro | Escuro | Uso e contraste |
+|---|---|---|---|
+| `--arvore-tronco` | `#7C5A3A` | `#C9A27E` | tronco e galhos; 6,21:1 / 7,18:1 contra `surface` |
+| `--arvore-folha-1` | `#2E7D4F` | `#7FCB9A` | folhas e quadrado "ganhou" dos 30 dias; 5,05:1 / 8,75:1 contra `surface` |
+| `--arvore-folha-2` | `#4C9A63` | `#9BD9AE` | folhas |
+| `--arvore-folha-3` | `#6DB07A` | `#B6E5C2` | folhas |
+| `--arvore-fruto` | `#E8590C` | `#FF922B` | frutos (estágio 8 em diante) |
+| `--arvore-terra` | `#B8A88A` | `#5A5146` | elipse do chão |
+
+**Árvore — desenho.** SVG inline original (`viewBox 0 0 200 220`), 10 esqueletos e uma copa por estágio. As folhas ficam numa espiral de Vogel com capacidade por estágio (no máximo 120 desenhadas); flores (12, estágio 7+) e frutos (9, estágio 8+) têm espiral própria. `role="img"` com `aria-label` "Sua árvore: {estágio}, {n} folhas". Luzinhas só no auge do Natal.
+
+| Componente | Tokens | Estados |
+|---|---|---|
+| Cartão da árvore (Progresso) | `card`, palco de 240 px, nome do estágio `type-title`, "{n} folhas" `type-label` `textSecondary` com algarismos tabulares, `bar` em `--arvore-folha-1`, dicas `hint` | "Faltam {k} folhas para {próximo}" ou "Estágio máximo"; 30 quadrados em 15 colunas (`--arvore-folha-1` ganhou, `surfaceVariant` sem mudança, `danger` perdeu), cada um com `title` e `aria-label` |
+| Linha da árvore (Hoje) | botão pílula alinhado à direita sob o cabeçalho, árvore de 32 px, `type-meta` `textSecondary`, alvo de 48 dp | abre Progresso |
+| Folha nova | `scale` 0 → 1 com `--ease-mola` em `--dur-lenta` | movimento reduzido: só opacidade em `--dur-reduzida` |
+| Subir de estágio | esqueleto em crossfade de 400 ms; folhas em cascata de no máximo 20 ms cada, 600 ms no total | movimento reduzido: só opacidade |
+| Folha caindo | cópia da folha cai 150 px com giro e balanço em 1,2 s, `fill: forwards`, removida no fim; uma vez por evento | movimento reduzido: some com opacidade |
+
+**Folhinha.** Personagem original em SVG (`viewBox 0 0 64 64`): folha com rosto, cabinho e broto. Fica fixa embaixo à esquerda, alinhada à coluna de 480 px, acima da navegação; tamanho `touch + space-2` (56 dp), `z-index` 6, sombra `drop-shadow` com `--sombra-cor`.
+
+| Estado | Visual |
+|---|---|
+| `parada` | balanço do cabinho ±4° em 3 s, alternado, `--ease-movimento`; pisca a cada 4–7 s (140 ms) |
+| `falando` | boca alterna aberta/fechada a cada 0,26 s enquanto o texto aparece (600 ms) |
+| `triste` | boca para baixo, pupilas e corpo descem 2 px |
+| `comemorando` | olhos fechados de alegria, pulinho de 8 px e broto girando 360° |
+
+- **Balão:** `surface`, `radius-card`, `shadow-fab`, até 280 px, seta para a Folhinha, texto `type-body`, "Entendi" de 48 dp. Fecha sozinho em 6 s, salvo quando fixo. O leitor de tela recebe o texto inteiro por `role="status"`; o texto digitado fica com `aria-hidden`.
+- **Some** com folha ou diálogo abertos, snackbar visível, teclado aberto e durante a abertura. Com movimento reduzido não balança, não fala animado e não pula. Pausa quando a aba fica oculta.
+- **Conteúdo:** dica na primeira visita de cada aba e no máximo uma aparição espontânea por dia (`ajustes.folhinha.ultimaAparicao`). As dicas ao tocar seguem em sequência (`proximaDica`) e pulam as que não valem (widget só no APK; anotação só com a Faculdade visível). As reações da árvore juntam vários dias de perda numa linha; quando ganha e sobe juntos, mostra só que subiu. Com "Mostrar a Folhinha" desligado, as reações viram snackbar.
+
+**Abertura.** Tela cheia sobre o app (`z-index` 8: as folhas do assistente e de "Escolher datas" ficam por cima), coluna de 480 px em 4 faixas:
+1. topo com "Voltar" e a barra "Passo X de 10" (8 no PWA, sem os passos 6 e 9);
+2. conteúdo rolável com título `type-title`;
+3. Folhinha com balão;
+4. rodapé com botão principal e "Pular".
+
+O rodapé sobe com `--teclado`, e a fala some com o teclado aberto. Avanço com deslize horizontal (25% da largura ou velocidade de gesto). Conteúdo entra deslizando 24 px na direção do passo, em `--dur-base`. Cada avanço grava `ajustes.abertura.passo`, então a abertura retoma de onde parou. Os cartões de modelo usam a cor da seção (`--c` / `--cc`), com itens e dias em chips. Ao rever pelos Ajustes, aparece um botão "Fechar".
+
+**Novidades (quem já usa).** Folha inferior com a Folhinha comemorando, a árvore atual e só o que falta (aniversário, "Você faz faculdade?", widgets no APK). Grava `novidadesVistas = "1.6.0"` ao abrir, para não insistir.
+
+**Widgets (APK).** Fundo `#FFFFFF` / `#1E1D1B` com cantos `system_app_widget_background_radius` no Android 12+ e 16 dp antes. Texto `#1C1B19` (17,21:1) e `#5F5B53` (6,76:1) no claro; `#F2F0EB` (14,79:1) e `#B3AEA4` (7,63:1) no escuro. Check `#6B3FA0` / `#C3A6F0`.
+
+| Nível de faltas | Claro | Escuro |
+|---|---|---|
+| `ok` | `#6B3FA0` (7,38:1) | `#C3A6F0` (8,05:1) |
+| `atencao` | `#9A5E07` (5,28:1) | `#E6B84A` (9,08:1) |
+| `perigo` | `#C0400C` (5,28:1) | `#FB8B5B` (7,18:1) |
+| `ultima_chance` / `ultrapassado` | `#B91C1C` (6,47:1) | `#F87171` (6,09:1) |
+
+| Widget | Tamanho | Conteúdo |
+|---|---|---|
+| Árvore | 2×2 até 4×3 | vetor `arvore_estagio_{n}`, estágio, "{pct}% hoje", "Sequência: {d} dias"; toque abre Progresso |
+| Hoje | 4×2 até 4×5 | "Hoje · {feitos} de {total}" e lista de até 30 itens com check de 48 dp; tocar marca sem abrir o app |
+| Próxima aula | 4×1 até 4×2 | "{dia}, {tempos} · {matéria} · {sala}" e "Faltas: {pct}" na cor do nível |
+
+Os três mostram "Abra o app para atualizar" quando o retrato tem mais de 7 dias. Nada sai do aparelho: o app publica um retrato local (`SharedPreferences rotina_widget`) e lê as marcações do widget como pendências, aplicadas pelo `em` e de forma idempotente.
