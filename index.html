@@ -320,19 +320,6 @@
   .linha-reord.arrastando{z-index:2}
   .linha-reord.arrastando .item{box-shadow:var(--shadow-fab);border-radius:var(--radius-card)}
   .alca-item{width:var(--touch);height:var(--touch);display:grid;place-items:center;color:var(--text-secondary);touch-action:none;cursor:grab;border-radius:var(--radius-full)}
-  .bv{position:fixed;inset:0;z-index:50;background:var(--background);display:flex;flex-direction:column;
-    padding:calc(var(--space-4) + env(safe-area-inset-top)) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));overflow:hidden}
-  .bv-trilho{flex:1;display:flex;transition:transform var(--dur-lenta) var(--ease-movimento);touch-action:pan-y;user-select:none;-webkit-user-select:none}
-  .bv-trilho.arrastando{transition:none}
-  .bv-tela{flex:0 0 100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:var(--space-4);padding:0 var(--space-4);max-width:var(--content-max);margin:0 auto}
-  .bv-tela svg{width:calc(var(--touch) * 4);height:calc(var(--touch) * 4)}
-  .bv-tela h2{margin:0;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold)}
-  .bv-tela p{margin:0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body);max-width:calc(var(--touch) * 7)}
-  .bv-pontos{display:flex;justify-content:center;gap:var(--space-2);padding:var(--space-4) 0}
-  .bv-pontos i{width:var(--space-2);height:var(--space-2);border-radius:var(--radius-full);background:var(--border-strong);transition:transform var(--dur-rapida) var(--ease-saida),background-color var(--dur-rapida) var(--ease-saida)}
-  .bv-pontos i.on{background:var(--primary);transform:scale(1.5)}
-  .bv-acoes{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);max-width:var(--content-max);width:100%;margin:0 auto}
-  .bv-acoes .btn{width:auto;min-width:calc(var(--touch) * 3)}
   .il-fundo{fill:var(--primary-container)} .il-bloco{fill:var(--surface)} .il-traco{fill:none;stroke:var(--primary);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
   .il-a{fill:var(--cat-teal)} .il-b{fill:var(--cat-orange)} .il-c{fill:var(--cat-blue)} .il-chama{fill:var(--priority-high)}
   .hoje-top .frase{margin:var(--space-1) 0 0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body)}
@@ -805,6 +792,62 @@
   .linha-arvore svg.arvore{width:32px;height:32px;flex:none}
   .linha-arvore span{min-width:0;overflow-wrap:anywhere}
   .comemoracao .cartao svg.arvore{width:calc(var(--touch) * 2);height:calc(var(--touch) * 2)}
+  html.na-abertura body{overflow:hidden}
+  html.na-abertura .toast{z-index:9}
+  .ab{position:fixed;inset:0 0 var(--teclado, 0px);z-index:8;background:var(--background);display:flex;justify-content:center}
+  .ab-coluna{width:100%;max-width:var(--content-max);height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;
+    padding:calc(var(--space-2) + env(safe-area-inset-top)) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom))}
+  .ab-topo{display:flex;align-items:center;gap:var(--space-2);min-height:var(--touch)}
+  .ab-topo-vazio{width:var(--touch);flex:none}
+  .ab-topo .icon-btn{flex:none;margin-left:calc(var(--space-2) * -1)}
+  .ab-prog{flex:1;display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+  .ab-prog span{font-size:var(--fs-meta);line-height:var(--lh-meta);color:var(--text-secondary);font-variant-numeric:tabular-nums}
+  .ab-conteudo{overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4) 0 var(--space-3);touch-action:pan-y}
+  .ab-conteudo h2{margin:0;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--w-semibold);color:var(--text-primary)}
+  .ab-conteudo h2:focus{outline:none}
+  .ab-conteudo .erro:empty{display:none}
+  .ab-ilustra{display:flex;justify-content:center;padding:var(--space-4) 0}
+  .ab-ilustra svg.arvore{width:calc(var(--touch) * 4);height:calc(var(--touch) * 4)}
+  .ab-texto{margin:0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body);text-align:center}
+  .ab-conteudo>.btn.text{align-self:center}
+  .ab-campo{display:flex;flex-direction:column;gap:var(--space-1)}
+  .ab-campo.row{flex-direction:row}
+  .ab-modelos{display:flex;flex-direction:column;gap:var(--space-2)}
+  .ab-modelo{border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface);overflow:hidden;transition:border-color var(--dur-rapida) var(--ease-saida),background-color var(--dur-rapida) var(--ease-saida)}
+  .ab-modelo.on{border-color:var(--c);background:var(--cc)}
+  .ab-modelo-top{display:flex;align-items:center;gap:var(--space-3);width:100%;min-height:calc(var(--touch) + var(--space-2));padding:0 var(--space-3);text-align:left;font-size:var(--fs-body);font-weight:var(--w-medium);color:var(--text-primary)}
+  .ab-modelo-top span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}
+  .ab-modelo-top .emo{font-size:var(--fs-title);width:var(--space-6);text-align:center;flex:none}
+  .ab-modelo-top svg{color:var(--c);flex:none}
+  .ab-modelo-corpo{display:flex;flex-wrap:wrap;gap:var(--space-2);padding:0 var(--space-3) var(--space-3)}
+  .ab-modelo-corpo .hint{width:100%;margin:var(--space-1) 0 0}
+  .ab-modelo-corpo .ab-campo{width:100%}
+  .ab-modelo-corpo .chip{max-width:100%}
+  .ab-modelo-corpo .chip span{overflow-wrap:anywhere;text-align:left}
+  .ab-escolhas{display:flex;flex-direction:column;gap:var(--space-2)}
+  .ab-widgets{display:flex;flex-direction:column;gap:var(--space-2)}
+  .ab-widget{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:var(--space-3);padding:var(--space-3);border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface)}
+  .ab-widget b{font-weight:var(--w-semibold)}
+  .ab-widget .hint{margin:0}
+  .ab-widget .btn{width:auto}
+  .ab-widget-previa{width:calc(var(--touch) * 1.5);height:calc(var(--touch) * 1.5);border-radius:var(--radius-card);background:var(--surface-variant);display:grid;place-items:center;overflow:hidden}
+  .pv{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:8px;line-height:1.2;color:var(--text-secondary);text-align:left;padding:4px}
+  .pv-arvore svg.arvore{width:36px;height:36px}
+  .pv-hoje,.pv-aula{align-items:flex-start}
+  .pv b{color:var(--text-primary);font-weight:var(--w-semibold)}
+  .ab-resumo{margin:0;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface)}
+  .ab-resumo div{display:flex;justify-content:space-between;gap:var(--space-3);padding:var(--space-3);border-top:1px solid var(--border)}
+  .ab-resumo div:first-child{border-top:0}
+  .ab-resumo dt{color:var(--text-secondary)}
+  .ab-resumo dd{margin:0;text-align:right;font-weight:var(--w-medium);min-width:0;overflow-wrap:anywhere}
+  .ab-fala{display:flex;align-items:flex-end;gap:var(--space-2);padding:var(--space-2) 0}
+  .ab .ab-folhinha{position:static;flex:none}
+  .ab-balao{position:relative;flex:1;min-width:0;padding:var(--space-3) var(--space-4);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-card);box-shadow:var(--shadow-fab);cursor:pointer;margin-bottom:var(--space-4)}
+  .ab-balao::before{content:'';position:absolute;left:calc(var(--space-2) * -1 + 2px);bottom:var(--space-3);width:var(--space-4);height:var(--space-4);background:var(--surface);transform:rotate(45deg);border-radius:0 0 0 var(--space-1)}
+  .ab-balao p{position:relative;margin:0;font-size:var(--fs-body);line-height:var(--lh-body);min-height:calc(var(--lh-body) * 2);overflow-wrap:anywhere}
+  .ab-balao p.sr{min-height:0}
+  html.teclado-aberto .ab-fala{display:none}
+  .ab-rodape{display:flex;flex-direction:column;gap:var(--space-1)}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -906,9 +949,13 @@ const NOME_COR = { green:'Verde', blue:'Azul', teal:'Verde-azulado', orange:'Lar
 const corDe = s => `var(--cat-${corTokenDe(s)})`;
 const tintaDe = s => `--c:var(--cat-${corTokenDe(s)});--cc:var(--cat-${corTokenDe(s)}-container)`;
 const MODELOS = [
-  { nome:'Treino', emoji:'🏋️', corToken:'red',   rotuloNome:'Exercício', rotuloDetalhe:'Carga' },
-  { nome:'Estudo', emoji:'📚', corToken:'teal',  rotuloNome:'Matéria',   rotuloDetalhe:'Duração' },
-  { nome:'',       emoji:'⭐', corToken:'green', rotuloNome:'Tarefa',    rotuloDetalhe:'Detalhe' },
+  { nome:'Manhã',  emoji:'☀️', corToken:'yellow', rotuloNome:'Hábito',    rotuloDetalhe:'Detalhe', itens:['Beber água', 'Arrumar a cama', 'Alongar'] },
+  { nome:'Treino', emoji:'🏋️', corToken:'red',    rotuloNome:'Exercício', rotuloDetalhe:'Carga',   itens:['Treinar', 'Alongar depois do treino'] },
+  { nome:'Estudo', emoji:'📚', corToken:'teal',   rotuloNome:'Matéria',   rotuloDetalhe:'Duração', itens:['Revisar a matéria do dia', 'Ler 20 páginas'] },
+  { nome:'Saúde',  emoji:'💧', corToken:'blue',   rotuloNome:'Hábito',    rotuloDetalhe:'Detalhe', itens:['Beber 2 L de água', 'Tomar a vitamina', 'Dormir antes das 23h'] },
+  { nome:'Casa',   emoji:'🏠', corToken:'orange', rotuloNome:'Tarefa',    rotuloDetalhe:'Detalhe', itens:['Lavar a louça', 'Organizar por 10 minutos'] },
+  { nome:'Noite',  emoji:'🌙', corToken:'gray',   rotuloNome:'Hábito',    rotuloDetalhe:'Detalhe', itens:['Preparar o dia seguinte', 'Desligar as telas 30 min antes de dormir'] },
+  { nome:'',       emoji:'⭐', corToken:'green',  rotuloNome:'Tarefa',    rotuloDetalhe:'Detalhe', itens:[] },
 ];
 const ICONES = {
   check:'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
@@ -2051,6 +2098,7 @@ function telaAjustes(){
       <div class="opcoes" role="radiogroup" aria-labelledby="rot-anim">${opcaoAnim('auto', 'Automático (segue o sistema)')}${opcaoAnim('reduzidas', 'Reduzidas')}</div>
       ${temVibracao ? interruptor('vibracao', 'Vibração') : ''}
       ${interruptor('sons', 'Sons')}
+      <button class="btn text inicio" onclick="mostrarAbertura(true)">Rever a abertura</button>
     </div>
     <div class="card aparencia">
       <h2>Aparência</h2>
@@ -2291,7 +2339,8 @@ function salvarSecao(editando){
     const i = dados.secoes.findIndex(x => x.id === s.id);
     dados.secoes[i] = { ...dados.secoes[i], ...s };
   } else {
-    dados.secoes.push({ ...s, id: uid(), itens: [] });
+    const base = MODELOS[modelo] && MODELOS[modelo].nome ? MODELOS[modelo].itens : [];
+    dados.secoes.push({ ...s, id: uid(), itens: base.map(nm => ({ id: uid(), nome: nm, detalhe: '', criadoEm: hoje(), notas: null, horario: null, dias: Regras.TODOS_OS_DIAS.slice(), lembreteMin: null })) });
   }
   salvar(); fecharSheet(); render(); toast(editando ? 'Seção salva' : 'Seção criada');
 }
@@ -2636,6 +2685,7 @@ document.getElementById('arquivo').addEventListener('change', async e => {
       if(!salvar()){ dados = antigo; render(); return; }
       if(tela.startsWith('fac-')) tela = 'faculdade';
       render(true); toast('Backup importado');
+      if(ab) concluirAbertura();
     },
   });
 });
@@ -3549,7 +3599,7 @@ function assistIr(delta){
   const h = $('assist-tit'); if(h){ h.tabIndex = -1; h.focus({ preventScroll: true }); }
 }
 function concluirAssistente(){
-  const a = assist, f = fac(), novo = !a.edicao;
+  const a = assist, f = fac(), novo = !a.edicao, voltarAbertura = abAguardaAssistente;
   if(novo){
     f.temposPorDia = a.tempos;
     f.grades = [{ validaDesde: a.semestre.inicio, dias: a.grade.dias }];
@@ -3577,6 +3627,7 @@ function concluirAssistente(){
   render(true);
   toast(novo ? 'Semestre configurado' : 'Semestre atualizado');
   if(fac().alertasAtivos && !a.alertas0){ pedirPermissaoFac(); mostrarProximoAlerta(); }
+  if(voltarAbertura) retomarAposAssistente();
 }
 
 const GRAVES = ['perigo', 'ultima_chance', 'ultrapassado'];
@@ -4085,6 +4136,189 @@ function processarEventosArvore(){
   if(perda) cairFolhas(perda.n);
   return soHoje ? ev.filter(e => e.tipo !== 'perdeu' && e.tipo !== 'voltouEstagio') : ev;
 }
+/* ---------- abertura ---------- */
+const NOVIDADES = '1.6.0';
+const AB_FALAS = {
+  1: 'Oi! Eu sou a Folhinha. Vou te ajudar a montar sua rotina em poucos passos.',
+  2: 'Como você quer que eu te chame?',
+  3: 'Quando é seu aniversário? Assim eu preparo uma surpresa no dia.',
+  4: 'Escolha o visual que combina com você.',
+  5: 'O que você quer acompanhar todo dia? Pode escolher mais de um.',
+  6: 'Quer que eu te lembre da rotina todo dia?',
+  7: 'Você faz faculdade? Eu ajudo com faltas e anotações.',
+  8: 'Posso enfeitar o app no Natal, no Ano Novo e em outras datas?',
+  9: 'Quer ver sua árvore e marcar itens direto da tela inicial?',
+  10: 'Plantei sua semente! Cada dia completo faz sua árvore ganhar uma folha.',
+};
+const AB_TITULOS = { 1: 'Boas-vindas', 2: 'Seu nome', 3: 'Aniversário', 4: 'Aparência', 5: 'Sua rotina', 6: 'Lembrete', 7: 'Faculdade', 8: 'Datas comemorativas', 9: 'Widgets', 10: 'Pronto' };
+const passosAbertura = () => [1, 2, 3, 4, 5, ...(NATIVO ? [6] : []), 7, 8, ...(NATIVO && window.WidgetPonte && WidgetPonte.disponivel() ? [9] : []), 10];
+let ab = null, timerDigitar = null, abAguardaAssistente = false;
+const deveMostrarAbertura = () => !dados.ajustes.abertura.concluida && ((!dados.secoes.length && !dados.tarefas.length && !Object.keys(dados.feitos).length) || dados.ajustes.abertura.passo > 1);
+function mostrarAbertura(rever = false){
+  const passos = passosAbertura();
+  const salvo = dados.ajustes.abertura.passo;
+  ab = { rever, passos, passo: rever ? 1 : (passos.includes(salvo) ? salvo : 1), escolhas: {}, criadas: [], erro: '' };
+  let el = $('abertura');
+  if(!el){ el = document.createElement('div'); el.id = 'abertura'; el.className = 'ab'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'ab-tit'); document.body.appendChild(el); }
+  document.documentElement.classList.add('na-abertura');
+  $('app').setAttribute('inert', ''); document.querySelector('nav.tabs').setAttribute('inert', '');
+  desenharAbertura();
+  if(!Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
+}
+function digitar(el, texto){
+  clearInterval(timerDigitar);
+  const fo = $('ab-folhinha'), letras = Array.from(texto);
+  if(Animacoes.reduzido()){ el.textContent = texto; return; }
+  if(fo) fo.dataset.estado = 'falando';
+  el.textContent = ''; const t0 = performance.now();
+  timerDigitar = setInterval(() => {
+    const k = Math.min(letras.length, Math.ceil((performance.now() - t0) / 600 * letras.length));
+    el.textContent = letras.slice(0, k).join('');
+    if(k >= letras.length){ clearInterval(timerDigitar); if(fo) fo.dataset.estado = ab && ab.passo === 10 ? 'comemorando' : 'parada'; }
+  }, 30);
+}
+function completarFala(){ clearInterval(timerDigitar); const p = $('ab-fala-texto'); if(p && ab) p.textContent = AB_FALAS[ab.passo]; const fo = $('ab-folhinha'); if(fo) fo.dataset.estado = 'parada'; }
+const MESES_OPC = (sel, id, nome, max, rot) => `<label>${rot}<select id="${id}" name="${nome}" autocomplete="${nome === 'ab-dia' ? 'bday-day' : 'bday-month'}"><option value="0">—</option>${Array.from({ length: max }, (_, i) => `<option value="${i + 1}" ${sel === i + 1 ? 'selected' : ''}>${nome === 'ab-mes' ? Festas.MESES[i] : i + 1}</option>`).join('')}</select></label>`;
+function conteudoPasso(n){
+  const aj = dados.ajustes;
+  if(n === 1) return `<div class="ab-ilustra">${sementeAb(0, 0)}</div><p class="ab-texto">Sua rotina, sua faculdade e uma árvore que cresce com você. Tudo fica só neste celular.</p>
+    <button class="btn text" onclick="abImportar()">Já tenho um backup</button>`;
+  if(n === 2) return `<label class="ab-campo">Seu nome<input id="ab-nome" name="nome" autocomplete="given-name" maxlength="30" value="${esc(aj.nome)}" placeholder="Ex.: Ana…" enterkeyhint="next" onkeydown="if(event.key==='Enter')abAvancar()"></label>`;
+  if(n === 3){ const [m, d] = aj.festas.aniversario ? aj.festas.aniversario.split('-').map(Number) : [0, 0]; return `<div class="row ab-campo">${MESES_OPC(d, 'ab-dia', 'ab-dia', 31, 'Dia')}${MESES_OPC(m, 'ab-mes', 'ab-mes', 12, 'Mês')}</div><p class="hint">Sem ano, só dia e mês.</p>`; }
+  if(n === 4){
+    const op = (grupo, val, atual, rot, acao) => `<button class="opcao" role="radio" aria-checked="${atual === val}" onclick="${acao}"><span class="radio"></span>${rot}</button>`;
+    const sw = (ch, rot) => `<button class="interruptor" role="switch" aria-checked="${!!aj[ch]}" onclick="alternarAjuste('${ch}');desenharAbertura(true)"><span>${rot}</span><span class="sw" aria-hidden="true"></span></button>`;
+    return `<span class="rotulo-grupo" id="ab-tema">Tema</span><div class="opcoes" role="radiogroup" aria-labelledby="ab-tema">${op('t', 'system', aj.tema, 'Sistema', "mudarTema('system');desenharAbertura(true)")}${op('t', 'light', aj.tema, 'Claro', "mudarTema('light');desenharAbertura(true)")}${op('t', 'dark', aj.tema, 'Escuro', "mudarTema('dark');desenharAbertura(true)")}</div>
+      <span class="rotulo-grupo" id="ab-anim">Animações</span><div class="opcoes" role="radiogroup" aria-labelledby="ab-anim">${op('a', 'auto', aj.animacoes, 'Completas', "mudarAnimacoes('auto');desenharAbertura(true)")}${op('a', 'reduzidas', aj.animacoes, 'Reduzidas', "mudarAnimacoes('reduzidas');desenharAbertura(true)")}</div>
+      ${sw('sons', 'Sons')}${(NATIVO || typeof navigator.vibrate === 'function') ? sw('vibracao', 'Vibração') : ''}`;
+  }
+  if(n === 5){
+    const cartoes = MODELOS.map((m, i) => {
+      const e = ab.escolhas[i], on = !!e, nome = m.nome || 'Criar do meu jeito';
+      const corpo = !on ? '' : `<div class="ab-modelo-corpo">${m.nome ? `<p class="hint">Itens</p>${m.itens.map((it, k) => `<button class="chip ${e.itens.includes(k) ? 'on' : ''}" aria-pressed="${e.itens.includes(k)}" onclick="abAlternarItem(${i},${k})"><span>${esc(it)}</span></button>`).join('')}` : `<label class="ab-campo">Nome da seção<input id="ab-sec-livre" name="secao" autocomplete="off" maxlength="24" value="${esc(e.nome || '')}" placeholder="Ex.: Leitura…" oninput="ab.escolhas[${i}].nome=this.value"></label>`}
+        <p class="hint">Dias</p><div class="chips dias">${['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((l, d) => `<button class="chip ${e.dias.includes(d + 1) ? 'on' : ''}" aria-pressed="${e.dias.includes(d + 1)}" aria-label="${NOMES_DIAS[d]}" onclick="abAlternarDia(${i},${d + 1})"><span>${l}</span></button>`).join('')}</div></div>`;
+      return `<div class="ab-modelo ${on ? 'on' : ''}" style="--c:var(--cat-${m.corToken});--cc:var(--cat-${m.corToken}-container)"><button class="ab-modelo-top" aria-pressed="${on}" onclick="abEscolher(${i})"><span class="emo" aria-hidden="true">${m.emoji}</span><span>${esc(nome)}</span>${on ? ic('check', 'sm') : ''}</button>${corpo}</div>`;
+    }).join('');
+    return `<div class="ab-modelos">${cartoes}</div>`;
+  }
+  if(n === 6){ const l = aj.lembreteDiario; return `<button class="interruptor" role="switch" aria-checked="${l.ativo}" onclick="abLembrete()"><span>Lembrete diário</span><span class="sw" aria-hidden="true"></span></button>
+    <label class="ab-campo">Horário<input type="time" id="ab-hora" name="hora-lembrete" autocomplete="off" value="${l.hora}" ${l.ativo ? '' : 'disabled'} onchange="dados.ajustes.lembreteDiario.hora=this.value||'08:00';salvar()"></label>`; }
+  if(n === 7) return `<div class="ab-escolhas"><button class="btn" onclick="abFaculdade('agora')">Sim, configurar agora</button><button class="btn ghost" onclick="abFaculdade('depois')">Sim, depois</button><button class="btn ghost" onclick="abFaculdade('nao')">Não faço</button></div>`;
+  if(n === 8) return `<button class="interruptor" role="switch" aria-checked="${aj.festas.ativas}" onclick="dados.ajustes.festas.ativas=!dados.ajustes.festas.ativas;salvar();desenharAbertura(true)"><span>Datas comemorativas</span><span class="sw" aria-hidden="true"></span></button>
+    <button class="btn text" onclick="escolherDatas()" ${aj.festas.ativas ? '' : 'disabled'}>Escolher datas</button>`;
+  if(n === 9) return `<div class="ab-widgets">${[['arvore', 'Árvore', 'A árvore e o progresso do dia.'], ['hoje', 'Hoje', 'Os itens do dia, para marcar tocando.'], ['aula', 'Próxima aula', 'A próxima aula e o percentual de faltas.']].map(([t, nome, d]) => `<div class="ab-widget"><div class="ab-widget-previa" aria-hidden="true">${previaWidget(t)}</div><div><b>${nome}</b><p class="hint">${d}</p></div>${ab.fixar === false ? '' : `<button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">Adicionar</button>`}</div>`).join('')}</div>
+    <p class="hint">Toque e segure na tela inicial, escolha Widgets e procure Minha Rotina.</p>`;
+  if(n === 10){
+    const secs = dados.secoes.length, itens = dados.secoes.reduce((s, x) => s + x.itens.length, 0);
+    const linhas = [['Nome', aj.nome || 'Sem nome'], ['Aniversário', aj.festas.aniversario ? aj.festas.aniversario.split('-').reverse().join('/') : 'Não informado'], ['Tema', { system: 'Sistema', light: 'Claro', dark: 'Escuro' }[aj.tema]], ['Rotina', secs ? `${secs} ${secs === 1 ? 'seção' : 'seções'}, ${itens} ${itens === 1 ? 'item' : 'itens'}` : 'Para criar depois'], ...(NATIVO ? [['Lembrete diário', aj.lembreteDiario.ativo ? 'Às ' + aj.lembreteDiario.hora : 'Desligado']] : []), ['Faculdade', aj.mostrarFaculdade ? (fac().semestre ? 'Configurada' : 'Aba visível') : 'Aba escondida'], ['Datas comemorativas', aj.festas.ativas ? 'Ligadas' : 'Desligadas']];
+    return `<div class="ab-ilustra" id="ab-semente">${sementeAb(0, 0)}</div><dl class="ab-resumo">${linhas.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+  }
+  return '';
+}
+const previaWidget = t => t === 'arvore' ? `<div class="pv pv-arvore">${desenharArvore(14, 4, false)}<span>Árvore jovem</span></div>` : t === 'hoje' ? '<div class="pv pv-hoje"><b>Hoje · 2 de 3</b><span>☑ Beber água</span><span>☑ Alongar</span><span>☐ Ler 20 páginas</span></div>' : '<div class="pv pv-aula"><b>Hoje, 1º ao 3º tempo · Cálculo</b><span>Faltas: 12,5%</span></div>';
+const sementeAb = (f, e) => desenharArvore(f, e, false).replace('viewBox="0 0 200 220"', 'viewBox="55 120 90 100"');
+const opcionais = n => [2, 3, 6, 9].includes(n);
+function desenharAbertura(manter = false){
+  const el = $('abertura'); if(!el || !ab) return;
+  const i = ab.passos.indexOf(ab.passo), total = ab.passos.length, n = ab.passo;
+  const principal = { 1: 'Começar', 5: 'Criar minha rotina', 10: 'Ir para Hoje' }[n] || 'Próximo';
+  const rolagem = manter && $('ab-conteudo') ? $('ab-conteudo').scrollTop : 0;
+  el.innerHTML = `<div class="ab-coluna">
+    <div class="ab-topo">${i > 0 ? `<button class="icon-btn" onclick="abVoltar()" aria-label="Voltar">${ic('voltar')}</button>` : '<span class="ab-topo-vazio"></span>'}
+      <div class="ab-prog"><div class="bar" aria-hidden="true"><i style="--c:var(--primary);--p:${((i + 1) / total).toFixed(3)}"></i></div><span>Passo ${i + 1} de ${total}</span></div>${ab.rever ? `<button class="icon-btn" onclick="concluirAbertura()" aria-label="Fechar">${ic('fechar')}</button>` : ''}</div>
+    <div class="ab-conteudo" id="ab-conteudo"><h2 id="ab-tit">${AB_TITULOS[n]}</h2>${conteudoPasso(n)}<p class="erro" role="alert">${esc(ab.erro)}</p></div>
+    <div class="ab-fala"><div class="folhinha ab-folhinha" id="ab-folhinha" data-estado="parada" aria-hidden="true">${FOLHINHA_SVG}</div>
+      <div class="ab-balao" onclick="completarFala()"><p id="ab-fala-texto" aria-hidden="true"></p><p class="sr" role="status">${esc(AB_FALAS[n])}</p></div></div>
+    <div class="ab-rodape"><button class="btn" onclick="abAvancar()">${principal}</button>${opcionais(n) || n === 5 ? '<button class="btn text" onclick="abPular()">Pular</button>' : ''}</div>
+  </div>`;
+  const fala = $('ab-fala-texto');
+  if(manter){ fala.textContent = AB_FALAS[n]; $('ab-conteudo').scrollTop = rolagem; }
+  else digitar(fala, AB_FALAS[n]);
+  if(n === 10 && !manter) setTimeout(() => { const s = $('ab-semente'); if(!s) return; s.innerHTML = sementeAb(1, 1); if(!Animacoes.reduzido()) s.querySelector('svg').animate([{ opacity: 0, transform: 'scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() }); folhaNovaAnim(0, s.querySelector('svg')); }, 700);
+}
+function irPasso(n, dir){
+  ab.passo = n; ab.erro = '';
+  if(!ab.rever){ dados.ajustes.abertura.passo = n; salvar(); }
+  desenharAbertura();
+  const c = $('ab-conteudo');
+  if(c && !Animacoes.reduzido()) c.animate([{ opacity: 0, transform: `translateX(${dir * 24}px)` }, { opacity: 1, transform: 'none' }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
+  const t = $('ab-tit'); if(t){ t.tabIndex = -1; t.focus({ preventScroll: true }); }
+}
+function gravarPasso(n){
+  const aj = dados.ajustes;
+  if(n === 2){ aj.nome = Array.from($('ab-nome').value.trim()).slice(0, 30).join(''); }
+  if(n === 3){ const d = Number($('ab-dia').value), m = Number($('ab-mes').value); if(d && m){ const v = String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'); if(!Regras.aniversarioValido(v)){ ab.erro = 'Essa data não existe. Escolha outro dia.'; return false; } aj.festas.aniversario = v; } }
+  if(n === 5){
+    const escolhidas = Object.entries(ab.escolhas);
+    if(!escolhidas.length){ ab.erro = 'Escolha pelo menos uma seção ou toque em Pular.'; return false; }
+    const livre = escolhidas.find(([i]) => !MODELOS[i].nome);
+    if(livre && !String(livre[1].nome || '').trim()){ ab.erro = 'Dê um nome para a sua seção.'; return false; }
+    dados.secoes = dados.secoes.filter(s => !ab.criadas.includes(s.id));
+    ab.criadas = [];
+    escolhidas.forEach(([i, e]) => {
+      const m = MODELOS[i], nome = m.nome || e.nome.trim().slice(0, 24);
+      if(dados.secoes.some(s => s.nome.toLocaleLowerCase('pt-BR') === nome.toLocaleLowerCase('pt-BR'))) return;
+      const id = uid();
+      dados.secoes.push({ id, nome, emoji: m.emoji, corToken: m.corToken, rotuloNome: m.rotuloNome, rotuloDetalhe: m.rotuloDetalhe,
+        itens: (m.itens || []).filter((_, k) => e.itens.includes(k)).map(nm => ({ id: uid(), nome: nm, detalhe: '', criadoEm: hoje(), notas: null, horario: null, dias: e.dias.slice(), lembreteMin: null })) });
+      ab.criadas.push(id);
+    });
+  }
+  salvar();
+  return true;
+}
+function abAvancar(){
+  const n = ab.passo;
+  if(!gravarPasso(n)) return desenharAbertura(true);
+  if(n === 10) return concluirAbertura();
+  irPasso(ab.passos[ab.passos.indexOf(n) + 1], 1);
+}
+function abVoltar(){ const i = ab.passos.indexOf(ab.passo); if(i > 0) irPasso(ab.passos[i - 1], -1); }
+function abPular(){
+  if(ab.passo === 5) return mostrarDialogo({ titulo: 'Pular a rotina?', texto: 'Você pode criar sua rotina depois em Hoje.', cancelar: 'Voltar', ok: 'Pular', acao: () => irPasso(ab.passos[ab.passos.indexOf(5) + 1], 1) });
+  irPasso(ab.passos[ab.passos.indexOf(ab.passo) + 1], 1);
+}
+function abEscolher(i){
+  if(ab.escolhas[i]) delete ab.escolhas[i];
+  else ab.escolhas[i] = { itens: (MODELOS[i].itens || []).map((_, k) => k), dias: [1, 2, 3, 4, 5, 6, 7], nome: '' };
+  ab.erro = ''; desenharAbertura(true);
+}
+function abAlternarItem(i, k){ const e = ab.escolhas[i]; e.itens = e.itens.includes(k) ? e.itens.filter(x => x !== k) : e.itens.concat(k); desenharAbertura(true); }
+function abAlternarDia(i, d){ const e = ab.escolhas[i]; if(e.dias.includes(d) && e.dias.length === 1) return; e.dias = e.dias.includes(d) ? e.dias.filter(x => x !== d) : e.dias.concat(d).sort(); desenharAbertura(true); }
+async function abLembrete(){
+  const l = dados.ajustes.lembreteDiario;
+  if(!l.ativo && NATIVO && !(await pedirPermissaoNotif())){ toast('Sem permissão de notificação, o lembrete não aparece.'); }
+  l.ativo = !l.ativo; salvar(); agendarReconciliacao(); desenharAbertura(true);
+}
+function abFaculdade(op){
+  dados.ajustes.mostrarFaculdade = op !== 'nao'; salvar(); montarNav();
+  if(op === 'agora'){ abAguardaAssistente = true; abrirAssistente(!!fac().semestre); return; }
+  irPasso(ab.passos[ab.passos.indexOf(7) + 1], 1);
+}
+function retomarAposAssistente(){ if(!abAguardaAssistente || !ab) return; abAguardaAssistente = false; irPasso(ab.passos[ab.passos.indexOf(7) + 1], 1); }
+function abImportar(){ importarBackup(); }
+function concluirAbertura(){
+  const el = $('abertura');
+  dados.ajustes.abertura.concluida = true; dados.ajustes.abertura.novidadesVistas = NOVIDADES; dados.ajustes.boasVindasVista = true;
+  salvar();
+  ab = null; clearInterval(timerDigitar);
+  document.documentElement.classList.remove('na-abertura');
+  $('app').removeAttribute('inert'); document.querySelector('nav.tabs').removeAttribute('inert');
+  const fim = () => { if(el) el.remove(); };
+  if(el && !Animacoes.reduzido()) el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim; else fim();
+  montarNav(); diaSel = hoje(); tela = 'rotina'; render(true);
+}
+let abArraste = null;
+document.addEventListener('pointerdown', e => { const c = e.target.closest('#ab-conteudo'); if(!c || e.target.closest('input, select, textarea, button')) return; abArraste = { x: e.clientX, y: e.clientY, t: e.timeStamp, id: e.pointerId }; });
+document.addEventListener('pointerup', e => {
+  const a = abArraste; abArraste = null;
+  if(!a || !ab || e.pointerId !== a.id) return;
+  const dx = e.clientX - a.x, dy = e.clientY - a.y;
+  if(Math.abs(dx) < Animacoes.GESTO.trava * 3 || Math.abs(dy) > Math.abs(dx)) return;
+  const v = Math.abs(dx) / Math.max(1, e.timeStamp - a.t);
+  if(Math.abs(dx) < innerWidth * 0.25 && v < Animacoes.GESTO.velocidade) return;
+  if(dx < 0 && ab.passo !== 10 && ab.passo !== 7) abAvancar(); else if(dx > 0) abVoltar();
+});
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
@@ -4142,86 +4376,6 @@ if(!NATIVO && 'serviceWorker' in navigator){
   try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
 }
 
-const BV_TELAS = [
-  ['Sua rotina em seções', 'Agrupe o que você faz todo dia: treino, estudo, casa.',
-    '<svg viewBox="0 0 160 160" aria-hidden="true"><circle class="il-fundo" cx="80" cy="80" r="72"/><rect class="il-bloco" x="34" y="40" width="92" height="22" rx="8"/><rect class="il-bloco" x="34" y="69" width="92" height="22" rx="8"/><rect class="il-bloco" x="34" y="98" width="92" height="22" rx="8"/><circle class="il-a" cx="48" cy="51" r="6"/><circle class="il-b" cx="48" cy="80" r="6"/><circle class="il-c" cx="48" cy="109" r="6"/><path class="il-traco" d="M62 51h46M62 80h34M62 109h40"/></svg>'],
-  ['Marque com um toque', 'Toque para marcar. Deslize para a direita para marcar e para a esquerda para excluir.',
-    '<svg viewBox="0 0 160 160" aria-hidden="true"><circle class="il-fundo" cx="80" cy="80" r="72"/><rect class="il-bloco" x="26" y="58" width="108" height="44" rx="12"/><rect x="38" y="70" width="20" height="20" rx="6" fill="var(--primary)"/><path d="M42 80l4 4 8-8" fill="none" stroke="var(--on-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path class="il-traco" d="M68 80h50"/><path class="il-traco" d="M60 122h40M90 114l10 8-10 8"/></svg>'],
-  ['Acompanhe sua constância', 'Veja sua sequência e sua semana na aba Progresso.',
-    '<svg viewBox="0 0 160 160" aria-hidden="true"><circle class="il-fundo" cx="80" cy="80" r="72"/><rect class="il-bloco" x="38" y="88" width="16" height="30" rx="5"/><rect class="il-bloco" x="62" y="70" width="16" height="48" rx="5"/><rect class="il-bloco" x="86" y="56" width="16" height="62" rx="5"/><path class="il-chama" d="M118 34c2 6 8 10 8 18a9 9 0 0 1-18 0c0-4 2-7 4-9 0 3 2 5 4 6-1-5 0-10 2-15z"/></svg>'],
-];
-let bvTela = 0;
-const deveMostrarBoasVindas = () => !dados.ajustes.boasVindasVista && !dados.secoes.length && !dados.tarefas.length && !Object.keys(dados.feitos).length;
-function mostrarBoasVindas(){
-  const el = document.createElement('div');
-  el.className = 'bv'; el.id = 'boas-vindas';
-  el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Boas-vindas');
-  el.innerHTML = `<div class="bv-trilho" id="bv-trilho">${BV_TELAS.map(([t, p, il], i) => `<section class="bv-tela" aria-hidden="${i !== 0}">${il}<h2>${t}</h2><p>${p}</p></section>`).join('')}</div>
-    <div class="bv-pontos" aria-hidden="true">${BV_TELAS.map((_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('')}</div>
-    <p class="sr" aria-live="polite" id="bv-status">Tela 1 de 3</p>
-    <div class="bv-acoes"><button class="btn text" onclick="fecharBoasVindas()">Pular</button><button class="btn" id="bv-proximo" onclick="bvAvancar()">Próximo</button></div>`;
-  document.body.appendChild(el);
-  ['app', 'toast'].forEach(id => $(id).setAttribute('inert', ''));
-  document.querySelector('nav.tabs').setAttribute('inert', '');
-  bvTela = 0;
-  if(!Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
-  setTimeout(() => $('bv-proximo').focus(), 50);
-}
-function bvIr(i){
-  bvTela = Math.max(0, Math.min(BV_TELAS.length - 1, i));
-  const tr = $('bv-trilho'); if(!tr) return;
-  tr.style.transform = `translateX(${-bvTela * 100}%)`;
-  tr.querySelectorAll('.bv-tela').forEach((s, k) => s.setAttribute('aria-hidden', k !== bvTela));
-  document.querySelectorAll('.bv-pontos i').forEach((p, k) => p.classList.toggle('on', k === bvTela));
-  $('bv-status').textContent = `Tela ${bvTela + 1} de ${BV_TELAS.length}: ${BV_TELAS[bvTela][0]}`;
-  $('bv-proximo').textContent = bvTela === BV_TELAS.length - 1 ? 'Começar' : 'Próximo';
-}
-function bvAvancar(){ if(bvTela === BV_TELAS.length - 1) fecharBoasVindas(); else bvIr(bvTela + 1); }
-function fecharBoasVindas(){
-  const el = $('boas-vindas'); if(!el) return;
-  dados.ajustes.boasVindasVista = true; salvar();
-  ['app', 'toast'].forEach(id => $(id).removeAttribute('inert'));
-  document.querySelector('nav.tabs').removeAttribute('inert');
-  const fim = () => { el.remove(); escolherInicio(); };
-  if(Animacoes.reduzido()) return fim();
-  el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.rapida, easing: Animacoes.MOV.entrada, fill: 'forwards' }).onfinish = fim;
-}
-function escolherInicio(){
-  abrirSheet(`<h2>Escolha por onde começar</h2>
-    <p class="hint">Comece com um modelo de seção. Dá para mudar tudo depois.</p>
-    <div class="chips">${MODELOS.map((m, i) => `<button class="chip" onclick="usarModelo(${i})"><span>${m.emoji} ${m.nome || 'Personalizada'}</span></button>`).join('')}</div>
-    ${NATIVO ? '<button class="btn ghost" onclick="fecharSheet();setTimeout(importarBackup, 60)">Importar backup do navegador</button>' : ''}
-    <button class="btn text" onclick="fecharSheet()">Começar do zero</button>`);
-}
-let bvArraste = null;
-document.addEventListener('pointerdown', e => {
-  const tr = e.target.closest('#bv-trilho');
-  if(!tr || e.button > 0) return;
-  bvArraste = { tr, x: e.clientX, y: e.clientY, dx: 0, ativo: false, id: e.pointerId, t: e.timeStamp };
-});
-document.addEventListener('pointermove', e => {
-  const a = bvArraste;
-  if(!a || e.pointerId !== a.id) return;
-  const dx = e.clientX - a.x, dy = e.clientY - a.y;
-  if(!a.ativo){
-    if(Math.abs(dx) < Animacoes.GESTO.trava && Math.abs(dy) < Animacoes.GESTO.trava) return;
-    if(Math.abs(dy) > Math.abs(dx)){ bvArraste = null; return; }
-    a.ativo = true; a.tr.classList.add('arrastando');
-    try{ a.tr.setPointerCapture(e.pointerId); }catch(err){}
-  }
-  const naBorda = (bvTela === 0 && dx > 0) || (bvTela === BV_TELAS.length - 1 && dx < 0);
-  a.dx = naBorda ? dx * Animacoes.GESTO.resistencia : dx;
-  a.tr.style.transform = `translateX(calc(${-bvTela * 100}% + ${a.dx}px))`;
-});
-document.addEventListener('pointerup', e => {
-  const a = bvArraste;
-  if(!a || e.pointerId !== a.id) return;
-  bvArraste = null;
-  a.tr.classList.remove('arrastando');
-  if(!a.ativo) return;
-  const decisao = Animacoes.decidirGesto({ dx: a.dx, dy: 0, largura: a.tr.offsetWidth, velocidade: a.dx / Math.max(1, e.timeStamp - a.t) });
-  bvIr(decisao === 'excluir' ? bvTela + 1 : decisao === 'marcar' ? bvTela - 1 : bvTela);
-});
 function telaErro(){
   document.querySelector('nav.tabs').innerHTML = '';
   document.getElementById('app').innerHTML = `
@@ -4237,7 +4391,7 @@ function iniciar(){
   if(NATIVO) document.getElementById('arquivo').removeAttribute('accept');
   aplicarTema(); montarNav(); render();
   iniciarLembretes();
-  if(deveMostrarBoasVindas()) mostrarBoasVindas();
+  if(deveMostrarAbertura()) mostrarAbertura();
   diaFestaVisto = hojeFesta();
   agendarVirada();
   setTimeout(limparFotosOrfas, 3000);
