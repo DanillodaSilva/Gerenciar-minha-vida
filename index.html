@@ -790,6 +790,17 @@
   .balao-fo .btn{position:relative;z-index:1;align-self:flex-end;min-height:var(--touch)}
   html.travado:not(.na-abertura) .folhinha,html.travado:not(.na-abertura) .balao-fo,html.teclado-aberto .folhinha,html.teclado-aberto .balao-fo,
   .toast.show ~ .folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ .folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
+  .arvore-card{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
+  .arvore-palco{height:240px;display:flex;justify-content:center;align-items:flex-end;grid-row:span 1}
+  .arvore-info{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
+  .arvore-info h2{margin:0;color:var(--text-primary);font-size:var(--fs-title);line-height:var(--lh-title);overflow-wrap:anywhere}
+  .arvore-info .arvore-n{margin:0;font-size:var(--fs-label);line-height:var(--lh-label);color:var(--text-secondary);font-variant-numeric:tabular-nums}
+  .arvore-info .bar{margin:var(--space-2) 0 var(--space-1)}
+  .arvore-info .hint,.arvore-card>.hint{margin:0}
+  .arvore-30{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:var(--space-1)}
+  .arvore-30 .q{aspect-ratio:1;border-radius:var(--radius-check);background:var(--surface-variant)}
+  .arvore-30 .q1{background:var(--arvore-folha-1)}
+  .arvore-30 .qm{background:var(--danger)}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -1926,6 +1937,7 @@ function telaProgresso(){
   const vis = visao();
   const total = Regras.totalConcluidas(vis);
   if(!total) return `<header class="top"><h1>Progresso</h1></header>
+    ${cartaoArvore()}
     <div class="vazio" data-chave="vazio">${ILUSTRA.grafico}<h2>Conclua sua primeira tarefa para ver seu progresso.</h2><p>Sua sequência e sua semana aparecem aqui.</p><button class="btn" onclick="irPara('rotina')">Ir para Hoje</button></div>`;
 
   const seq = Regras.sequencia(vis, hoje());
@@ -1968,6 +1980,7 @@ function telaProgresso(){
 
   return `
     <header class="top"><h1>Progresso</h1></header>
+    ${cartaoArvore()}
     <div class="cartoes">
       <div class="cartao-num destaque">${ic('fogo')}<b data-contar="${seq}" data-duracao="600">${seq}</b><span>${Regras.textoSequencia(seq)}</span></div>
       <div class="cartao-num">${ic('grafico')}<b ${taxa.pct === null ? '' : `data-contar="${taxa.pct}" data-sufixo="%" data-duracao="600"`}>${taxa.pct === null ? '—' : taxa.pct + '%'}</b><span>${Regras.textoTaxa(taxa.pct)}</span></div>
@@ -3974,6 +3987,41 @@ const Folhinha = {
   remover(){ if(!this.el) return; clearTimeout(this.timerPiscar); this.fechar(); this.el.remove(); this.balao.remove(); this.el = this.balao = null; },
 };
 document.addEventListener('visibilitychange', () => document.documentElement.classList.toggle('oculto', document.hidden));
+const SIM_ARVORE = (() => {
+  if(NATIVO || (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')) return null;
+  const p = new URLSearchParams(location.search), f = p.get('folhas'), e = p.get('evento');
+  const folhas = f !== null && /^\d{1,5}$/.test(f) ? Number(f) : null, evento = ['perdeu', 'ganhou', 'subiu', 'voltou'].includes(e) ? e : null;
+  return folhas === null && !evento ? null : { folhas, evento };
+})();
+const memoArvore = {};
+let cacheArvore = { chave: '', valor: null };
+function arvoreAtual(){
+  const chave = facVersao + ':' + hoje();
+  if(cacheArvore.chave !== chave){
+    let a = Arvore.calcularArvore(dados, hoje(), memoArvore);
+    if(SIM_ARVORE && SIM_ARVORE.folhas !== null){
+      const f = SIM_ARVORE.folhas, e = Arvore.estagioDe(f);
+      a = { ...a, folhas: f, folhasAteOntem: f, estagio: e, nomeEstagio: Arvore.NOMES[e], proximo: e < 9 ? { nome: Arvore.NOMES[e + 1], faltam: Arvore.LIMITES[e + 1] - f } : null };
+    }
+    cacheArvore = { chave, valor: a };
+  }
+  return cacheArvore.valor;
+}
+const folhasTxt = n => n + (n === 1 ? ' folha' : ' folhas');
+const VAR_TXT = { 1: 'ganhou 1 folha', 0: 'sem mudança', '-1': 'perdeu 1 folha' };
+function cartaoArvore(){
+  const a = arvoreAtual(), e = a.estagio;
+  const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
+  const falta = a.proximo ? (a.proximo.faltam === 1 ? `Falta 1 folha para ${a.proximo.nome}` : `Faltam ${a.proximo.faltam} folhas para ${a.proximo.nome}`) : 'Estágio máximo';
+  return `<section class="card arvore-card" data-chave="arvore-card">
+    <div class="arvore-palco" id="palco-arvore">${desenharArvore(a.folhas, e)}</div>
+    <div class="arvore-info"><h2>${a.nomeEstagio}</h2><p class="arvore-n">${folhasTxt(a.folhas)}</p>
+      <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
+      <p class="hint">${falta}</p><p class="hint">Ganhas: ${a.ganhas} · Perdidas: ${a.perdidas}</p></div>
+    <div class="arvore-30" role="list" aria-label="Últimos 30 dias">${a.historico.map(h => { const t = `${Regras.curto(h.data)}: ${VAR_TXT[h.variacao]}`; return `<span role="listitem" class="q q${h.variacao < 0 ? 'm' : h.variacao}" title="${t}" aria-label="${t}"></span>`; }).join('')}</div>
+    <p class="hint">Dia completo: +1 folha. Menos da metade: −1 folha.</p>
+  </section>`;
+}
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
