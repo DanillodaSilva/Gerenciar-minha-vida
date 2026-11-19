@@ -1,0 +1,82 @@
+{
+  "retrato": {
+    "versao": 1,
+    "geradoEm": "2026-11-18T09:00:00.000Z",
+    "hoje": "2026-11-18",
+    "dias": [
+      { "data": "2026-11-18", "itens": [
+        { "id": "i1", "tipo": "rotina", "titulo": "Beber água", "subtitulo": "Manhã", "feito": true },
+        { "id": "i2", "tipo": "rotina", "titulo": "Alongar", "subtitulo": "Manhã", "feito": true },
+        { "id": "i3", "tipo": "rotina", "titulo": "Revisar Cálculo", "subtitulo": "Estudo", "feito": false },
+        { "id": "t1", "tipo": "tarefa", "titulo": "Entregar lista de Física", "subtitulo": "Tarefa", "feito": false }
+      ] },
+      { "data": "2026-11-19", "itens": [
+        { "id": "i1", "tipo": "rotina", "titulo": "Beber água", "subtitulo": "Manhã", "feito": false },
+        { "id": "i2", "tipo": "rotina", "titulo": "Alongar", "subtitulo": "Manhã", "feito": false },
+        { "id": "i3", "tipo": "rotina", "titulo": "Revisar Cálculo", "subtitulo": "Estudo", "feito": false },
+        { "id": "i4", "tipo": "rotina", "titulo": "Ler 20 páginas", "subtitulo": "Estudo", "feito": false }
+      ] },
+      { "data": "2026-11-20", "itens": [
+        { "id": "i1", "tipo": "rotina", "titulo": "Beber água", "subtitulo": "Manhã", "feito": false },
+        { "id": "i2", "tipo": "rotina", "titulo": "Alongar", "subtitulo": "Manhã", "feito": false },
+        { "id": "i3", "tipo": "rotina", "titulo": "Revisar Cálculo", "subtitulo": "Estudo", "feito": false },
+        { "id": "i4", "tipo": "rotina", "titulo": "Ler 20 páginas", "subtitulo": "Estudo", "feito": false }
+      ] },
+      { "data": "2026-11-21", "itens": [
+        { "id": "i1", "tipo": "rotina", "titulo": "Beber água", "subtitulo": "Manhã", "feito": false },
+        { "id": "i2", "tipo": "rotina", "titulo": "Alongar", "subtitulo": "Manhã", "feito": false },
+        { "id": "i3", "tipo": "rotina", "titulo": "Revisar Cálculo", "subtitulo": "Estudo", "feito": false },
+        { "id": "i4", "tipo": "rotina", "titulo": "Ler 20 páginas", "subtitulo": "Estudo", "feito": false }
+      ] },
+      { "data": "2026-11-22", "itens": [] },
+      { "data": "2026-11-23", "itens": [
+        { "id": "i1", "tipo": "rotina", "titulo": "Beber água", "subtitulo": "Manhã", "feito": false },
+        { "id": "i2", "tipo": "rotina", "titulo": "Alongar", "subtitulo": "Manhã", "feito": false },
+        { "id": "i3", "tipo": "rotina", "titulo": "Revisar Cálculo", "subtitulo": "Estudo", "feito": false },
+        { "id": "i4", "tipo": "rotina", "titulo": "Ler 20 páginas", "subtitulo": "Estudo", "feito": false }
+      ] },
+      { "data": "2026-11-24", "itens": [
+        { "id": "i1", "tipo": "rotina", "titulo": "Beber água", "subtitulo": "Manhã", "feito": false },
+        { "id": "i2", "tipo": "rotina", "titulo": "Alongar", "subtitulo": "Manhã", "feito": false },
+        { "id": "i3", "tipo": "rotina", "titulo": "Revisar Cálculo", "subtitulo": "Estudo", "feito": false },
+        { "id": "i4", "tipo": "rotina", "titulo": "Ler 20 páginas", "subtitulo": "Estudo", "feito": false }
+      ] },
+      { "data": "2026-11-25", "itens": [
+        { "id": "i1", "tipo": "rotina", "titulo": "Beber água", "subtitulo": "Manhã", "feito": false },
+        { "id": "i2", "tipo": "rotina", "titulo": "Alongar", "subtitulo": "Manhã", "feito": false },
+        { "id": "i3", "tipo": "rotina", "titulo": "Revisar Cálculo", "subtitulo": "Estudo", "feito": false },
+        { "id": "i4", "tipo": "rotina", "titulo": "Ler 20 páginas", "subtitulo": "Estudo", "feito": false }
+      ] }
+    ],
+    "arvore": {
+      "folhasAteOntem": 12,
+      "estagios": [0, 1, 3, 7, 14, 30, 60, 100, 180, 365],
+      "nomes": ["Semente", "Broto", "Muda", "Arvoreta", "Árvore jovem", "Árvore", "Árvore frondosa", "Árvore florida", "Árvore com frutos", "Árvore anciã"]
+    },
+    "sequencia": { "ateOntem": 5 },
+    "faculdadeVisivel": true,
+    "semestreConfigurado": true,
+    "aulas": [
+      { "data": "2026-11-19", "tempos": "1º ao 3º tempo", "materia": "Cálculo I", "sala": "204", "faltas": "12,5%", "nivel": "ok" },
+      { "data": "2026-11-20", "tempos": "4º e 5º tempo", "materia": "Física Geral", "sala": "Lab 2", "faltas": "20,2%", "nivel": "perigo" }
+    ]
+  },
+  "pendencias": [
+    { "data": "2026-11-18", "id": "i3", "tipo": "rotina", "feito": false, "em": "2026-11-18T10:00:00.000Z" },
+    { "data": "2026-11-18", "id": "i3", "tipo": "rotina", "feito": true, "em": "2026-11-18T11:00:00.000Z" },
+    { "data": "2026-11-18", "id": "t1", "tipo": "tarefa", "feito": true, "em": "2026-11-18T12:00:00.000Z" },
+    { "data": "2026-11-19", "id": "i1", "tipo": "rotina", "feito": true, "em": "2026-11-19T08:00:00.000Z" }
+  ],
+  "calcularEm": "2026-11-20",
+  "esperado": {
+    "folhas": 12,
+    "sequencia": 0,
+    "estagio": 3,
+    "nomeEstagio": "Arvoreta",
+    "itensHoje": 4,
+    "feitosHoje": 0,
+    "pctHoje": 0,
+    "dia18": { "feitos": 4, "total": 4 },
+    "dia19": { "feitos": 1, "total": 4 }
+  }
+}
