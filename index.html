@@ -910,6 +910,7 @@
 <script src="fotos.js?v=1.5.0"></script>
 <script src="festas.js?v=1.5.0"></script>
 <script src="arvore.js?v=1.6.0"></script>
+<script src="widget.js?v=1.6.0"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -1062,6 +1063,7 @@ function salvar(){
   if(!dados) return;
   facVersao++;
   agendarReconciliacao();
+  WidgetPonte.agendar();
   try{ localStorage.setItem(CHAVE, JSON.stringify(dados)); return true; }
   catch(e){ toast('Não consegui salvar 😕'); return false; }
 }
@@ -4171,7 +4173,7 @@ const AB_FALAS = {
   10: 'Plantei sua semente! Cada dia completo faz sua árvore ganhar uma folha.',
 };
 const AB_TITULOS = { 1: 'Boas-vindas', 2: 'Seu nome', 3: 'Aniversário', 4: 'Aparência', 5: 'Sua rotina', 6: 'Lembrete', 7: 'Faculdade', 8: 'Datas comemorativas', 9: 'Widgets', 10: 'Pronto' };
-const passosAbertura = () => [1, 2, 3, 4, 5, ...(NATIVO ? [6] : []), 7, 8, ...(NATIVO && window.WidgetPonte && WidgetPonte.disponivel() ? [9] : []), 10];
+const passosAbertura = () => [1, 2, 3, 4, 5, ...(NATIVO ? [6] : []), 7, 8, ...(WidgetPonte.disponivel() ? [9] : []), 10];
 let ab = null, timerDigitar = null, abAguardaAssistente = false;
 const deveMostrarAbertura = () => !dados.ajustes.abertura.concluida && ((!dados.secoes.length && !dados.tarefas.length && !Object.keys(dados.feitos).length) || dados.ajustes.abertura.passo > 1);
 function mostrarAbertura(rever = false){
@@ -4347,7 +4349,7 @@ function mostrarNovidades(){
   aj.abertura.novidadesVistas = NOVIDADES; salvar();
   nvFac = null;
   const perguntaAniv = !aj.festas.aniversario, perguntaFac = aj.mostrarFaculdade && !fac().semestre;
-  const widgets = NATIVO && window.WidgetPonte && WidgetPonte.disponivel();
+  const widgets = WidgetPonte.disponivel();
   abrirSheet(`<div class="nv">
     <div class="nv-topo"><div class="folhinha nv-folhinha" data-estado="comemorando" aria-hidden="true">${FOLHINHA_SVG}</div>
       <h2 id="nv-tit">Oi! Eu sou a Folhinha, sua nova guia. Agora sua rotina tem uma árvore que cresce a cada dia completo.</h2></div>
@@ -4432,6 +4434,59 @@ function sincronizarFolhinha(){
   else { Folhinha.remover(); document.documentElement.classList.remove('com-folhinha'); }
 }
 function alternarFolhinha(){ dados.ajustes.folhinha.ativa = !dados.ajustes.folhinha.ativa; salvar(); sincronizarFolhinha(); render(); }
+/* ---------- widgets (só no APK) ---------- */
+const WidgetPonte = {
+  timer: null, timerDia: null, memo: {}, ocupado: false,
+  disponivel: () => NATIVO && !!(window.Capacitor && Capacitor.isPluginAvailable && Capacitor.isPluginAvailable('Widget')),
+  async iniciar(){
+    if(!this.disponivel()) return;
+    const W = plugin('Widget');
+    W.addListener('pendencias', () => this.sincronizar());
+    W.addListener('aba', ev => this.abrirAba(ev && ev.aba));
+    document.addEventListener('visibilitychange', () => { if(!document.hidden){ this.sincronizar(); this.agendarDia(); } });
+    try{ const r = await W.abaInicial(); if(r && r.aba) this.abrirAba(r.aba); }catch(e){}
+    await this.sincronizar();
+    (window.requestIdleCallback || (f => setTimeout(f, 300)))(() => this.publicar());
+    this.agendarDia();
+  },
+  agendar(){ if(!this.disponivel()) return; clearTimeout(this.timer); this.timer = setTimeout(() => this.publicar(), 400); },
+  agendarDia(){
+    clearTimeout(this.timerDia);
+    const a = new Date(), meia = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 1, 0, 0, 5);
+    this.timerDia = setTimeout(() => { this.publicar(); this.agendarDia(); }, meia - a);
+  },
+  async publicar(){
+    if(!this.disponivel() || !dados) return;
+    try{ await plugin('Widget').publicar({ json: JSON.stringify(Widget.montarRetrato(dados, hoje(), this.memo)) }); }
+    catch(e){ console.error('Falha ao publicar o widget:', e && e.message); }
+  },
+  async sincronizar(){
+    if(!this.disponivel() || !dados || this.ocupado) return;
+    this.ocupado = true;
+    try{
+      const lista = ((await plugin('Widget').lerPendentes()) || {}).pendencias || [];
+      if(!lista.length) return;
+      const r = Widget.aplicarPendencias(dados, lista, hoje());
+      if(r.aplicadas && !salvar()) return;
+      if(r.ate) await plugin('Widget').limparPendentes({ ate: r.ate });
+      if(r.aplicadas) render();
+      this.publicar();
+    }catch(e){ console.error('Falha ao ler as marcações do widget:', e && e.message); }
+    finally{ this.ocupado = false; }
+  },
+  abrirAba(aba){
+    const t = { constancia: 'constancia', rotina: 'rotina', faculdade: 'faculdade' }[aba];
+    if(!t || !dados || ab || (t === 'faculdade' && !dados.ajustes.mostrarFaculdade)) return;
+    if($('overlay').classList.contains('show')) fecharSheet();
+    if(t === 'rotina') diaSel = hoje();
+    if(tela !== t) irPara(t); else render();
+  },
+  async fixar(tipo){
+    const dica = 'Toque e segure na tela inicial, escolha Widgets e procure Minha Rotina.';
+    try{ const r = await plugin('Widget').pedirFixar({ tipo }); if(!r || !r.ok) toast(dica); }
+    catch(e){ toast(dica); }
+  },
+};
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 async function alternarLembreteDiario(){
@@ -4509,6 +4564,7 @@ function iniciar(){
   if(NATIVO) document.getElementById('arquivo').removeAttribute('accept');
   aplicarTema(); montarNav(); render();
   iniciarLembretes();
+  WidgetPonte.iniciar();
   if(deveMostrarAbertura()) mostrarAbertura();
   else if(deveMostrarNovidades()) setTimeout(mostrarNovidades, Animacoes.MOV.lenta);
   sincronizarFolhinha();
