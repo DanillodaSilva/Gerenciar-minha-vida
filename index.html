@@ -1001,11 +1001,12 @@ const ICONES = {
 };
 const ic = (nome, extra = '') => `<svg class="ic ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${ICONES[nome]}"/></svg>`;
 const ABAS = [['rotina','hoje','Hoje'], ['proximos','calendario','Próximos'], ['faculdade','capelo','Faculdade'], ['constancia','grafico','Progresso'], ['ajustes','ajustes','Ajustes']];
+const abasVisiveis = () => ABAS.filter(([t]) => t !== 'faculdade' || !dados || dados.ajustes.mostrarFaculdade);
 const ORDEM_ABA = { rotina: 0, secao: 0, proximos: 1, faculdade: 2, 'fac-materia': 2, 'fac-anotacao': 2, constancia: 3, ajustes: 4 };
 const rolagemAba = {};
 const abasVistas = new Set();
 function montarNav(){
-  document.querySelector('nav.tabs').innerHTML = '<span class="pilula" aria-hidden="true"></span>' + ABAS.map(([id, icone, rotulo]) =>
+  document.querySelector('nav.tabs').innerHTML = '<span class="pilula" aria-hidden="true"></span>' + abasVisiveis().map(([id, icone, rotulo]) =>
     `<button id="tab-${id}" onclick="irPara('${id}')"><span class="ind">${ic(icone + 'Vazio', 'ic-vazio')}${ic(icone + 'Cheio', 'ic-cheio')}</span><span class="rot">${rotulo}</span></button>`).join('');
 }
 function cascata(container){
@@ -1626,7 +1627,8 @@ let telaDesenhada = '';
 function render(refazer = false, semFlip = false){
   if(!dados) return;
   aplicarFesta();
-  ABAS.forEach(([t]) => {
+  if(!dados.ajustes.mostrarFaculdade && (tela === 'faculdade' || tela.startsWith('fac-'))){ tela = 'rotina'; pilhaFac = []; }
+  abasVisiveis().forEach(([t]) => {
     const on = t === tela || (t==='rotina' && tela==='secao') || (t==='faculdade' && tela.startsWith('fac-'));
     const b = document.getElementById('tab-'+t);
     b.classList.toggle('on', on);
@@ -2995,7 +2997,7 @@ function aposMudarFaltas(){
     if(!m.arquivada) r.novos.forEach(n => novos.push({ m, n, s }));
   });
   if(mudou) salvar();
-  if(!novos.length) return;
+  if(!novos.length || !dados.ajustes.mostrarFaculdade) return;
   novos.sort((a, b) => Faculdade.NIVEIS.indexOf(b.n) - Faculdade.NIVEIS.indexOf(a.n));
   novos.forEach(notificarAlerta);
   filaAlertas.push(...novos);
@@ -3030,7 +3032,7 @@ function verMateria(id){
   abrirMateria(id);
 }
 async function notificarAlerta(a){
-  if(!fac().alertasAtivos) return;
+  if(!fac().alertasAtivos || !dados.ajustes.mostrarFaculdade) return;
   const t = textoAlertaDe(a);
   try{
     if(NATIVO){
@@ -3044,9 +3046,12 @@ async function notificarAlerta(a){
   }catch(e){ console.error('Falha ao notificar:', e && e.message); }
 }
 if(!NATIVO && navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', e => { if(e.data && e.data.tipo === 'abrir-materia' && dados) verMateria(e.data.id); });
+function alternarFaculdade(){ dados.ajustes.mostrarFaculdade = !dados.ajustes.mostrarFaculdade; salvar(); montarNav(); render(); }
 function cartaoAjustesFaculdade(){
-  const f = fac();
+  const f = fac(), sw = `<button class="interruptor" role="switch" aria-checked="${dados.ajustes.mostrarFaculdade}" onclick="alternarFaculdade()"><span>Mostrar a aba Faculdade</span><span class="sw" aria-hidden="true"></span></button>`;
+  if(!dados.ajustes.mostrarFaculdade) return `<div class="card fac-form" data-chave="aj-fac"><h2>Faculdade</h2>${sw}<p class="hint">A aba está escondida. Suas matérias, faltas e anotações continuam guardadas.</p></div>`;
   return `<div class="card fac-form" data-chave="aj-fac"><h2>Faculdade</h2>
+    ${sw}
     <button class="btn ghost" onclick="abrirAssistente(!!fac().semestre)">Configurar semestre</button>
     <button class="interruptor" role="switch" aria-checked="${f.alertasAtivos}" onclick="alternarAlertasFac()"><span>Alertas de faltas</span><span class="sw" aria-hidden="true"></span></button>
     <label>Limite de faltas (%)<input type="number" name="limite-faltas" autocomplete="off" inputmode="numeric" min="1" max="50" value="${f.limiteFaltas}" onchange="mudarLimiteFac(this)"></label>
@@ -3642,7 +3647,7 @@ function concluirAssistente(){
 const GRAVES = ['perigo', 'ultima_chance', 'ultrapassado'];
 function cartoesFaculdadeHoje(){
   const f = fac();
-  if(!f.semestre) return '';
+  if(!f.semestre || !dados.ajustes.mostrarFaculdade) return '';
   const est = estFac(), ehHoje = diaSel === hoje();
   const graves = Faculdade.ordenarPorGravidade(f.materias.filter(m => !m.arquivada && est[m.id] && GRAVES.includes(est[m.id].nivel)), est);
   const linha = m => { const s = est[m.id]; return `<button onclick="verMateria('${m.id}')"><b>${esc(m.nome)}:</b> ${Faculdade.formatarPct(s.percentual)} de faltas. ${s.restante > 0 ? 'Ainda pode faltar ' + Faculdade.tempos(s.restante) + '.' : s.restante === 0 ? 'Não pode faltar mais.' : 'Passou do limite de ' + f.limiteFaltas + '%.'}</button>`; };
