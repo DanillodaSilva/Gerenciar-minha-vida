@@ -820,7 +820,7 @@
   .ab-modelo.on{border-color:var(--c);background:var(--cc)}
   .ab-modelo-top{display:flex;align-items:center;gap:var(--space-3);width:100%;min-height:calc(var(--touch) + var(--space-2));padding:0 var(--space-3);text-align:left;font-size:var(--fs-body);font-weight:var(--w-medium);color:var(--text-primary)}
   .ab-modelo-top span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}
-  .ab-modelo-top .emo{font-size:var(--fs-title);width:var(--space-6);text-align:center;flex:none}
+  .ab-modelo-top .emo{font-size:var(--fs-title);min-width:var(--space-6);text-align:center;flex:none}
   .ab-modelo-top svg{color:var(--c);flex:none}
   .ab-modelo-corpo{display:flex;flex-wrap:wrap;gap:var(--space-2);padding:0 var(--space-3) var(--space-3)}
   .ab-modelo-corpo .hint{width:100%;margin:var(--space-1) 0 0}
@@ -847,7 +847,8 @@
   .ab .ab-folhinha{position:static;flex:none}
   .ab-balao{position:relative;flex:1;min-width:0;padding:var(--space-3) var(--space-4);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-card);box-shadow:var(--shadow-fab);cursor:pointer;margin-bottom:var(--space-4)}
   .ab-balao::before{content:'';position:absolute;left:calc(var(--space-2) * -1 + 2px);bottom:var(--space-3);width:var(--space-4);height:var(--space-4);background:var(--surface);transform:rotate(45deg);border-radius:0 0 0 var(--space-1)}
-  .ab-balao{text-align:left;font:inherit}
+  .ab-balao{text-align:left;font:inherit;max-height:22vh;overflow-y:auto;overscroll-behavior:contain}
+  .sem-quebra{white-space:nowrap}
   .ab-balao span{position:relative;display:block;font-size:var(--fs-body);line-height:var(--lh-body);min-height:calc(var(--lh-body) * 2);overflow-wrap:anywhere}
   html.teclado-aberto .ab-fala{display:none}
   .ab-rodape{display:flex;flex-direction:column;gap:var(--space-1)}
@@ -4095,17 +4096,18 @@ function arvoreAtual(){
   }
   return cacheArvore.valor;
 }
-const folhasTxt = n => n + (n === 1 ? ' folha' : ' folhas');
+const numBR = n => n.toLocaleString('pt-BR');
+const folhasTxt = n => numBR(n) + (n === 1 ? ' folha' : ' folhas');
 const VAR_TXT = { 1: 'ganhou 1 folha', 0: 'sem mudança', '-1': 'perdeu 1 folha' };
 function cartaoArvore(){
   const a = arvoreAtual(), e = a.estagio;
   const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
-  const falta = a.proximo ? (a.proximo.faltam === 1 ? `Falta 1 folha para ${a.proximo.nome}` : `Faltam ${a.proximo.faltam} folhas para ${a.proximo.nome}`) : 'Estágio máximo';
+  const falta = a.proximo ? (a.proximo.faltam === 1 ? `Falta 1 folha para ${a.proximo.nome}` : `Faltam ${numBR(a.proximo.faltam)} folhas para ${a.proximo.nome}`) : 'Estágio máximo';
   return `<section class="card arvore-card" data-chave="arvore-card">
     <div class="arvore-palco" id="palco-arvore">${desenharArvore(a.folhas, e)}</div>
     <div class="arvore-info"><h2>${a.nomeEstagio}</h2><p class="arvore-n">${folhasTxt(a.folhas)}</p>
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
-      <p class="hint">${falta}</p><p class="hint">Ganhas: ${a.ganhas} · Perdidas: ${a.perdidas}</p></div>
+      <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
     <div class="arvore-30" role="list" aria-label="Últimos 30 dias">${a.historico.map(h => { const t = `${Regras.curto(h.data)}: ${VAR_TXT[h.variacao]}`; return `<span role="listitem" class="q q${h.variacao < 0 ? 'm' : h.variacao}" title="${t}" aria-label="${t}"></span>`; }).join('')}</div>
     <p class="hint">Dia completo: +1 folha. Menos da metade: −1 folha.</p>
   </section>`;
