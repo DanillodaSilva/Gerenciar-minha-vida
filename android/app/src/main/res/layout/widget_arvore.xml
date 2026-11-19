@@ -26,7 +26,7 @@
         android:layout_marginTop="4dp"
         android:ellipsize="end"
         android:gravity="center_horizontal"
-        android:maxLines="2"
+        android:maxLines="1"
         android:text="@string/widget_previa_estagio"
         android:textColor="@color/widget_texto"
         android:textSize="14sp"

@@ -352,7 +352,7 @@ Mesma arquitetura: os componentes abaixo só usam tokens que já existem. Nenhum
 
 ### 6.3 Árvore, Folhinha, abertura e widgets (versão 1.6.0)
 
-**Árvore — tokens.** Primitivas `--p-arvore-*` (claro) e `--p-arvore-*-e` (escuro) → semânticos `--arvore-tronco`, `--arvore-folha-1..3`, `--arvore-flor`, `--arvore-fruto`, `--arvore-terra`, repetidos nos dois seletores de modo escuro. A flor usa `--primary` (a identidade roxa continua). O verde é só da árvore: não pinta texto, botão nem foco.
+**Árvore — tokens.** Primitivas `--p-arvore-*` (claro) e `--p-arvore-*-e` (escuro) → semânticos `--arvore-tronco`, `--arvore-folha-1..3`, `--arvore-flor`, `--arvore-fruto`, `--arvore-terra`, repetidos nos dois seletores de modo escuro. A flor usa `--primary` no claro (a identidade roxa continua) e `#7A45C8` no escuro: o `--primary` escuro (`#C3A6F0`) ficava com 1,29:1 sobre as folhas claras; `#7A45C8` dá 3,68:1. O verde é só da árvore: não pinta texto, botão nem foco.
 
 | Token | Claro | Escuro | Uso e contraste |
 |---|---|---|---|

@@ -736,11 +736,11 @@
   html.com-previa #app{padding-top:calc(var(--touch) + var(--space-6))}
   .previa-banner button{min-height:var(--touch);padding:0 var(--space-3);color:var(--snack-action);font-weight:var(--w-medium);border-radius:var(--radius-chip)}
   :root{--p-arvore-tronco:#7C5A3A; --p-arvore-tronco-e:#C9A27E; --p-arvore-folha-1:#2E7D4F; --p-arvore-folha-1e:#7FCB9A; --p-arvore-folha-2:#4C9A63; --p-arvore-folha-2e:#9BD9AE;
-    --p-arvore-folha-3:#6DB07A; --p-arvore-folha-3e:#B6E5C2; --p-arvore-fruto:#E8590C; --p-arvore-fruto-e:#FF922B; --p-arvore-terra:#B8A88A; --p-arvore-terra-e:#5A5146;
+    --p-arvore-folha-3:#6DB07A; --p-arvore-folha-3e:#B6E5C2; --p-arvore-fruto:#E8590C; --p-arvore-fruto-e:#FF922B; --p-arvore-terra:#B8A88A; --p-arvore-terra-e:#5A5146; --p-arvore-flor-e:#7A45C8;
     --arvore-tronco:var(--p-arvore-tronco); --arvore-folha-1:var(--p-arvore-folha-1); --arvore-folha-2:var(--p-arvore-folha-2); --arvore-folha-3:var(--p-arvore-folha-3);
     --arvore-flor:var(--primary); --arvore-fruto:var(--p-arvore-fruto); --arvore-terra:var(--p-arvore-terra)}
-  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-tronco:var(--p-arvore-tronco-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)} }
-  :root[data-theme="dark"]{--arvore-tronco:var(--p-arvore-tronco-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-tronco:var(--p-arvore-tronco-e); --arvore-flor:var(--p-arvore-flor-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)} }
+  :root[data-theme="dark"]{--arvore-tronco:var(--p-arvore-tronco-e); --arvore-flor:var(--p-arvore-flor-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)}
   svg.arvore{display:block;width:auto;height:100%;max-width:100%;overflow:visible}
   .arv-folha{transform-box:fill-box;transform-origin:center}
   .arv-luz{display:none}
@@ -790,6 +790,9 @@
   .arvore-30 .qm{background:var(--danger)}
   .linha-arvore{display:flex;align-items:center;gap:var(--space-2);width:fit-content;max-width:100%;margin:calc(var(--space-2) * -1) 0 var(--space-1) auto;min-height:var(--touch);padding:0 var(--space-3) 0 var(--space-1);border-radius:var(--radius-full);color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium)}
   .linha-arvore svg.arvore{width:32px;height:32px;flex:none}
+  .linha-arvore{transition:background-color var(--dur-toque) var(--ease-saida)}
+  .linha-arvore:active{background:var(--surface-variant)}
+  @media (hover: hover) and (pointer: fine){ .linha-arvore:hover{background:var(--surface-variant)} }
   .linha-arvore span{min-width:0;overflow-wrap:anywhere}
   .comemoracao .cartao svg.arvore{width:calc(var(--touch) * 2);height:calc(var(--touch) * 2)}
   html.na-abertura body{overflow:hidden}
@@ -844,8 +847,8 @@
   .ab .ab-folhinha{position:static;flex:none}
   .ab-balao{position:relative;flex:1;min-width:0;padding:var(--space-3) var(--space-4);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-card);box-shadow:var(--shadow-fab);cursor:pointer;margin-bottom:var(--space-4)}
   .ab-balao::before{content:'';position:absolute;left:calc(var(--space-2) * -1 + 2px);bottom:var(--space-3);width:var(--space-4);height:var(--space-4);background:var(--surface);transform:rotate(45deg);border-radius:0 0 0 var(--space-1)}
-  .ab-balao p{position:relative;margin:0;font-size:var(--fs-body);line-height:var(--lh-body);min-height:calc(var(--lh-body) * 2);overflow-wrap:anywhere}
-  .ab-balao p.sr{min-height:0}
+  .ab-balao{text-align:left;font:inherit}
+  .ab-balao span{position:relative;display:block;font-size:var(--fs-body);line-height:var(--lh-body);min-height:calc(var(--lh-body) * 2);overflow-wrap:anywhere}
   html.teclado-aberto .ab-fala{display:none}
   .ab-rodape{display:flex;flex-direction:column;gap:var(--space-1)}
   .nv{display:flex;flex-direction:column;gap:var(--space-3)}
@@ -4143,7 +4146,7 @@ let ateOntemSessao = null, eventoSimuladoFeito = false;
 function processarEventosArvore(){
   if(!dados) return [];
   const a = arvoreAtual(), aj = dados.ajustes.arvore;
-  let ev = Arvore.eventosDesde(aj, a);
+  let ev = SIM_ARVORE && SIM_ARVORE.folhas !== null ? [] : Arvore.eventosDesde(aj, a);
   const soHoje = ateOntemSessao !== null && ateOntemSessao === a.folhasAteOntem;
   if(SIM_ARVORE && SIM_ARVORE.evento && !eventoSimuladoFeito){
     eventoSimuladoFeito = true;
@@ -4251,7 +4254,7 @@ function desenharAbertura(manter = false){
       <div class="ab-prog"><div class="bar" aria-hidden="true"><i style="--c:var(--primary);--p:${((i + 1) / total).toFixed(3)}"></i></div><span>Passo ${i + 1} de ${total}</span></div>${ab.rever ? `<button class="icon-btn" onclick="concluirAbertura()" aria-label="Fechar">${ic('fechar')}</button>` : ''}</div>
     <div class="ab-conteudo" id="ab-conteudo"><h2 id="ab-tit">${AB_TITULOS[n]}</h2>${conteudoPasso(n)}<p class="erro" role="alert">${esc(ab.erro)}</p></div>
     <div class="ab-fala"><div class="folhinha ab-folhinha" id="ab-folhinha" data-estado="parada" aria-hidden="true">${FOLHINHA_SVG}</div>
-      <div class="ab-balao" onclick="completarFala()"><p id="ab-fala-texto" aria-hidden="true"></p><p class="sr" role="status">${esc(AB_FALAS[n])}</p></div></div>
+      <button class="ab-balao" onclick="completarFala()" aria-label="Mostrar a fala inteira"><span id="ab-fala-texto" aria-hidden="true"></span></button><p class="sr" role="status">${esc(AB_FALAS[n])}</p></div>
     <div class="ab-rodape"><button class="btn" onclick="abAvancar()">${principal}</button>${opcionais(n) || n === 5 ? '<button class="btn text" onclick="abPular()">Pular</button>' : ''}</div>
   </div>`;
   const fala = $('ab-fala-texto');
