@@ -775,8 +775,8 @@
   .balao-fo[hidden]{display:none}
   .balao-texto{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);min-height:var(--lh-body);overflow-wrap:anywhere;cursor:pointer}
   .balao-fo .btn{position:relative;z-index:1;align-self:flex-end;min-height:var(--touch)}
-  html.travado:not(.na-abertura) .folhinha,html.travado:not(.na-abertura) .balao-fo,html.teclado-aberto .folhinha,html.teclado-aberto .balao-fo,
-  .toast.show ~ .folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ .folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
+  html.travado #folhinha,html.travado .balao-fo,html.na-abertura #folhinha,html.na-abertura .balao-fo,html.teclado-aberto #folhinha,html.teclado-aberto .balao-fo,
+  .toast.show ~ #folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ #folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
   .arvore-card{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
   .arvore-palco{height:240px;display:flex;justify-content:center;align-items:flex-end;grid-row:span 1}
   .arvore-info{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
@@ -848,6 +848,15 @@
   .ab-balao p.sr{min-height:0}
   html.teclado-aberto .ab-fala{display:none}
   .ab-rodape{display:flex;flex-direction:column;gap:var(--space-1)}
+  .nv{display:flex;flex-direction:column;gap:var(--space-3)}
+  .nv-topo{display:flex;align-items:flex-start;gap:var(--space-3)}
+  .nv .nv-folhinha{position:static;flex:none}
+  .nv-topo h2{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--w-medium);color:var(--text-primary)}
+  .nv-arvore{display:flex;flex-direction:column;align-items:center;gap:var(--space-1)}
+  .nv-arvore svg.arvore{width:calc(var(--touch) * 3.5);height:calc(var(--touch) * 3.5)}
+  .nv-arvore .hint{margin:0}
+  .nv .erro:empty{display:none}
+  .nv .ab-widget{grid-template-columns:auto minmax(0,1fr) auto}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -4319,6 +4328,37 @@ document.addEventListener('pointerup', e => {
   if(Math.abs(dx) < innerWidth * 0.25 && v < Animacoes.GESTO.velocidade) return;
   if(dx < 0 && ab.passo !== 10 && ab.passo !== 7) abAvancar(); else if(dx > 0) abVoltar();
 });
+const deveMostrarNovidades = () => dados.ajustes.abertura.concluida && dados.ajustes.abertura.novidadesVistas !== NOVIDADES;
+let nvFac = null;
+function mostrarNovidades(){
+  const aj = dados.ajustes, a = arvoreAtual();
+  aj.abertura.novidadesVistas = NOVIDADES; salvar();
+  nvFac = null;
+  const perguntaAniv = !aj.festas.aniversario, perguntaFac = aj.mostrarFaculdade && !fac().semestre;
+  const widgets = NATIVO && window.WidgetPonte && WidgetPonte.disponivel();
+  abrirSheet(`<div class="nv">
+    <div class="nv-topo"><div class="folhinha nv-folhinha" data-estado="comemorando" aria-hidden="true">${FOLHINHA_SVG}</div>
+      <h2 id="nv-tit">Oi! Eu sou a Folhinha, sua nova guia. Agora sua rotina tem uma árvore que cresce a cada dia completo.</h2></div>
+    <div class="nv-arvore">${desenharArvore(a.folhas, a.estagio)}<p class="hint">${a.nomeEstagio} · ${folhasTxt(a.folhas)}</p></div>
+    ${perguntaAniv ? `<span class="rotulo-grupo">Quando é seu aniversário?</span><div class="row">${MESES_OPC(0, 'nv-dia', 'ab-dia', 31, 'Dia')}${MESES_OPC(0, 'nv-mes', 'ab-mes', 12, 'Mês')}</div><p class="erro" role="alert" id="nv-erro"></p>` : ''}
+    ${perguntaFac ? `<span class="rotulo-grupo" id="nv-fac">Você faz faculdade?</span><div class="chips" role="group" aria-labelledby="nv-fac"><button class="chip" aria-pressed="false" data-fac="sim" onclick="nvEscolherFac('sim')"><span>Sim</span></button><button class="chip" aria-pressed="false" data-fac="nao" onclick="nvEscolherFac('nao')"><span>Não faço</span></button></div>` : ''}
+    ${widgets ? `<span class="rotulo-grupo">Widgets na tela inicial</span><div class="ab-widgets">${[['arvore', 'Árvore'], ['hoje', 'Hoje'], ['aula', 'Próxima aula']].map(([t, nome]) => `<div class="ab-widget"><div class="ab-widget-previa" aria-hidden="true">${previaWidget(t)}</div><b>${nome}</b><button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">Adicionar</button></div>`).join('')}</div>` : ''}
+    <button class="btn" onclick="fecharNovidades(true)">Conhecer minha árvore</button>
+    <button class="btn text" onclick="fecharNovidades(false)">Agora não</button>
+  </div>`);
+}
+function nvEscolherFac(v){ nvFac = v; document.querySelectorAll('[data-fac]').forEach(b => { const on = b.dataset.fac === v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); }
+function fecharNovidades(conhecer){
+  const aj = dados.ajustes, d = $('nv-dia'), m = $('nv-mes');
+  if(conhecer && d && Number(d.value) && Number(m.value)){
+    const v = String(m.value).padStart(2, '0') + '-' + String(d.value).padStart(2, '0');
+    if(!Regras.aniversarioValido(v)){ $('nv-erro').textContent = 'Essa data não existe. Escolha outro dia.'; return; }
+    aj.festas.aniversario = v;
+  }
+  if(conhecer && nvFac === 'nao'){ aj.mostrarFaculdade = false; montarNav(); }
+  salvar(); fecharSheet();
+  if(conhecer) irPara('constancia');
+}
 /* ---------- lembretes (só no APK) ---------- */
 let reconcTimer = null;
 function agendarReconciliacao(){ if(!NATIVO) return; clearTimeout(reconcTimer); reconcTimer = setTimeout(reconciliarLembretes, 300); }
@@ -4392,6 +4432,7 @@ function iniciar(){
   aplicarTema(); montarNav(); render();
   iniciarLembretes();
   if(deveMostrarAbertura()) mostrarAbertura();
+  else if(deveMostrarNovidades()) setTimeout(mostrarNovidades, Animacoes.MOV.lenta);
   diaFestaVisto = hojeFesta();
   agendarVirada();
   setTimeout(limparFotosOrfas, 3000);
