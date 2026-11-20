@@ -735,50 +735,15 @@
   .hoje-tit h1,.festa-cartao-txt h2,.retro h2{text-wrap:balance}
   html.com-previa #app{padding-top:calc(var(--touch) + var(--space-6))}
   .previa-banner button{min-height:var(--touch);padding:0 var(--space-3);color:var(--snack-action);font-weight:var(--w-medium);border-radius:var(--radius-chip)}
-  :root{--p-arvore-tronco:#7C5A3A; --p-arvore-tronco-e:#C9A27E; --p-arvore-folha-1:#2E7D4F; --p-arvore-folha-1e:#7FCB9A; --p-arvore-folha-2:#4C9A63; --p-arvore-folha-2e:#9BD9AE;
-    --p-arvore-folha-3:#6DB07A; --p-arvore-folha-3e:#B6E5C2; --p-arvore-fruto:#E8590C; --p-arvore-fruto-e:#FF922B; --p-arvore-terra:#B8A88A; --p-arvore-terra-e:#5A5146; --p-arvore-flor-e:#7A45C8;
-    --arvore-tronco:var(--p-arvore-tronco); --arvore-folha-1:var(--p-arvore-folha-1); --arvore-folha-2:var(--p-arvore-folha-2); --arvore-folha-3:var(--p-arvore-folha-3);
-    --arvore-flor:var(--primary); --arvore-fruto:var(--p-arvore-fruto); --arvore-terra:var(--p-arvore-terra)}
-  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-tronco:var(--p-arvore-tronco-e); --arvore-flor:var(--p-arvore-flor-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)} }
-  :root[data-theme="dark"]{--arvore-tronco:var(--p-arvore-tronco-e); --arvore-flor:var(--p-arvore-flor-e); --arvore-folha-1:var(--p-arvore-folha-1e); --arvore-folha-2:var(--p-arvore-folha-2e); --arvore-folha-3:var(--p-arvore-folha-3e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-terra:var(--p-arvore-terra-e)}
-  svg.arvore{display:block;width:auto;height:100%;max-width:100%;overflow:visible}
-  .arv-folha,.arv-caindo{transform-box:fill-box;transform-origin:center}
-  .arv-luz{display:none}
-  :root[data-festa="natal"][data-fase="auge"] .arv-luz{display:inline}
-  .folhinha{position:fixed;z-index:6;width:calc(var(--touch) + var(--space-2));height:calc(var(--touch) + var(--space-2));padding:0;border-radius:var(--radius-full);
-    left:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-3) + env(safe-area-inset-left));bottom:calc(var(--nav-h) + var(--space-3) + env(safe-area-inset-bottom));
-    filter:drop-shadow(0 2px 3px var(--sombra-cor));transition:opacity var(--dur-rapida) var(--ease-saida)}
-  .folhinha svg{width:100%;height:100%;display:block;overflow:visible}
-  .fo-cabo{transform-box:view-box;transform-origin:24px 52px;animation:balancar 3s var(--ease-movimento) infinite alternate}
-  @keyframes balancar{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
-  .fo-broto{transform-box:fill-box;transform-origin:right top}
-  .fo-olhos{transform-box:fill-box;transform-origin:center;transition:transform var(--dur-toque) var(--ease-saida)}
-  .folhinha.piscando .fo-olhos{transform:scaleY(.12)}
-  .fo-pupilas,.fo-corpo{transition:transform var(--dur-base) var(--ease-saida)}
-  .fo-aberta,.fo-tristeza{opacity:0}
-  .folhinha[data-estado="falando"] .fo-sorriso{animation:boca-fechada .26s steps(1) infinite}
-  .folhinha[data-estado="falando"] .fo-aberta{animation:boca-aberta .26s steps(1) infinite}
-  @keyframes boca-aberta{0%{opacity:1}50%{opacity:0}}
-  @keyframes boca-fechada{0%{opacity:0}50%{opacity:1}}
-  .folhinha[data-estado="triste"] .fo-sorriso{opacity:0}
-  .folhinha[data-estado="triste"] .fo-tristeza{opacity:1}
-  .folhinha[data-estado="triste"] .fo-pupilas{transform:translateY(1.6px)}
-  .folhinha[data-estado="triste"] .fo-corpo{transform:translateY(2px)}
-  .folhinha[data-estado="comemorando"] .fo-olhos{transform:scaleY(.6)}
-  html.oculto .fo-cabo{animation-play-state:paused}
-  :root[data-animacoes="reduzidas"] .fo-cabo,:root[data-animacoes="reduzidas"] .folhinha[data-estado="falando"] .fo-sorriso,:root[data-animacoes="reduzidas"] .folhinha[data-estado="falando"] .fo-aberta{animation:none}
-  @media (prefers-reduced-motion: reduce){ .fo-cabo,.folhinha[data-estado="falando"] .fo-sorriso,.folhinha[data-estado="falando"] .fo-aberta{animation:none} }
-  .balao-fo{position:fixed;z-index:6;max-width:min(280px, calc(100vw - var(--space-4) * 2));display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-1);
-    left:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-3) + env(safe-area-inset-left));bottom:calc(var(--nav-h) + var(--space-3) + var(--touch) + var(--space-4) + env(safe-area-inset-bottom));
-    padding:var(--space-3) var(--space-3) var(--space-1) var(--space-4);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-card);box-shadow:var(--shadow-fab)}
-  .balao-fo::after{content:'';position:absolute;left:var(--space-6);bottom:calc(var(--space-2) * -1 + 1px);width:var(--space-4);height:var(--space-4);background:var(--surface);transform:rotate(45deg);border-radius:0 0 var(--space-1) 0}
-  .balao-fo[hidden]{display:none}
-  .balao-texto{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);min-height:var(--lh-body);overflow-wrap:anywhere;cursor:pointer}
-  .balao-fo .btn{position:relative;z-index:1;align-self:flex-end;min-height:var(--touch)}
-  html.travado #folhinha,html.travado .balao-fo,html.na-abertura #folhinha,html.na-abertura .balao-fo,html.teclado-aberto #folhinha,html.teclado-aberto .balao-fo,
-  .toast.show ~ #folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ #folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
+  :root{--p-arvore-tronco-sombra:#5A3F27; --p-arvore-tronco-sombra-e:#8C6A4C; --p-arvore-tronco:#7C5A3A; --p-arvore-tronco-e:#B08A66; --p-arvore-tronco-luz:#A57E57; --p-arvore-tronco-luz-e:#D6B48F; --p-arvore-folha-fundo:#1F5C3A; --p-arvore-folha-fundo-e:#3F8A5E; --p-arvore-folha-1:#2E7D4F; --p-arvore-folha-1-e:#5DB383; --p-arvore-folha-2:#4C9A63; --p-arvore-folha-2-e:#7FCB9A; --p-arvore-folha-3:#6DB07A; --p-arvore-folha-3-e:#9BD9AE; --p-arvore-folha-luz:#A8D8A0; --p-arvore-folha-luz-e:#C8EBC6; --p-arvore-flor-miolo:#F5C542; --p-arvore-flor-miolo-e:#F7D56B; --p-arvore-fruto:#E8590C; --p-arvore-fruto-e:#FF922B; --p-arvore-colina:#9CC58A; --p-arvore-colina-e:#2F4A35; --p-arvore-colina-luz:#C4E0B4; --p-arvore-colina-luz-e:#456B4E; --p-arvore-terra:#B8A88A; --p-arvore-terra-e:#5A5146; --p-arvore-nervura:rgba(0,0,0,.16); --p-arvore-nervura-e:rgba(0,0,0,.22); --p-arvore-flor-chao:#F3EFFA; --p-arvore-flor-chao-e:#E7DDF7; --p-arvore-pedra:#B7B2A8; --p-arvore-pedra-e:#5E5A55; --p-arvore-pedra-luz:#D6D2CA; --p-arvore-pedra-luz-e:#7A766F; --p-arvore-sombra-chao:#1C1B19; --p-arvore-sombra-chao-e:#000000; --p-arvore-brilho:#FFFFFF; --p-arvore-borboleta:#C3A6F0; --p-arvore-borboleta-2:#9C7BD6; --p-arvore-passaro:#6E8CAF; --p-arvore-passaro-asa:#4E6B8C; --p-arvore-olho:#1C1B19; --p-arvore-vagalume:#F7E27A; --p-ceu-manha-1:#DCEBFA; --p-ceu-manha-2:#F7F6F3; --p-ceu-tarde-1:#FCE3C8; --p-ceu-tarde-2:#F7F6F3; --p-ceu-noite-1:#1C1830; --p-ceu-noite-2:#141413; --p-ceu-estrela:#FFF7E0; --p-ceu-lua:#F6E7B8; --p-ceu-sol:#FFE9A8; --p-ceu-nuvem:#FFFFFF;
+    --arvore-tronco-sombra:var(--p-arvore-tronco-sombra); --arvore-tronco:var(--p-arvore-tronco); --arvore-tronco-luz:var(--p-arvore-tronco-luz); --arvore-folha-fundo:var(--p-arvore-folha-fundo); --arvore-folha-1:var(--p-arvore-folha-1); --arvore-folha-2:var(--p-arvore-folha-2); --arvore-folha-3:var(--p-arvore-folha-3); --arvore-folha-luz:var(--p-arvore-folha-luz); --arvore-flor-miolo:var(--p-arvore-flor-miolo); --arvore-fruto:var(--p-arvore-fruto); --arvore-colina:var(--p-arvore-colina); --arvore-colina-luz:var(--p-arvore-colina-luz); --arvore-terra:var(--p-arvore-terra); --arvore-nervura:var(--p-arvore-nervura); --arvore-flor-chao:var(--p-arvore-flor-chao); --arvore-pedra:var(--p-arvore-pedra); --arvore-pedra-luz:var(--p-arvore-pedra-luz); --arvore-sombra-chao:var(--p-arvore-sombra-chao); --arvore-brilho:var(--p-arvore-brilho); --arvore-borboleta:var(--p-arvore-borboleta); --arvore-borboleta-2:var(--p-arvore-borboleta-2); --arvore-passaro:var(--p-arvore-passaro); --arvore-passaro-asa:var(--p-arvore-passaro-asa); --arvore-olho:var(--p-arvore-olho); --arvore-vagalume:var(--p-arvore-vagalume); --arvore-flor:var(--primary); --ceu-manha-1:var(--p-ceu-manha-1); --ceu-manha-2:var(--p-ceu-manha-2); --ceu-tarde-1:var(--p-ceu-tarde-1); --ceu-tarde-2:var(--p-ceu-tarde-2); --ceu-noite-1:var(--p-ceu-noite-1); --ceu-noite-2:var(--p-ceu-noite-2); --ceu-estrela:var(--p-ceu-estrela); --ceu-lua:var(--p-ceu-lua); --ceu-sol:var(--p-ceu-sol); --ceu-nuvem:var(--p-ceu-nuvem);}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-tronco-sombra:var(--p-arvore-tronco-sombra-e); --arvore-tronco:var(--p-arvore-tronco-e); --arvore-tronco-luz:var(--p-arvore-tronco-luz-e); --arvore-folha-fundo:var(--p-arvore-folha-fundo-e); --arvore-folha-1:var(--p-arvore-folha-1-e); --arvore-folha-2:var(--p-arvore-folha-2-e); --arvore-folha-3:var(--p-arvore-folha-3-e); --arvore-folha-luz:var(--p-arvore-folha-luz-e); --arvore-flor-miolo:var(--p-arvore-flor-miolo-e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-colina:var(--p-arvore-colina-e); --arvore-colina-luz:var(--p-arvore-colina-luz-e); --arvore-terra:var(--p-arvore-terra-e); --arvore-nervura:var(--p-arvore-nervura-e); --arvore-flor-chao:var(--p-arvore-flor-chao-e); --arvore-pedra:var(--p-arvore-pedra-e); --arvore-pedra-luz:var(--p-arvore-pedra-luz-e); --arvore-sombra-chao:var(--p-arvore-sombra-chao-e);} }
+  :root[data-theme="dark"]{--arvore-tronco-sombra:var(--p-arvore-tronco-sombra-e); --arvore-tronco:var(--p-arvore-tronco-e); --arvore-tronco-luz:var(--p-arvore-tronco-luz-e); --arvore-folha-fundo:var(--p-arvore-folha-fundo-e); --arvore-folha-1:var(--p-arvore-folha-1-e); --arvore-folha-2:var(--p-arvore-folha-2-e); --arvore-folha-3:var(--p-arvore-folha-3-e); --arvore-folha-luz:var(--p-arvore-folha-luz-e); --arvore-flor-miolo:var(--p-arvore-flor-miolo-e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-colina:var(--p-arvore-colina-e); --arvore-colina-luz:var(--p-arvore-colina-luz-e); --arvore-terra:var(--p-arvore-terra-e); --arvore-nervura:var(--p-arvore-nervura-e); --arvore-flor-chao:var(--p-arvore-flor-chao-e); --arvore-pedra:var(--p-arvore-pedra-e); --arvore-pedra-luz:var(--p-arvore-pedra-luz-e); --arvore-sombra-chao:var(--p-arvore-sombra-chao-e);}
+  svg.arvore-viva{display:block;width:auto;height:100%;max-width:100%;overflow:visible}
+  svg.arvore-viva .arv-folha,svg.arvore-viva .arv-caindo{transform-box:fill-box;transform-origin:50% 100%}
   .arvore-card{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
-  .arvore-palco{height:240px;display:flex;justify-content:center;align-items:flex-end;grid-row:span 1}
+  .arvore-palco{height:300px;display:flex;justify-content:center;align-items:flex-end;grid-row:span 1}
+  @media (min-width: 768px){ .arvore-palco{height:360px} }
   .arvore-info{display:flex;flex-direction:column;gap:var(--space-1);min-width:0}
   .arvore-info h2{margin:0;color:var(--text-primary);font-size:var(--fs-title);line-height:var(--lh-title);overflow-wrap:anywhere}
   .arvore-info .arvore-n{margin:0;font-size:var(--fs-label);line-height:var(--lh-label);color:var(--text-secondary);font-variant-numeric:tabular-nums}
@@ -797,12 +762,13 @@
   .faixas-tab td{text-align:center;padding:var(--space-1) 0}
   .faixas-tab tr + tr td{color:var(--text-primary);font-weight:var(--w-semibold)}
   .linha-arvore{display:flex;align-items:center;gap:var(--space-2);width:fit-content;max-width:100%;margin:calc(var(--space-2) * -1) 0 var(--space-1) auto;min-height:var(--touch);padding:0 var(--space-3) 0 var(--space-1);border-radius:var(--radius-full);color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium)}
-  .linha-arvore svg.arvore{width:32px;height:32px;flex:none}
+  .mini-arvore{display:block;width:44px;height:44px;flex:none}
+  .linha-arvore svg.arvore-viva{width:44px;height:44px}
   .linha-arvore{transition:background-color var(--dur-toque) var(--ease-saida)}
   .linha-arvore:active{background:var(--surface-variant)}
   @media (hover: hover) and (pointer: fine){ .linha-arvore:hover{background:var(--surface-variant)} }
   .linha-arvore span{min-width:0;overflow-wrap:anywhere}
-  .comemoracao .cartao svg.arvore{width:calc(var(--touch) * 2);height:calc(var(--touch) * 2)}
+  .comemoracao .cartao svg.arvore-viva{height:240px;width:auto;max-width:100%}
   html.na-abertura body{overflow:hidden}
   html.na-abertura .toast{z-index:9}
   .ab{position:fixed;inset:0 0 var(--teclado, 0px);z-index:8;background:var(--background);display:flex;justify-content:center}
@@ -818,7 +784,7 @@
   .ab-conteudo h2:focus{outline:none}
   .ab-conteudo .erro:empty{display:none}
   .ab-ilustra{display:flex;justify-content:center;padding:var(--space-4) 0}
-  .ab-ilustra svg.arvore{width:calc(var(--touch) * 4);height:calc(var(--touch) * 4)}
+  .ab-ilustra svg.arvore-viva{height:220px;width:auto;max-width:100%}
   .ab-texto{margin:0;color:var(--text-secondary);font-size:var(--fs-body);line-height:var(--lh-body);text-align:center}
   .ab-conteudo>.btn.text{align-self:center}
   .ab-campo{display:flex;flex-direction:column;gap:var(--space-1)}
@@ -843,7 +809,7 @@
   .ab-widget .btn{width:auto}
   .ab-widget-previa{width:calc(var(--touch) * 1.5);height:calc(var(--touch) * 1.5);border-radius:var(--radius-card);background:var(--surface-variant);display:grid;place-items:center;overflow:hidden}
   .pv{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:8px;line-height:1.2;color:var(--text-secondary);text-align:left;padding:4px}
-  .pv-arvore svg.arvore{width:36px;height:36px}
+  .pv-arvore svg.arvore-viva{width:36px;height:36px}
   .pv-hoje,.pv-aula{align-items:flex-start}
   .pv b{color:var(--text-primary);font-weight:var(--w-semibold)}
   .ab-resumo{margin:0;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface)}
@@ -865,7 +831,7 @@
   .nv .nv-folhinha{position:static;flex:none}
   .nv-topo h2{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--w-medium);color:var(--text-primary)}
   .nv-arvore{display:flex;flex-direction:column;align-items:center;gap:var(--space-1)}
-  .nv-arvore svg.arvore{width:calc(var(--touch) * 3.5);height:calc(var(--touch) * 3.5)}
+  .nv-arvore svg.arvore-viva{height:220px;width:auto;max-width:100%}
   .nv-arvore .hint{margin:0}
   .nv .erro:empty{display:none}
   .nv .ab-widget{grid-template-columns:auto minmax(0,1fr) auto}
@@ -924,6 +890,7 @@
 <script src="fotos.js?v=1.6.0"></script>
 <script src="festas.js?v=1.6.0"></script>
 <script src="arvore.js?v=1.6.0"></script>
+<script src="arvore-desenho.js?v=1.7.0"></script>
 <script src="widget.js?v=1.6.0"></script>
 <script>
 /* =========================================================
@@ -1188,8 +1155,8 @@ function comemorarDiaCompleto(total, depois){
     Animacoes.confete(visivel ? r.left + r.width / 2 : innerWidth / 2, visivel ? r.top + r.height / 2 : innerHeight * 0.3, festa ? coresFesta() : ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor), festa ? FORMA_FESTA[festa.id] : undefined);
   }
   const arv = arvoreAtual();
-  mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), desenharArvore(arv.folhas, arv.estagio, false), depois);
-  const noCartao = document.querySelector('.comemoracao svg.arvore');
+  mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), cenaArvore(arv.folhas, arv.estagio, { prefixo: 'com' }).svg, depois);
+  const noCartao = document.querySelector('.comemoracao svg.arvore-viva');
   if(noCartao) setTimeout(() => folhaNovaAnim(arv.folhas - 1, noCartao), Animacoes.MOV.base);
 }
 let ultimoToque = null;
@@ -3975,43 +3942,12 @@ function sairPrevia(){
   render(true);
 }
 /* ---------- árvore ---------- */
-const ESQUELETOS = [
-  '<ellipse cx="100" cy="195" rx="7" ry="5" fill="var(--arvore-tronco)"/><path d="M95 192c2-3 8-3 10 0" fill="none" stroke="var(--arvore-folha-2)" stroke-width="1.6" stroke-linecap="round"/>',
-  '<path d="M100 200Q99 189 100 178" fill="none" stroke="var(--arvore-tronco)" stroke-width="2.6" stroke-linecap="round"/>',
-  '<path d="M100 200Q97 180 101 152" fill="none" stroke="var(--arvore-tronco)" stroke-width="3.6" stroke-linecap="round"/><path d="M100 174q-8-4-12-11" fill="none" stroke="var(--arvore-tronco)" stroke-width="2" stroke-linecap="round"/>',
-  '<path d="M100 200C99 180 101 160 100 138" fill="none" stroke="var(--arvore-tronco)" stroke-width="6" stroke-linecap="round"/><path d="M100 162q-14-8-24-22M100 152q14-6 22-20M100 142q-2-12 0-22" fill="none" stroke="var(--arvore-tronco)" stroke-width="3" stroke-linecap="round"/>',
-  '<path d="M100 200C98 176 102 150 100 122" fill="none" stroke="var(--arvore-tronco)" stroke-width="8" stroke-linecap="round"/><path d="M100 156q-20-8-34-28M100 146q20-6 32-26M100 132q-12-10-18-30M100 128q10-12 14-32" fill="none" stroke="var(--arvore-tronco)" stroke-width="3.6" stroke-linecap="round"/>',
-  '<path d="M100 200C97 172 103 140 100 108" fill="none" stroke="var(--arvore-tronco)" stroke-width="10" stroke-linecap="round"/><path d="M100 152q-26-8-44-32M100 142q26-6 42-30M100 126q-16-10-26-36M100 120q14-12 22-38M100 112q-2-18 0-34M64 128q-8-10-10-20M140 120q8-10 10-22" fill="none" stroke="var(--arvore-tronco)" stroke-width="4" stroke-linecap="round"/>',
-  '<path d="M100 200C96 168 104 136 100 100" fill="none" stroke="var(--arvore-tronco)" stroke-width="12" stroke-linecap="round"/><path d="M100 150q-34-8-58-34M100 140q34-6 56-32M100 124q-20-12-34-42M100 118q18-14 30-44M100 106q-2-20 0-40M52 124q-10-10-14-22M148 116q10-10 14-24M74 92q-6-12-4-24M126 88q6-12 4-24" fill="none" stroke="var(--arvore-tronco)" stroke-width="4.4" stroke-linecap="round"/>',
-];
-ESQUELETOS.push(ESQUELETOS[6], ESQUELETOS[6], ESQUELETOS[6].replace('stroke-width="12"', 'stroke-width="16"') + '<path d="M100 198q-16 3-30 9M100 198q16 3 32 7M96 199q-5 6-12 10M104 199q6 6 14 9" fill="none" stroke="var(--arvore-tronco)" stroke-width="3.4" stroke-linecap="round"/>');
-const COPAS = [null, null, null, [100, 124, 32, 22], [100, 110, 42, 31], [100, 96, 54, 39], [100, 86, 68, 48], [100, 84, 72, 52], [100, 84, 72, 52], [100, 84, 72, 52]];
-const CAPACIDADE = [0, 2, 6, 13, 29, 59, 120, 120, 120, 120];
-const pontoCopa = (k, n, giro, escala, estagio) => { const c = COPAS[estagio], a = k * 2.39996 + giro, raio = Math.sqrt((k + 0.5) / n) * escala; return { x: c[0] + c[2] * raio * Math.cos(a), y: c[1] + c[3] * raio * Math.sin(a) }; };
-const FOLHAS_CAULE = [[94, 182, -40], [106, 178, 40], [93, 168, -35], [107, 162, 35], [95, 154, -25], [105, 150, 25]];
-const FOLHA_D = 'M0-6C4-3 4 3 0 6C-4 3-4-3 0-6Z';
-function posicaoFolha(i, estagio){
-  const c = COPAS[estagio];
-  if(!c){ const p = FOLHAS_CAULE[i % FOLHAS_CAULE.length]; return { x: p[0], y: p[1] - Math.floor(i / FOLHAS_CAULE.length) * 6, r: p[2] }; }
-  const a = i * 2.39996, raio = Math.min(1, Math.sqrt((i + 0.5) / CAPACIDADE[estagio]));
-  return { x: c[0] + c[2] * raio * Math.cos(a), y: c[1] + c[3] * raio * Math.sin(a), r: (i * 73) % 120 - 60 };
-}
-const tamFolha = e => (e >= 6 ? 1.35 : e >= 3 ? 1.45 : 1.05);
-function svgFolha(i, estagio, extra = ''){
-  const p = posicaoFolha(i, estagio);
-  return `<g transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${p.r}) scale(${tamFolha(estagio)})"><path class="arv-folha" data-i="${i}" d="${FOLHA_D}" fill="var(--arvore-folha-${(i % 3) + 1})"${extra}/></g>`;
-}
-function desenharArvore(folhas, estagio, rotulo = true){
-  const n = Math.min(folhas, 120), partes = [];
-  for(let i = 0; i < n; i++) partes.push(svgFolha(i, estagio));
-  const extras = [];
-  if(estagio >= 7) for(let k = 0; k < 12; k++){ const p = pontoCopa(k, 12, 0.7, 0.92, estagio); extras.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.4" fill="var(--arvore-flor)"/><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="1.2" fill="var(--surface)"/>`); }
-  if(estagio >= 8) for(let k = 0; k < 9; k++){ const p = pontoCopa(k, 9, 2.1, 0.86, estagio); extras.push(`<circle cx="${p.x.toFixed(1)}" cy="${(p.y + 5).toFixed(1)}" r="3.8" fill="var(--arvore-fruto)"/>`); }
-  const luzes = COPAS[estagio] ? Array.from({ length: 10 }, (_, k) => { const p = posicaoFolha(k * 11 + 3, estagio); return `<circle class="arv-luz" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.2" fill="var(--festa-${(k % 3) + 1})"/>`; }).join('') : '';
-  const rot = rotulo ? `role="img" aria-label="Sua árvore: ${Arvore.NOMES[estagio]}, ${folhas} ${folhas === 1 ? 'folha' : 'folhas'}"` : 'aria-hidden="true"';
-  return `<svg class="arvore" viewBox="0 0 200 220" ${rot} focusable="false" data-estagio="${estagio}">
-    <ellipse cx="100" cy="203" rx="${36 + estagio * 5}" ry="8" fill="var(--arvore-terra)"/>
-    <g class="arv-esqueleto">${ESQUELETOS[estagio]}</g><g class="arv-folhas">${partes.join('')}</g><g class="arv-extras">${extras.join('')}${luzes}</g></svg>`;
+const cacheCenas = new Map();
+function cenaArvore(folhas, estagio, o = {}){
+  const opc = { folhas, estagio, periodo: o.periodo || Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', tamanho: o.mini ? 'mini' : 'cena', prefixo: o.prefixo || 'av', rotulo: o.rotulo ? `Sua árvore: ${Arvore.NOMES[estagio]}, ${folhasTxt(folhas)}` : '' };
+  const chave = [opc.prefixo, opc.tamanho, folhas, estagio, opc.periodo, opc.tema, opc.rotulo ? 1 : 0].join('|');
+  if(!cacheCenas.has(chave)){ if(cacheCenas.size > 30) cacheCenas.clear(); cacheCenas.set(chave, ArvoreDesenho.gerarArvore(opc)); }
+  return { chave, ...cacheCenas.get(chave) };
 }
 /* ---------- Folhinha ---------- */
 const FOLHINHA_SVG = `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
@@ -4114,7 +4050,7 @@ function cartaoArvore(){
   const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
   const falta = a.proximo ? (a.proximo.faltam === 1 ? `Falta 1 folha para ${a.proximo.nome}` : `Faltam ${numBR(a.proximo.faltam)} folhas para ${a.proximo.nome}`) : 'Estágio máximo';
   return `<section class="card arvore-card" data-chave="arvore-card">
-    <div class="arvore-palco" id="palco-arvore">${desenharArvore(a.folhas, e)}</div>
+    ${(c => `<div class="arvore-palco" id="palco-arvore" data-cena="${c.chave}">${c.svg}</div>`)(cenaArvore(a.folhas, e, { prefixo: 'prog', rotulo: true }))}
     <div class="arvore-info"><h2>${a.nomeEstagio}</h2><p class="arvore-n">${folhasTxt(a.folhas)}</p>
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
       <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
@@ -4125,21 +4061,20 @@ function cartaoArvore(){
 }
 function linhaArvore(){
   const a = arvoreAtual();
-  return `<button class="linha-arvore" data-chave="linha-arvore" onclick="irPara('constancia')" aria-label="Sua árvore: ${a.nomeEstagio}, ${folhasTxt(a.folhas)}. Abrir Progresso">${desenharArvore(a.folhas, a.estagio, false)}<span>${a.nomeEstagio} · ${folhasTxt(a.folhas)}</span></button>`;
+  return `<button class="linha-arvore" data-chave="linha-arvore" onclick="irPara('constancia')" aria-label="Sua árvore: ${a.nomeEstagio}, ${folhasTxt(a.folhas)}. Abrir Progresso">${(c => `<span class="mini-arvore" data-cena="${c.chave}">${c.svg}</span>`)(cenaArvore(a.folhas, a.estagio, { prefixo: 'hoje', mini: true }))}<span>${a.nomeEstagio} · ${folhasTxt(a.folhas)}</span></button>`;
 }
-const arvoresVisiveis = () => [...document.querySelectorAll('#app svg.arvore, .comemoracao svg.arvore')];
+const arvoresVisiveis = () => [...document.querySelectorAll('#app svg.arvore-viva, .comemoracao svg.arvore-viva')];
 function folhaNovaAnim(i, raiz){
   (raiz ? [raiz] : arvoresVisiveis()).forEach(svg => svg.querySelectorAll(`.arv-folha[data-i="${i}"]`).forEach(el => {
     if(Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.reduzida });
-    else el.animate([{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() });
+    else el.animate([{ scale: '0' }, { scale: '1' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() });
   }));
 }
 function subirEstagioAnim(){
   arvoresVisiveis().forEach(svg => {
     const folhas = [...svg.querySelectorAll('.arv-folha')], passo = Math.min(20, 600 / Math.max(1, folhas.length));
     if(Animacoes.reduzido()){ svg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.reduzida }); return; }
-    svg.querySelector('.arv-esqueleto').animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, easing: Animacoes.MOV.saida });
-    folhas.forEach((el, k) => el.animate([{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: Animacoes.MOV.lenta, delay: k * passo, easing: Animacoes.curvaMola(), fill: 'backwards' }));
+    folhas.forEach((el, k) => el.animate([{ scale: '0' }, { scale: '1' }], { duration: Animacoes.MOV.lenta, delay: k * passo, easing: Animacoes.curvaMola(), fill: 'backwards' }));
   });
 }
 function cairFolhas(n){
@@ -4148,7 +4083,11 @@ function cairFolhas(n){
     const g = svg.querySelector('.arv-extras');
     for(let k = 0; k < n; k++){
       const i = a.folhas + k;
-      g.insertAdjacentHTML('beforeend', `<g class="arv-caindo">${svgFolha(i, a.estagio)}</g>`);
+      const t = document.createElement('template'), pre = (svg.querySelector('use') || { getAttribute: () => '#av-f' }).getAttribute('href').slice(1).replace(/-fl?$/, '');
+      t.innerHTML = ArvoreDesenho.gerarArvore({ folhas: i + 1, estagio: a.estagio, prefixo: pre, tamanho: 'mini' }).svg;
+      const molde = t.content.querySelector(`.arv-folha[data-i="${i}"]`);
+      if(!g || !molde) continue;
+      g.insertAdjacentHTML('beforeend', `<g class="arv-caindo">${molde.outerHTML}</g>`);
       const el = g.lastElementChild;
       const lado = k % 2 ? 1 : -1;
       const anim = Animacoes.reduzido()
@@ -4271,8 +4210,8 @@ function conteudoPasso(n){
   }
   return '';
 }
-const previaWidget = t => t === 'arvore' ? `<div class="pv pv-arvore">${desenharArvore(14, 4, false)}<span>Árvore jovem</span></div>` : t === 'hoje' ? '<div class="pv pv-hoje"><b>Hoje · 2 de 3</b><span>☑ Beber água</span><span>☑ Alongar</span><span>☐ Ler 20 páginas</span></div>' : '<div class="pv pv-aula"><b>Hoje, 1º ao 3º tempo · Cálculo</b><span>Faltas: 12,5%</span></div>';
-const sementeAb = (f, e) => desenharArvore(f, e, false).replace('viewBox="0 0 200 220"', 'viewBox="55 120 90 100"');
+const previaWidget = t => t === 'arvore' ? `<div class="pv pv-arvore">${cenaArvore(104, 4, { prefixo: 'pw', mini: true }).svg}<span>Árvore jovem</span></div>` : t === 'hoje' ? '<div class="pv pv-hoje"><b>Hoje · 2 de 3</b><span>☑ Beber água</span><span>☑ Alongar</span><span>☐ Ler 20 páginas</span></div>' : '<div class="pv pv-aula"><b>Hoje, 1º ao 3º tempo · Cálculo</b><span>Faltas: 12,5%</span></div>';
+const sementeAb = (f, e) => cenaArvore(f, e, { prefixo: 'ab' }).svg;
 const opcionais = n => [2, 3, 6, 9].includes(n);
 function desenharAbertura(manter = false){
   const el = $('abertura'); if(!el || !ab) return;
@@ -4290,7 +4229,7 @@ function desenharAbertura(manter = false){
   const fala = $('ab-fala-texto');
   if(manter){ fala.textContent = AB_FALAS[n]; $('ab-conteudo').scrollTop = rolagem; }
   else digitar(fala, AB_FALAS[n]);
-  if(n === 10 && !manter) setTimeout(() => { const s = $('ab-semente'); if(!s) return; s.innerHTML = sementeAb(1, 1); if(!Animacoes.reduzido()) s.querySelector('svg').animate([{ opacity: 0, transform: 'scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() }); folhaNovaAnim(0, s.querySelector('svg')); }, 700);
+  if(n === 10 && !manter) setTimeout(() => { const s = $('ab-semente'); if(!s) return; s.innerHTML = sementeAb(5, 1); if(!Animacoes.reduzido()) s.querySelector('svg').animate([{ opacity: 0, transform: 'scale(.9)' }, { opacity: 1, transform: 'none' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() }); folhaNovaAnim(0, s.querySelector('svg')); }, 700);
 }
 function irPasso(n, dir){
   ab.passo = n; ab.erro = '';
@@ -4386,7 +4325,7 @@ function mostrarNovidades(){
   abrirSheet(`<div class="nv">
     <div class="nv-topo"><div class="folhinha nv-folhinha" data-estado="comemorando" aria-hidden="true">${FOLHINHA_SVG}</div>
       <h2 id="nv-tit">Oi! Eu sou a Folhinha, sua nova guia. Agora sua rotina tem uma árvore que cresce a cada item feito.</h2></div>
-    <div class="nv-arvore">${desenharArvore(a.folhas, a.estagio)}<p class="hint">${a.nomeEstagio} · ${folhasTxt(a.folhas)}</p></div>
+    <div class="nv-arvore">${cenaArvore(a.folhas, a.estagio, { prefixo: 'nv', rotulo: true }).svg}<p class="hint">${a.nomeEstagio} · ${folhasTxt(a.folhas)}</p></div>
     ${perguntaAniv ? `<span class="rotulo-grupo">Quando é seu aniversário?</span><div class="row">${MESES_OPC(0, 'nv-dia', 'ab-dia', 31, 'Dia')}${MESES_OPC(0, 'nv-mes', 'ab-mes', 12, 'Mês')}</div><p class="erro" role="alert" id="nv-erro"></p>` : ''}
     ${perguntaFac ? `<span class="rotulo-grupo" id="nv-fac">Você faz faculdade?</span><div class="chips" role="group" aria-labelledby="nv-fac"><button class="chip" aria-pressed="false" data-fac="sim" onclick="nvEscolherFac('sim')"><span>Sim</span></button><button class="chip" aria-pressed="false" data-fac="nao" onclick="nvEscolherFac('nao')"><span>Não faço</span></button></div>` : ''}
     ${widgets ? `<span class="rotulo-grupo">Widgets na tela inicial</span><div class="ab-widgets">${[['arvore', 'Árvore'], ['hoje', 'Hoje'], ['aula', 'Próxima aula']].map(([t, nome]) => `<div class="ab-widget"><div class="ab-widget-previa" aria-hidden="true">${previaWidget(t)}</div><b>${nome}</b>${WidgetPonte.podeFixar === false ? '' : `<button class="btn ghost" onclick="WidgetPonte.fixar('${t}')">Adicionar</button>`}</div>`).join('')}</div>${WidgetPonte.podeFixar === false ? `<p class="hint">${WidgetPonte.DICA}</p>` : ''}` : ''}

@@ -60,6 +60,8 @@
     while (pai.childNodes.length > novos.length) pai.removeChild(pai.lastChild);
   }
   function mesclar(antigo, novo) {
+    const cena = novo.getAttribute('data-cena');
+    if (cena && antigo.getAttribute('data-cena') === cena) return;
     sincronizarAtributos(antigo, novo);
     if (antigo === document.activeElement && (antigo.tagName === 'INPUT' || antigo.tagName === 'TEXTAREA')) return;
     mesclarFilhos(antigo, novo);
