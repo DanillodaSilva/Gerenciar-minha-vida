@@ -972,15 +972,15 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="arquivo" accept="application/json" hidden>
 
-<script src="regras.js?v=1.6.0"></script>
-<script src="animacoes.js?v=1.6.0"></script>
-<script src="faculdade.js?v=1.6.0"></script>
-<script src="fotos.js?v=1.6.0"></script>
-<script src="festas.js?v=1.6.0"></script>
-<script src="arvore.js?v=1.6.0"></script>
+<script src="regras.js?v=1.7.0"></script>
+<script src="animacoes.js?v=1.7.0"></script>
+<script src="faculdade.js?v=1.7.0"></script>
+<script src="fotos.js?v=1.7.0"></script>
+<script src="festas.js?v=1.7.0"></script>
+<script src="arvore.js?v=1.7.0"></script>
 <script src="arvore-desenho.js?v=1.7.0"></script>
 <script src="folhinha.js?v=1.7.0"></script>
-<script src="widget.js?v=1.6.0"></script>
+<script src="widget.js?v=1.7.0"></script>
 <script>
 /* =========================================================
    DADOS — tudo fica salvo no próprio celular (localStorage)
@@ -999,7 +999,7 @@ function ajustarBarras(){
   plugin('SystemBars').setStyle({ style: temaEscuro() ? 'DARK' : 'LIGHT' }).catch(() => {});
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ajustarBarras);
-const VERSAO = '1.6.0';
+const VERSAO = '1.7.0';
 const tokenCss = nome => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
 const CORES_TEMA = { get light(){ return tokenCss('--p-sand-50'); }, get dark(){ return tokenCss('--p-night-950'); } };
 function aplicarAnimacoes(){

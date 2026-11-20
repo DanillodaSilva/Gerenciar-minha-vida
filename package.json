@@ -1,6 +1,6 @@
 {
   "name": "minha-rotina",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "App de rotina e tarefas do dia, offline. Site (PWA) e APK Android (Capacitor).",
   "scripts": {
