@@ -92,10 +92,11 @@ html.oculto .fo-ser,html.oculto .fo-sombra,html.oculto .fo-z{animation-play-stat
       injetarCss(document);
       const b = document.createElement('button');
       b.id = 'folhinha'; b.type = 'button'; b.className = 'folhinha'; b.dataset.estado = 'parada';
-      b.setAttribute('aria-label', 'Folhinha: toque para ver uma dica');
+      b.setAttribute('aria-label', 'Folhinha: toque para ver uma dica. Setas mudam o canto');
       b.innerHTML = svg('fo');
       b.addEventListener('click', () => { if (this.arrastou) return; this.clicar(); });
       b.addEventListener('pointerdown', e => this.arrastar(e));
+      b.addEventListener('keydown', e => { const m = { ArrowLeft: 'esquerda', ArrowRight: 'direita' }[e.key]; if (m) { e.preventDefault(); this.mover(e.shiftKey ? 'espiando-' + m : m); } });
       const balao = document.createElement('div');
       balao.id = 'balao-fo'; balao.className = 'balao-fo'; balao.hidden = true;
       balao.innerHTML = '<svg class="balao-folha" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 14C2 6 7 2 14 2C14 9 9 14 2 14Z"/><path d="M3 13L11 5" fill="none"/></svg><p class="balao-texto" aria-hidden="true"></p><p class="sr" role="status" id="balao-sr"></p><div class="balao-acoes"></div>';

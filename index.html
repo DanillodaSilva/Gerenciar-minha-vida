@@ -763,9 +763,9 @@
     --folhinha-luz:var(--p-folhinha-luz); --folhinha-meio:var(--p-folhinha-meio); --folhinha-base:var(--p-folhinha-base); --folhinha-contorno:var(--p-folhinha-contorno); --folhinha-nervura:var(--p-folhinha-nervura);
     --folhinha-sombra:var(--p-folhinha-sombra); --folhinha-bochecha:var(--p-folhinha-bochecha); --folhinha-pupila:var(--p-folhinha-pupila); --folhinha-olho:var(--p-folhinha-olho); --folhinha-boca:var(--p-folhinha-boca); --folhinha-lingua:var(--p-folhinha-lingua);
     --fo-tam:88px; --fo-alt:calc(var(--fo-tam) * 1.067); --fo-esq:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-2) + env(safe-area-inset-left)); --fo-dir:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-2) + env(safe-area-inset-right))}
-  :root{--p-arvore-folha-texto:#256B42; --p-arvore-folha-texto-e:#7FCB9A; --arvore-folha-texto:var(--p-arvore-folha-texto)}
-  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-folha-texto:var(--p-arvore-folha-texto-e)} }
-  :root[data-theme="dark"]{--arvore-folha-texto:var(--p-arvore-folha-texto-e)}
+  :root{--p-arvore-folha-texto:#256B42; --p-arvore-folha-texto-e:#7FCB9A; --arvore-folha-texto:var(--p-arvore-folha-texto); --arvore-sobre-folha:var(--p-white)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-folha-texto:var(--p-arvore-folha-texto-e); --arvore-sobre-folha:var(--p-ink-900)} }
+  :root[data-theme="dark"]{--arvore-folha-texto:var(--p-arvore-folha-texto-e); --arvore-sobre-folha:var(--p-ink-900)}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--folhinha-contorno:var(--p-folhinha-contorno-e); --folhinha-sombra:var(--p-folhinha-sombra-e)} }
   :root[data-theme="dark"]{--folhinha-contorno:var(--p-folhinha-contorno-e); --folhinha-sombra:var(--p-folhinha-sombra-e)}
   @media (max-height: 640px){ :root{--fo-tam:72px} }
@@ -790,7 +790,7 @@
   .balao-acoes .btn{min-height:var(--touch)}
   html.travado #folhinha,html.travado .balao-fo,html.na-abertura #folhinha,html.na-abertura .balao-fo,html.teclado-aberto #folhinha,html.teclado-aberto .balao-fo,
   .toast.show ~ #folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ #folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
-  .momento{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:var(--space-4);padding-top:calc(var(--space-4) + env(safe-area-inset-top));padding-bottom:calc(var(--space-4) + env(safe-area-inset-bottom));overflow-y:auto}
+  .momento{overscroll-behavior:contain;position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:var(--space-4);padding-top:calc(var(--space-4) + env(safe-area-inset-top));padding-bottom:calc(var(--space-4) + env(safe-area-inset-bottom));overflow-y:auto}
   .momento::before{content:'';position:fixed;inset:0;background:var(--scrim);opacity:.25;pointer-events:none}
   .momento-cont{position:relative;display:flex;flex-direction:column;align-items:center;gap:var(--space-3);width:100%;max-width:var(--dialog-max)}
   .momento-fo{width:160px;height:171px;flex:none}
@@ -813,13 +813,13 @@
   .corrente-txt{margin:0;font-weight:var(--w-medium);color:var(--text-primary);font-size:var(--fs-label);line-height:var(--lh-label)}
   .corrente-pontos{display:flex;gap:var(--space-2);align-items:center}
   .corrente-pontos .ponto{width:20px;height:20px;border-radius:var(--radius-full);background:var(--surface-variant);display:grid;place-items:center;color:var(--text-secondary);flex:none}
-  .corrente-pontos .ponto.cheio{background:var(--arvore-folha-1);color:var(--p-white)}
+  .corrente-pontos .ponto.cheio{background:var(--arvore-folha-1);color:var(--arvore-sobre-folha)}
   .corrente-pontos .presente{width:28px;height:28px}
   .corrente-pontos .presente svg{width:16px;height:16px}
   .arvore-acoes{display:flex;flex-wrap:wrap;gap:var(--space-2)}
   #palco-arvore{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;cursor:pointer}
   .brilho-toque{position:fixed;z-index:7;width:10px;height:10px;pointer-events:none;background:var(--arvore-flor-miolo);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
-  .arvore-acoes .btn{min-height:var(--touch)}
+  .arvore-acoes .btn{min-height:var(--touch);flex:1 1 0;width:auto;min-width:min(100%, 9.5em)}
   .lt{display:flex;flex-direction:column;gap:var(--space-3);padding-bottom:var(--space-2)}
   .lt-tit{margin:0;font-size:var(--fs-section);line-height:var(--lh-section)}
   .lt-cena{height:300px;display:flex;justify-content:center}
@@ -1248,7 +1248,7 @@ function momentoGrande({ texto, linha = '', subiu = false, depois = null }){
   const fechar = () => fecharMomento();
   m.querySelector('.btn').addEventListener('click', fechar);
   m.addEventListener('pointerdown', e => { if(!e.target.closest('.btn')) clearTimeout(momentoAberto && momentoAberto.timer); });
-  m.addEventListener('keydown', e => { if(e.key === 'Escape') fechar(); });
+  m.addEventListener('keydown', e => { if(e.key === 'Escape') fechar(); else if(e.key === 'Tab'){ e.preventDefault(); m.querySelector('.btn').focus(); } });
   m.querySelector('.btn').focus({ preventScroll: true });
   const M = Animacoes.MOV, cena = m.querySelector('.momento-cena'), fo = m.querySelector('.momento-fo'), canto = Folhinha.el;
   if(Animacoes.reduzido()) m.animate([{ opacity: 0 }, { opacity: 1 }], { duration: M.reduzida });
@@ -4239,6 +4239,13 @@ document.addEventListener('pointerdown', e => {
   }, 800);
   carinhoToque = t;
 });
+document.addEventListener('keydown', e => {
+  if((e.key !== 'Enter' && e.key !== ' ') || !e.target.closest || !e.target.closest('#palco-arvore')) return;
+  e.preventDefault();
+  const palco = e.target.closest('#palco-arvore'), r = palco.getBoundingClientRect();
+  rajadaLocal(palco); brilhosToque(r.left + r.width / 2, r.top + r.height / 3);
+  if(folhinhaAtiva()) Folhinha.falar(FRASES_CARINHO[Math.floor(Math.random() * FRASES_CARINHO.length)], { estado: 'carinho' });
+});
 const fimCarinho = e => {
   const t = carinhoToque; if(!t) return;
   carinhoToque = null; clearTimeout(t.timer);
@@ -4285,7 +4292,7 @@ async function compartilharArvore(){
     setTimeout(() => URL.revokeObjectURL(url), 4000);
     toast('Imagem da árvore baixada');
   }catch(e){
-    if(!/cancel|abort/i.test(String(e && (e.message || e.name || e)))) toast('Não foi possível compartilhar a árvore');
+    if(!/cancel|abort/i.test(String(e && (e.message || e.name || e)))) toast('Não foi possível compartilhar a árvore. Tente de novo.');
   }
 }
 function cartaoArvore(){
@@ -4293,7 +4300,7 @@ function cartaoArvore(){
   const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
   const falta = a.proximo ? (a.proximo.faltam === 1 ? `Falta 1 folha para ${a.proximo.nome}` : `Faltam ${numBR(a.proximo.faltam)} folhas para ${a.proximo.nome}`) : 'Estágio máximo';
   return `<section class="card arvore-card" data-chave="arvore-card">
-    ${(c => `<div class="arvore-palco" id="palco-arvore" data-cena="${c.chave}"${c.pouso ? ` data-pouso="${c.pouso.x},${c.pouso.y}"` : ''}>${c.svg}</div>`)(cenaArvore(a.folhas, e, { prefixo: 'prog', rotulo: true }))}
+    ${(c => `<div class="arvore-palco" id="palco-arvore" tabindex="0" role="button" aria-label="${esc(`Sua árvore: ${Arvore.NOMES[e]}, ${folhasTxt(a.folhas)}. Toque ou aperte Enter para fazer carinho`)}" data-cena="${c.chave}"${c.pouso ? ` data-pouso="${c.pouso.x},${c.pouso.y}"` : ''}>${c.svg}</div>`)(cenaArvore(a.folhas, e, { prefixo: 'prog', rotulo: true }))}
     <div class="arvore-info"><h2>${a.nomeEstagio}</h2><p class="arvore-n">${folhasTxt(a.folhas)}</p>
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
       <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
@@ -4733,7 +4740,7 @@ function reagirArvore(ev){
   reacaoPendente = { r, timer: 0 };
   const tentar = (n = 0) => {
     if(r.grande && momentoAberto){ reacaoPendente = null; atualizarMomento({ texto: r.texto, subiu: r.subiu }); return; }
-    if(momentoAberto || document.querySelector('.comemoracao') || $('overlay').classList.contains('show') || $('dialogo').classList.contains('show')){ if(n < 20) reacaoPendente.timer = setTimeout(() => tentar(n + 1), 500); else reacaoPendente = null; return; }
+    if(momentoAberto || document.querySelector('.comemoracao') || $('overlay').classList.contains('show') || $('dialogo').classList.contains('show') || (folhinhaAtiva() && $('toast').classList.contains('show'))){ if(n < 24) reacaoPendente.timer = setTimeout(() => tentar(n + 1), 500); else reacaoPendente = null; return; }
     reacaoPendente = null;
     if(r.grande){ momentoGrande({ texto: r.texto, subiu: r.subiu }); return; }
     if(folhinhaAtiva()){ Folhinha.falar(r.texto, { estado: r.estado, botoes: tela !== 'constancia' ? [{ rotulo: 'Ver árvore', acao: () => irPara('constancia') }, { rotulo: 'Entendi' }] : null }); if(r.conta){ dados.ajustes.folhinha.ultimaAparicao = hoje(); salvar(); } }
