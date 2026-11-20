@@ -461,7 +461,7 @@ describe('comemoração do dia', () => {
 
 describe('normalizarAjustes', () => {
   test('objeto vazio recebe todos os padrões da 5.16', () => {
-    assert.deepEqual(R.normalizarAjustes({}, false), { tema: 'system', nome: '', animacoes: 'auto', vibracao: true, sons: false, dicaGestoVista: false, boasVindasVista: false, ultimaComemoracao: null, ultimoMarco: null, festas: { ativas: true, desligadas: [], aniversario: null, cartaoFechadoEm: null, retrospectivaVista: null }, abertura: { concluida: false, passo: 1, novidadesVistas: null }, mostrarFaculdade: true, lembreteDiario: { ativo: false, hora: '08:00' }, folhinha: { ativa: true, dicasVistas: [], ultimaAparicao: null, proximaDica: 0 }, arvore: { folhasVistas: null, estagioVisto: null, regra: 1, diaFaixa: null, faixaVista: 0, bonusDia: null } });
+    assert.deepEqual(R.normalizarAjustes({}, false), { tema: 'system', nome: '', animacoes: 'auto', vibracao: true, sons: false, dicaGestoVista: false, boasVindasVista: false, ultimaComemoracao: null, ultimoMarco: null, festas: { ativas: true, desligadas: [], aniversario: null, cartaoFechadoEm: null, retrospectivaVista: null }, abertura: { concluida: false, passo: 1, novidadesVistas: null }, mostrarFaculdade: true, lembreteDiario: { ativo: false, hora: '08:00' }, folhinha: { ativa: true, dicasVistas: [], ultimaAparicao: null, proximaDica: 0, espreguicou: null, posicao: 'esquerda' }, arvore: { folhasVistas: null, estagioVisto: null, regra: 1, diaFaixa: null, faixaVista: 0, bonusDia: null } });
   });
   test('com dados existentes, boasVindasVista = true (e o campo antigo do APK também conta)', () => {
     assert.equal(R.normalizarAjustes({}, true).boasVindasVista, true);
@@ -595,7 +595,7 @@ describe('ajustes da abertura, Folhinha e árvore', () => {
     assert.deepEqual(a.abertura, { concluida: true, passo: 1, novidadesVistas: '1.6.0' });
     assert.equal(a.mostrarFaculdade, false);
     assert.deepEqual(a.lembreteDiario, { ativo: true, hora: '08:00' });
-    assert.deepEqual(a.folhinha, { ativa: false, dicasVistas: ['rotina'], ultimaAparicao: null, proximaDica: 0 });
+    assert.deepEqual(a.folhinha, { ativa: false, dicasVistas: ['rotina'], ultimaAparicao: null, proximaDica: 0, espreguicou: null, posicao: 'esquerda' });
     assert.deepEqual(a.arvore, { folhasVistas: 12, estagioVisto: null, regra: 1, diaFaixa: null, faixaVista: 0, bonusDia: null });
   });
   test('nome aceita até 30 caracteres, sem espaços nas pontas', () => {

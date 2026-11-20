@@ -251,7 +251,7 @@
   }
   function normalizarFolhinha(f) {
     const x = ehObjeto(f) ? f : {};
-    return { ...x, ativa: x.ativa !== false, dicasVistas: Array.isArray(x.dicasVistas) ? [...new Set(x.dicasVistas.filter(d => typeof d === 'string'))] : [], ultimaAparicao: ehData(x.ultimaAparicao) ? x.ultimaAparicao : null, proximaDica: Number.isInteger(x.proximaDica) && x.proximaDica >= 0 ? x.proximaDica : 0 };
+    return { ...x, ativa: x.ativa !== false, dicasVistas: Array.isArray(x.dicasVistas) ? [...new Set(x.dicasVistas.filter(d => typeof d === 'string'))] : [], ultimaAparicao: ehData(x.ultimaAparicao) ? x.ultimaAparicao : null, proximaDica: Number.isInteger(x.proximaDica) && x.proximaDica >= 0 ? x.proximaDica : 0, espreguicou: ehData(x.espreguicou) ? x.espreguicou : null, posicao: ['esquerda', 'direita', 'espiando-esquerda', 'espiando-direita'].includes(x.posicao) ? x.posicao : 'esquerda' };
   }
   function normalizarArvore(a) {
     const x = ehObjeto(a) ? a : {};

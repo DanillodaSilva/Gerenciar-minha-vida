@@ -778,6 +778,17 @@
   .balao-acoes .btn{min-height:var(--touch)}
   html.travado #folhinha,html.travado .balao-fo,html.na-abertura #folhinha,html.na-abertura .balao-fo,html.teclado-aberto #folhinha,html.teclado-aberto .balao-fo,
   .toast.show ~ #folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ #folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
+  .momento{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:var(--space-4);padding-top:calc(var(--space-4) + env(safe-area-inset-top));padding-bottom:calc(var(--space-4) + env(safe-area-inset-bottom));overflow-y:auto}
+  .momento::before{content:'';position:fixed;inset:0;background:var(--scrim);opacity:.25;pointer-events:none}
+  .momento-cont{position:relative;display:flex;flex-direction:column;align-items:center;gap:var(--space-3);width:100%;max-width:var(--dialog-max)}
+  .momento-fo{width:160px;height:171px;flex:none}
+  .momento-balao{margin:0;max-width:300px;padding:var(--space-3) var(--space-4);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-sheet);box-shadow:var(--shadow-fab);font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--w-medium);text-align:center;overflow-wrap:anywhere}
+  .momento-cena{height:240px;display:flex;justify-content:center}
+  .momento-cena svg.arvore-viva{height:240px;width:auto;max-width:100%}
+  .momento-linha{margin:0;padding:var(--space-1) var(--space-3);border-radius:var(--radius-full);background:var(--surface);color:var(--text-secondary);font-size:var(--fs-label);line-height:var(--lh-label);text-align:center}
+  .momento .btn.filled{min-width:160px;min-height:var(--touch)}
+  html.momento-aberto #folhinha,html.momento-aberto .balao-fo{visibility:hidden}
+  @media (max-height: 640px){ .momento-fo{width:120px;height:128px} .momento-cena,.momento-cena svg.arvore-viva{height:180px} }
   .arvore-card{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
   .arvore-palco{height:300px;display:flex;justify-content:center;align-items:flex-end;grid-row:span 1}
   @media (min-width: 768px){ .arvore-palco{height:360px} }
@@ -1181,6 +1192,56 @@ function comemorarMarco({ valor, recorde }){
   vibrar([12, 30, 12]);
   mostrarCartao(valor + ' dias seguidos', recorde ? 'Sua maior sequência até agora.' : 'Continue assim.', CHAMA);
 }
+let momentoAberto = null, ultimoAntesArvore = null;
+function momentoGrande({ texto, linha = '', subiu = false, depois = null }){
+  if(momentoAberto){ atualizarMomento({ texto, subiu }); if(depois) momentoAberto.depois = depois; return; }
+  const a = arvoreAtual(), antes = ultimoAntesArvore, c = cenaArvore(a.folhas, a.estagio, { prefixo: 'mom', rotulo: true });
+  const m = document.createElement('div');
+  m.className = 'momento'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-labelledby', 'momento-txt');
+  m.innerHTML = `<div class="momento-cont">${folhinhaAtiva() ? `<div class="folhinha momento-fo" data-estado="comemorando" aria-hidden="true">${FolhinhaDesenho.svg('mom-fo')}</div>` : ''}
+    <p class="momento-balao" id="momento-txt">${esc(texto)}</p>
+    <div class="momento-cena cena-viva" data-cena="${c.chave}"${c.pouso ? ` data-pouso="${c.pouso.x},${c.pouso.y}"` : ''}>${c.svg}</div>
+    ${linha ? `<p class="momento-linha">${esc(linha)}</p>` : ''}<button class="btn filled" type="button">Continuar</button></div>`;
+  document.body.appendChild(m);
+  document.documentElement.classList.add('momento-aberto');
+  momentoAberto = { el: m, depois, timer: 0 };
+  const fechar = () => fecharMomento();
+  m.querySelector('.btn').addEventListener('click', fechar);
+  m.addEventListener('pointerdown', e => { if(!e.target.closest('.btn')) clearTimeout(momentoAberto && momentoAberto.timer); });
+  m.addEventListener('keydown', e => { if(e.key === 'Escape') fechar(); });
+  m.querySelector('.btn').focus({ preventScroll: true });
+  const M = Animacoes.MOV, cena = m.querySelector('.momento-cena'), fo = m.querySelector('.momento-fo'), canto = Folhinha.el;
+  if(Animacoes.reduzido()) m.animate([{ opacity: 0 }, { opacity: 1 }], { duration: M.reduzida });
+  else {
+    m.animate([{ opacity: 0 }, { opacity: 1 }], { duration: M.base, easing: M.saida });
+    if(fo && canto){ const de = canto.getBoundingClientRect(), para = fo.getBoundingClientRect(); fo.animate([{ transform: `translate(${de.left - para.left}px, ${de.top - para.top}px) scale(${de.width / para.width})` }, { transform: 'none' }], { duration: 420, easing: M.saida }); }
+    cena.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: M.lenta, delay: 120, easing: M.saida, fill: 'backwards' });
+  }
+  const svg = cena.querySelector('svg');
+  if(subiu && antes && antes.estagioVisto !== null && antes.estagioVisto !== a.estagio) setTimeout(() => trocarCena(cena, cenaArvore(antes.folhasVistas, antes.estagioVisto, { prefixo: 'mom' }).svg, true), 200);
+  else setTimeout(() => folhaNovaAnim(Math.max(0, antes && antes.folhasVistas !== null ? Math.min(antes.folhasVistas, a.folhas - 1) : a.folhas - a.folhasHoje), a.folhas, svg), 300);
+  Vida.ligar(cena);
+  momentoAberto.timer = setTimeout(fechar, 4000);
+}
+function atualizarMomento({ texto, subiu }){
+  const m = momentoAberto && momentoAberto.el; if(!m) return;
+  const p = m.querySelector('.momento-balao');
+  if(subiu || !p.dataset.subiu){ p.textContent = texto; if(subiu) p.dataset.subiu = '1'; }
+  if(subiu){
+    const a = arvoreAtual(), antes = ultimoAntesArvore, cena = m.querySelector('.momento-cena'), c = cenaArvore(a.folhas, a.estagio, { prefixo: 'mom', rotulo: true });
+    if(cena.dataset.cena !== c.chave && antes && antes.estagioVisto !== null){ const velho = cena.innerHTML; cena.dataset.cena = c.chave; cena.innerHTML = c.svg; trocarCena(cena, velho, true); }
+    clearTimeout(momentoAberto.timer); momentoAberto.timer = setTimeout(fecharMomento, 4000);
+  }
+}
+function fecharMomento(){
+  const atual = momentoAberto; if(!atual) return;
+  momentoAberto = null; clearTimeout(atual.timer);
+  const m = atual.el, fo = m.querySelector('.momento-fo'), canto = Folhinha.el;
+  const fim = () => { m.remove(); document.documentElement.classList.remove('momento-aberto'); Vida.sincronizar(); if(atual.depois) setTimeout(atual.depois, Animacoes.MOV.toque); };
+  if(Animacoes.reduzido()) return fim();
+  if(fo && canto){ const de = fo.getBoundingClientRect(), para = canto.getBoundingClientRect(); fo.animate([{ transform: 'none' }, { transform: `translate(${para.left - de.left}px, ${para.top - de.top}px) scale(${para.width / de.width})` }], { duration: 360, easing: Animacoes.MOV.saida, fill: 'forwards' }); }
+  m.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 360, easing: Animacoes.MOV.saida, fill: 'forwards' }).onfinish = fim;
+}
 function comemorarDiaCompleto(total, depois){
   vibrar([15, 40, 15, 40, 30]);
   const festa = festaAtual();
@@ -1192,10 +1253,7 @@ function comemorarDiaCompleto(total, depois){
     const visivel = r.bottom > 0 && r.top < innerHeight;
     Animacoes.confete(visivel ? r.left + r.width / 2 : innerWidth / 2, visivel ? r.top + r.height / 2 : innerHeight * 0.3, festa ? coresFesta() : ['--primary', '--priority-medium', '--priority-low', '--priority-high'].map(cor), festa ? FORMA_FESTA[festa.id] : undefined);
   }
-  const arv = arvoreAtual();
-  mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), cenaArvore(arv.folhas, arv.estagio, { prefixo: 'com' }).svg, depois);
-  const noCartao = document.querySelector('.comemoracao svg.arvore-viva');
-  if(noCartao) setTimeout(() => folhaNovaAnim(Math.max(0, arv.folhas - arv.folhasHoje), arv.folhas, noCartao), Animacoes.MOV.base);
+  momentoGrande({ texto: 'Dia completo! +5 folhas na sua árvore.', linha: Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), depois });
 }
 let ultimoToque = null;
 document.addEventListener('pointerdown', e => { ultimoToque = { x: e.clientX, y: e.clientY, alvo: e.target }; if(dados && dados.ajustes.sons) Animacoes.prepararAudio(); }, true);
@@ -4186,6 +4244,7 @@ function processarEventosArvore(){
     dados.ajustes.arvore = t.arvore; salvar();
     return t.fala ? [{ tipo: 'regra', texto: t.fala }] : [];
   }
+  if(!sim) ultimoAntesArvore = { ...aj };
   let ev = sim ? [] : Arvore.eventosDesde(aj, a);
   if(SIM_ARVORE && SIM_ARVORE.evento && !eventoSimuladoFeito){ eventoSimuladoFeito = true; ev = EVENTOS_SIM[SIM_ARVORE.evento](a); }
   if(!sim){
@@ -4446,7 +4505,7 @@ function textoEventosArvore(ev){
   const de = t => ev.find(e => e.tipo === t);
   const regra = de('regra'), perdeu = de('perdeu'), voltou = de('voltouEstagio'), subiu = de('subiuEstagio'), bonus = de('bonus'), faixa = de('faixaSubiu');
   if(regra) return { texto: regra.texto, estado: 'acenando', conta: true };
-  if(subiu) return { texto: `Sua árvore virou ${subiu.nome}!`, estado: 'comemorando', conta: true, grande: true };
+  if(subiu) return { texto: `Sua árvore virou ${subiu.nome}!`, estado: 'comemorando', conta: true, grande: true, subiu: true };
   if(bonus) return { texto: `${bonus.dias} dias seguidos tentando! +3 folhas de bônus.`, estado: 'comemorando', conta: false };
   if(perdeu || voltou){
     const linhas = [];
@@ -4466,9 +4525,11 @@ function reagirArvore(ev){
   if(reacaoPendente) clearTimeout(reacaoPendente.timer);
   reacaoPendente = { r, timer: 0 };
   const tentar = (n = 0) => {
-    if(document.querySelector('.comemoracao') || $('overlay').classList.contains('show') || $('dialogo').classList.contains('show')){ if(n < 20) reacaoPendente.timer = setTimeout(() => tentar(n + 1), 500); else reacaoPendente = null; return; }
+    if(r.grande && momentoAberto){ reacaoPendente = null; atualizarMomento({ texto: r.texto, subiu: r.subiu }); return; }
+    if(momentoAberto || document.querySelector('.comemoracao') || $('overlay').classList.contains('show') || $('dialogo').classList.contains('show')){ if(n < 20) reacaoPendente.timer = setTimeout(() => tentar(n + 1), 500); else reacaoPendente = null; return; }
     reacaoPendente = null;
-    if(folhinhaAtiva()){ Folhinha.falar(r.texto, { estado: r.estado }); if(r.conta){ dados.ajustes.folhinha.ultimaAparicao = hoje(); salvar(); } }
+    if(r.grande){ momentoGrande({ texto: r.texto, subiu: r.subiu }); return; }
+    if(folhinhaAtiva()){ Folhinha.falar(r.texto, { estado: r.estado, botoes: tela !== 'constancia' ? [{ rotulo: 'Ver árvore', acao: () => irPara('constancia') }, { rotulo: 'Entendi' }] : null }); if(r.conta){ dados.ajustes.folhinha.ultimaAparicao = hoje(); salvar(); } }
     else if(r.conta || r.grande) toast(r.texto);
   };
   reacaoPendente.timer = setTimeout(tentar, Animacoes.MOV.lenta);
@@ -4486,7 +4547,12 @@ function dicaDeAba(){
   }, 900);
 }
 function sincronizarFolhinha(){
-  if(folhinhaAtiva()){ Folhinha.montar(); Folhinha.aoTocar = proximaDica; document.documentElement.classList.add('com-folhinha'); }
+  if(folhinhaAtiva()){
+    Folhinha.montar(); Folhinha.aoTocar = proximaDica; document.documentElement.classList.add('com-folhinha');
+    const fo = dados.ajustes.folhinha;
+    if(SIM_ARVORE && SIM_ARVORE.folhinha && FolhinhaDesenho.ESTADOS.includes(SIM_ARVORE.folhinha)) Folhinha.definir(SIM_ARVORE.folhinha);
+    else if(Folhinha.hora() < 11 && Folhinha.hora() >= 5 && fo.espreguicou !== hoje()){ fo.espreguicou = hoje(); salvar(); setTimeout(() => Folhinha.espreguicar(), 600); }
+  }
   else { Folhinha.remover(); document.documentElement.classList.remove('com-folhinha'); }
 }
 function alternarFolhinha(){ dados.ajustes.folhinha.ativa = !dados.ajustes.folhinha.ativa; salvar(); sincronizarFolhinha(); render(); }
