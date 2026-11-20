@@ -44,6 +44,43 @@ public class WidgetCalculoTest {
         return WidgetCalculo.retratoDe(fixture.get("retrato"));
     }
 
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> retratoMapa() throws Exception {
+        String texto = new String(Files.readAllBytes(arquivoFixture.toPath()), StandardCharsets.UTF_8);
+        return (Map<String, Object>) ((Map<String, Object>) WidgetCalculo.Json.ler(texto)).get("retrato");
+    }
+
+    private static WidgetCalculo.Retrato retratoDeUmDia(int feitos, int total, int folhasAteOntem) {
+        WidgetCalculo.Retrato r = new WidgetCalculo.Retrato();
+        r.hoje = "2026-11-18";
+        WidgetCalculo.Dia d = new WidgetCalculo.Dia("2026-11-18");
+        for (int i = 0; i < total; i++) d.itens.add(new WidgetCalculo.Item("i" + i, "rotina", "Item " + i, "", i < feitos));
+        r.dias.add(d);
+        r.folhasAteOntem = folhasAteOntem;
+        r.estagios = new int[] {0, 5, 15, 35, 70, 140, 250, 400, 600, 1000};
+        r.nomes = new String[] {"Semente", "Broto", "Muda", "Arvoreta", "Árvore jovem", "Árvore", "Árvore frondosa", "Árvore florida", "Árvore com frutos", "Árvore anciã"};
+        return r;
+    }
+
+    private static int variacaoDia(int feitos, int total) {
+        return WidgetCalculo.calcular(retratoDeUmDia(feitos, total, 100), null, "2026-11-19").folhas - 100;
+    }
+
+    private static WidgetCalculo.Retrato retratoDeDias(String inicio, int dias, int feitos, int total, int folhasAteOntem, int tentativasAteOntem) {
+        WidgetCalculo.Retrato r = new WidgetCalculo.Retrato();
+        r.hoje = inicio;
+        for (int k = 0; k < dias; k++) {
+            WidgetCalculo.Dia d = new WidgetCalculo.Dia(WidgetCalculo.somaDias(inicio, k));
+            for (int i = 0; i < total; i++) d.itens.add(new WidgetCalculo.Item("i" + i, "rotina", "Item " + i, "", i < feitos));
+            r.dias.add(d);
+        }
+        r.folhasAteOntem = folhasAteOntem;
+        r.tentativasAteOntem = tentativasAteOntem;
+        r.estagios = new int[] {0, 5, 15, 35};
+        r.nomes = new String[] {"Semente", "Broto", "Muda", "Arvoreta"};
+        return r;
+    }
+
     private static List<WidgetCalculo.Pendencia> pendencias() {
         return WidgetCalculo.pendenciasDe(fixture.get("pendencias"));
     }
@@ -67,10 +104,14 @@ public class WidgetCalculoTest {
         assertEquals(((Number) esp.get("itensHoje")).intValue(), r.itensHoje.size());
         assertEquals(((Number) esp.get("feitosHoje")).intValue(), r.feitosHoje);
         assertEquals(((Number) esp.get("pctHoje")).intValue(), r.pctHoje);
-        assertEquals(12, r.folhas);
+        assertEquals(((Number) esp.get("folhasHoje")).intValue(), r.folhasHoje);
+        assertEquals(((Number) esp.get("tentativas")).intValue(), r.tentativas);
+        assertEquals(22, r.folhas);
         assertEquals(0, r.sequencia);
-        assertEquals(3, r.estagio);
-        assertEquals("Arvoreta", r.nomeEstagio);
+        assertEquals(7, r.tentativas);
+        assertEquals(0, r.folhasHoje);
+        assertEquals(2, r.estagio);
+        assertEquals("Muda", r.nomeEstagio);
         assertEquals(4, r.totalHoje);
         assertEquals(0, r.feitosHoje);
     }
@@ -90,7 +131,9 @@ public class WidgetCalculoTest {
     public void viradaDeUmDia() {
         WidgetCalculo.Resultado r = WidgetCalculo.calcular(retrato(), pendencias(), "2026-11-19");
         assertFalse(r.desatualizado);
-        assertEquals(13, r.folhas);
+        assertEquals(22, r.folhas);
+        assertEquals(5, r.folhasHoje);
+        assertEquals(7, r.tentativas);
         assertEquals(6, r.sequencia);
         assertEquals(4, r.totalHoje);
         assertEquals(1, r.feitosHoje);
@@ -100,7 +143,9 @@ public class WidgetCalculoTest {
     @Test
     public void mesmoDiaDoRetrato() {
         WidgetCalculo.Resultado r = WidgetCalculo.calcular(retrato(), pendencias(), "2026-11-18");
-        assertEquals(13, r.folhas);
+        assertEquals(17, r.folhas);
+        assertEquals(5, r.folhasHoje);
+        assertEquals(6, r.tentativas);
         assertEquals(5, r.sequencia);
         assertEquals(4, r.feitosHoje);
         assertEquals(100, r.pctHoje);
@@ -109,9 +154,107 @@ public class WidgetCalculoTest {
     @Test
     public void viradaDeDoisDias() {
         WidgetCalculo.Resultado r = WidgetCalculo.calcular(retrato(), pendencias(), "2026-11-20");
-        assertEquals(12, r.folhas);
+        assertEquals(22, r.folhas);
         assertEquals(0, r.sequencia);
-        assertEquals(3, r.estagio);
+        assertEquals(7, r.tentativas);
+        assertEquals(2, r.estagio);
+    }
+
+    @Test
+    public void retratoVersaoUmSemTentativas() throws Exception {
+        Map<String, Object> m = retratoMapa();
+        m.put("versao", 1L);
+        ((Map<?, ?>) m.get("arvore")).remove("tentativasAteOntem");
+        WidgetCalculo.Retrato r = WidgetCalculo.retratoDe(m);
+        assertEquals(0, r.tentativasAteOntem);
+        WidgetCalculo.Resultado x = WidgetCalculo.calcular(r, pendencias(), "2026-11-20");
+        assertEquals(19, x.folhas);
+        assertEquals(2, x.tentativas);
+        assertEquals(0, x.folhasHoje);
+    }
+
+    @Test
+    public void lerTentativasDoRetrato() {
+        assertEquals(5, retrato().tentativasAteOntem);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void tudoEmBrancoNaoFicaNegativo() throws Exception {
+        Map<String, Object> m = retratoMapa();
+        ((Map<String, Object>) m.get("arvore")).put("folhasAteOntem", 0L);
+        for (Object od : (List<Object>) m.get("dias")) {
+            for (Object oi : (List<Object>) ((Map<String, Object>) od).get("itens")) ((Map<String, Object>) oi).put("feito", Boolean.FALSE);
+        }
+        WidgetCalculo.Resultado x = WidgetCalculo.calcular(WidgetCalculo.retratoDe(m), null, "2026-11-20");
+        assertEquals(0, x.folhas);
+        assertEquals(0, x.tentativas);
+        assertEquals(0, x.estagio);
+    }
+
+    @Test
+    public void faixasDeDezItens() {
+        int[] feitos = {0, 1, 2, 3, 4, 5, 7, 8, 9, 10};
+        int[] esperado = {-2, 1, 1, 2, 2, 3, 3, 4, 4, 5};
+        for (int i = 0; i < feitos.length; i++) assertEquals("feitos " + feitos[i], esperado[i], variacaoDia(feitos[i], 10));
+    }
+
+    @Test
+    public void faixasSemArredondar() {
+        assertEquals(2, variacaoDia(3, 12));
+        assertEquals(2, variacaoDia(1, 3));
+        assertEquals(3, variacaoDia(2, 3));
+        assertEquals(5, variacaoDia(3, 3));
+        assertEquals(0, WidgetCalculo.faixaDia(0, 0, true));
+        assertEquals(0, WidgetCalculo.faixaDia(0, 4, false));
+        assertEquals(-2, WidgetCalculo.faixaDia(0, 4, true));
+    }
+
+    @Test
+    public void emBrancoRespeitaPiso() {
+        assertEquals(0, WidgetCalculo.calcular(retratoDeUmDia(0, 3, 1), null, "2026-11-19").folhas);
+        assertEquals(0, WidgetCalculo.calcular(retratoDeUmDia(0, 3, 2), null, "2026-11-19").folhas);
+        assertEquals(1, WidgetCalculo.calcular(retratoDeUmDia(0, 3, 3), null, "2026-11-19").folhas);
+    }
+
+    @Test
+    public void emBrancoZeraTentativas() {
+        WidgetCalculo.Retrato r = retratoDeUmDia(0, 3, 10);
+        r.tentativasAteOntem = 6;
+        WidgetCalculo.Resultado x = WidgetCalculo.calcular(r, null, "2026-11-19");
+        assertEquals(0, x.tentativas);
+        assertEquals(8, x.folhas);
+    }
+
+    @Test
+    public void bonusDeSeteDias() {
+        WidgetCalculo.Resultado sete = WidgetCalculo.calcular(retratoDeDias("2026-11-01", 7, 1, 10, 0, 0), null, "2026-11-08");
+        assertFalse(sete.desatualizado);
+        assertEquals(10, sete.folhas);
+        assertEquals(7, sete.tentativas);
+        WidgetCalculo.Retrato seguinte = retratoDeDias("2026-11-08", 7, 1, 10, sete.folhas, sete.tentativas);
+        WidgetCalculo.Resultado quatorze = WidgetCalculo.calcular(seguinte, null, "2026-11-15");
+        assertEquals(20, quatorze.folhas);
+        assertEquals(14, quatorze.tentativas);
+    }
+
+    @Test
+    public void bonusCaiNoDiaDeHoje() {
+        WidgetCalculo.Resultado x = WidgetCalculo.calcular(retratoDeDias("2026-11-01", 8, 1, 10, 0, 0), null, "2026-11-07");
+        assertEquals(4, x.folhasHoje);
+        assertEquals(10, x.folhas);
+        assertEquals(7, x.tentativas);
+        WidgetCalculo.Resultado antes = WidgetCalculo.calcular(retratoDeDias("2026-11-01", 8, 1, 10, 0, 0), null, "2026-11-06");
+        assertEquals(1, antes.folhasHoje);
+        assertEquals(6, antes.folhas);
+    }
+
+    @Test
+    public void hojeNuncaPerde() {
+        WidgetCalculo.Resultado x = WidgetCalculo.calcular(retratoDeUmDia(0, 4, 9), null, "2026-11-18");
+        assertEquals(9, x.folhas);
+        assertEquals(0, x.folhasHoje);
+        assertEquals(0, x.tentativas);
     }
 
     @Test
@@ -139,8 +282,9 @@ public class WidgetCalculoTest {
     public void diaSemItensNaoMudaNada() {
         WidgetCalculo.Resultado antes = WidgetCalculo.calcular(retrato(), pendencias(), "2026-11-22");
         WidgetCalculo.Resultado depois = WidgetCalculo.calcular(retrato(), pendencias(), "2026-11-23");
-        assertEquals(10, antes.folhas);
+        assertEquals(18, antes.folhas);
         assertEquals(antes.folhas, depois.folhas);
+        assertEquals(antes.tentativas, depois.tentativas);
         assertEquals(antes.sequencia, depois.sequencia);
         assertEquals(0, antes.totalHoje);
 
@@ -151,11 +295,13 @@ public class WidgetCalculoTest {
         d23.itens.add(new WidgetCalculo.Item("a", "rotina", "A", "", false));
         r.dias.add(d23);
         r.folhasAteOntem = 5;
+        r.tentativasAteOntem = 4;
         r.sequenciaAteOntem = 3;
         r.estagios = new int[] {0, 1, 3, 7};
         r.nomes = new String[] {"Semente", "Broto", "Muda", "Arvoreta"};
         WidgetCalculo.Resultado x = WidgetCalculo.calcular(r, null, "2026-11-23");
         assertEquals(5, x.folhas);
+        assertEquals(4, x.tentativas);
         assertEquals(3, x.sequencia);
         assertEquals(2, x.estagio);
     }
@@ -180,7 +326,7 @@ public class WidgetCalculoTest {
     }
 
     @Test
-    public void meioFeitoNaoPerdeNemGanha() {
+    public void meioFeitoGanhaTres() {
         WidgetCalculo.Retrato r = new WidgetCalculo.Retrato();
         r.hoje = "2026-11-18";
         WidgetCalculo.Dia d = new WidgetCalculo.Dia("2026-11-18");
@@ -190,7 +336,8 @@ public class WidgetCalculoTest {
         r.folhasAteOntem = 4;
         r.sequenciaAteOntem = 2;
         WidgetCalculo.Resultado x = WidgetCalculo.calcular(r, null, "2026-11-19");
-        assertEquals(4, x.folhas);
+        assertEquals(7, x.folhas);
+        assertEquals(1, x.tentativas);
         assertEquals(3, x.sequencia);
     }
 

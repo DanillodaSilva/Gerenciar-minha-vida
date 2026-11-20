@@ -1,6 +1,6 @@
 {
   "retrato": {
-    "versao": 1,
+    "versao": 2,
     "geradoEm": "2026-11-18T09:00:00.000Z",
     "hoje": "2026-11-18",
     "dias": [
@@ -50,7 +50,8 @@
     ],
     "arvore": {
       "folhasAteOntem": 12,
-      "estagios": [0, 1, 3, 7, 14, 30, 60, 100, 180, 365],
+      "tentativasAteOntem": 5,
+      "estagios": [0, 5, 15, 35, 70, 140, 250, 400, 600, 1000],
       "nomes": ["Semente", "Broto", "Muda", "Arvoreta", "Árvore jovem", "Árvore", "Árvore frondosa", "Árvore florida", "Árvore com frutos", "Árvore anciã"]
     },
     "sequencia": { "ateOntem": 5 },
@@ -69,10 +70,12 @@
   ],
   "calcularEm": "2026-11-20",
   "esperado": {
-    "folhas": 12,
+    "folhas": 22,
     "sequencia": 0,
-    "estagio": 3,
-    "nomeEstagio": "Arvoreta",
+    "tentativas": 7,
+    "folhasHoje": 0,
+    "estagio": 2,
+    "nomeEstagio": "Muda",
     "itensHoje": 4,
     "feitosHoje": 0,
     "pctHoje": 0,

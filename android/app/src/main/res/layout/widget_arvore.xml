@@ -33,6 +33,18 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/arvore_hoje"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:maxLines="1"
+        android:text="@string/widget_previa_folhas_hoje"
+        android:textColor="@color/widget_check"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/arvore_pct"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

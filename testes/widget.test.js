@@ -14,6 +14,8 @@ describe('fixture compartilhado com o Java', () => {
     assert.equal(r.desatualizado, false);
     assert.equal(r.folhas, e.folhas);
     assert.equal(r.sequencia, e.sequencia);
+    assert.equal(r.tentativas, e.tentativas);
+    assert.equal(r.folhasHoje, e.folhasHoje);
     assert.equal(r.estagio, e.estagio);
     assert.equal(r.nomeEstagio, e.nomeEstagio);
     assert.equal(r.itensHoje, e.itensHoje);
@@ -22,16 +24,18 @@ describe('fixture compartilhado com o Java', () => {
     assert.deepEqual({ feitos: r.resumo('2026-11-18').feitos, total: r.resumo('2026-11-18').total }, e.dia18);
     assert.deepEqual({ feitos: r.resumo('2026-11-19').feitos, total: r.resumo('2026-11-19').total }, e.dia19);
   });
-  test('virada de 1 dia: 18/11 completo soma folha e sequência', () => {
+  test('virada de 1 dia: 18/11 completo soma 5 e hoje 1 de 4 é o 7.º dia tentado', () => {
     const r = W.calcularDoRetrato(fixture.retrato, fixture.pendencias, '2026-11-19');
-    assert.equal(r.folhas, 13);
+    assert.equal(r.folhas, 22);
+    assert.equal(r.folhasHoje, 5);
+    assert.equal(r.tentativas, 7);
     assert.equal(r.sequencia, 6);
     assert.equal(r.feitosHoje, 1);
     assert.equal(r.itensHoje, 4);
   });
-  test('no próprio dia, o dia completo já conta folha', () => {
+  test('no próprio dia, o dia completo já conta 5 folhas', () => {
     const r = W.calcularDoRetrato(fixture.retrato, fixture.pendencias, '2026-11-18');
-    assert.equal(r.folhas, 13);
+    assert.equal(r.folhas, 17);
     assert.equal(r.sequencia, 5);
   });
   test('mais de 7 dias depois fica desatualizado', () => {
@@ -40,7 +44,7 @@ describe('fixture compartilhado com o Java', () => {
   });
   test('vale a pendência mais recente, em qualquer ordem', () => {
     const inv = fixture.pendencias.slice().reverse();
-    assert.equal(W.calcularDoRetrato(fixture.retrato, inv, '2026-11-19').folhas, 13);
+    assert.equal(W.calcularDoRetrato(fixture.retrato, inv, '2026-11-19').folhas, 22);
   });
   test('dia sem itens não mexe em folhas nem sequência', () => {
     const a = W.calcularDoRetrato(fixture.retrato, fixture.pendencias, '2026-11-22');
@@ -51,7 +55,18 @@ describe('fixture compartilhado com o Java', () => {
   test('piso 0 de folhas', () => {
     const ret = clonar(fixture.retrato);
     ret.arvore.folhasAteOntem = 0;
-    assert.equal(W.calcularDoRetrato(ret, [], '2026-11-20').folhas, 0);
+    ret.dias.forEach(d => d.itens.forEach(i => { i.feito = false; }));
+    const r = W.calcularDoRetrato(ret, [], '2026-11-20');
+    assert.equal(r.folhas, 0);
+    assert.equal(r.tentativas, 0);
+  });
+  test('retrato versão 1 sem tentativasAteOntem vale 0', () => {
+    const ret = clonar(fixture.retrato);
+    ret.versao = 1;
+    delete ret.arvore.tentativasAteOntem;
+    const r = W.calcularDoRetrato(ret, fixture.pendencias, '2026-11-20');
+    assert.equal(r.tentativas, 2);
+    assert.equal(r.folhas, 19);
   });
 });
 
@@ -100,9 +115,10 @@ describe('retrato', () => {
     ajustes: { mostrarFaculdade: true },
     faculdade: { semestre: null, materias: [] },
   };
-  test('formato v1 com hoje e mais 7 dias', () => {
+  test('formato v2 com hoje e mais 7 dias', () => {
     const r = W.montarRetrato(d, '2026-11-18');
-    assert.equal(r.versao, 1);
+    assert.equal(r.versao, 2);
+    assert.equal(r.arvore.tentativasAteOntem, 2);
     assert.equal(r.hoje, '2026-11-18');
     assert.equal(r.dias.length, 8);
     assert.equal(r.dias[7].data, '2026-11-25');

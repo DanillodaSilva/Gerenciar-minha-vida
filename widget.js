@@ -51,11 +51,11 @@
   function montarRetrato(dados, hoje, memo) {
     const arv = A.calcularArvore(dados, hoje, memo);
     return {
-      versao: 1,
+      versao: 2,
       geradoEm: new Date().toISOString(),
       hoje,
       dias: Array.from({ length: DIAS + 1 }, (_, k) => { const data = somaDias(hoje, k); return { data, itens: itensDoDia(dados, data) }; }),
-      arvore: { folhasAteOntem: arv.folhasAteOntem, estagios: A.LIMITES.slice(), nomes: A.NOMES.slice() },
+      arvore: { folhasAteOntem: arv.folhasAteOntem, tentativasAteOntem: arv.tentativasAteOntem, estagios: A.LIMITES.slice(), nomes: A.NOMES.slice() },
       sequencia: { ateOntem: sequenciaAteOntem(dados, hoje) },
       faculdadeVisivel: !(dados.ajustes && dados.ajustes.mostrarFaculdade === false),
       semestreConfigurado: !!(dados.faculdade && dados.faculdade.semestre),
@@ -95,18 +95,23 @@
     const dia = d => retrato.dias.find(x => x.data === d);
     const resumo = d => { const x = dia(d); if (!x) return null; const total = x.itens.length, feitos = x.itens.filter(i => (ultimo.has(d + '|' + i.id) ? ultimo.get(d + '|' + i.id) : i.feito)).length; return { total, feitos, pct: total ? Math.round(feitos * 100 / total) : 0 }; };
     if (hoje > somaDias(retrato.hoje, DIAS) || hoje < retrato.hoje) return { desatualizado: true };
-    let folhas = retrato.arvore.folhasAteOntem, seq = retrato.sequencia.ateOntem;
+    let folhas = Math.max(0, retrato.arvore.folhasAteOntem || 0), seq = retrato.sequencia.ateOntem, tent = Math.max(0, retrato.arvore.tentativasAteOntem || 0);
     for (let d = retrato.hoje; d < hoje; d = somaDias(d, 1)) {
       const r = resumo(d);
       if (!r || !r.total) continue;
-      if (r.feitos >= r.total) folhas++; else if (r.pct < 50) folhas = Math.max(0, folhas - 1);
+      let bonus = 0;
+      if (r.feitos > 0) { tent++; if (tent % A.CICLO === 0) bonus = A.BONUS; } else tent = 0;
+      folhas = Math.max(0, folhas + A.faixaDia(r.feitos, r.total, true).folhas + bonus);
       seq = r.pct >= 50 ? seq + 1 : 0;
     }
     const h = resumo(hoje) || { total: 0, feitos: 0, pct: 0 };
-    if (h.total && h.feitos >= h.total) folhas++;
+    const tentouHoje = h.total > 0 && h.feitos > 0;
+    const folhasHoje = tentouHoje ? A.folhasDaFaixa(h.feitos, h.total) + ((tent + 1) % A.CICLO === 0 ? A.BONUS : 0) : 0;
+    folhas += folhasHoje;
+    const tentativas = tent + (tentouHoje ? 1 : 0);
     const lim = retrato.arvore.estagios || A.LIMITES, nomes = retrato.arvore.nomes || A.NOMES;
     let estagio = 0; lim.forEach((l, i) => { if (folhas >= l) estagio = i; });
-    return { desatualizado: false, folhas, sequencia: seq, estagio, nomeEstagio: nomes[estagio] || '', itensHoje: h.total, feitosHoje: h.feitos, pctHoje: h.pct, resumo };
+    return { desatualizado: false, folhas, folhasHoje, tentativas, sequencia: seq, estagio, nomeEstagio: nomes[estagio] || '', itensHoje: h.total, feitosHoje: h.feitos, pctHoje: h.pct, resumo };
   }
 
   const Widget = { montarRetrato, aplicarPendencias, calcularDoRetrato, sequenciaAteOntem, cortar };

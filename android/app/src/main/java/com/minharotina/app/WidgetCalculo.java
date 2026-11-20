@@ -16,6 +16,9 @@ public final class WidgetCalculo {
     public static final int MAX_TITULO = 60;
     public static final int DIAS_AULAS = 14;
     public static final int DIAS_RETRATO = 7;
+    public static final int PERDA = 2;
+    public static final int BONUS = 3;
+    public static final int CICLO = 7;
 
     private WidgetCalculo() {}
 
@@ -73,6 +76,7 @@ public final class WidgetCalculo {
         public String hoje;
         public List<Dia> dias = new ArrayList<>();
         public int folhasAteOntem;
+        public int tentativasAteOntem;
         public int[] estagios = new int[0];
         public String[] nomes = new String[0];
         public int sequenciaAteOntem;
@@ -84,6 +88,8 @@ public final class WidgetCalculo {
     public static final class Resultado {
         public boolean desatualizado;
         public int folhas;
+        public int folhasHoje;
+        public int tentativas;
         public int sequencia;
         public int estagio;
         public String nomeEstagio = "";
@@ -124,17 +130,28 @@ public final class WidgetCalculo {
             return res;
         }
         int folhas = Math.max(0, r.folhasAteOntem);
+        int tentativas = Math.max(0, r.tentativasAteOntem);
         int sequencia = Math.max(0, r.sequenciaAteOntem);
         for (String d = r.hoje; d.compareTo(hoje) < 0; d = somaDias(d, 1)) {
             Contagem c = contar(r, pend, d);
             if (c.total == 0) continue;
-            if (c.feitos >= c.total) folhas++;
-            else if (c.pct() < 50) folhas = Math.max(0, folhas - 1);
+            int bonus = 0;
+            if (c.feitos > 0) {
+                tentativas++;
+                if (tentativas % CICLO == 0) bonus = BONUS;
+            } else {
+                tentativas = 0;
+            }
+            folhas = Math.max(0, folhas + faixaDia(c.feitos, c.total, true) + bonus);
             sequencia = c.pct() >= 50 ? sequencia + 1 : 0;
         }
         Contagem agora = contar(r, pend, hoje);
-        if (agora.total > 0 && agora.feitos >= agora.total) folhas++;
+        boolean tentouHoje = agora.total > 0 && agora.feitos > 0;
+        int folhasHoje = tentouHoje ? folhasDaFaixa(agora.feitos, agora.total) + ((tentativas + 1) % CICLO == 0 ? BONUS : 0) : 0;
+        folhas += folhasHoje;
         res.folhas = folhas;
+        res.folhasHoje = folhasHoje;
+        res.tentativas = tentativas + (tentouHoje ? 1 : 0);
         res.sequencia = sequencia;
         res.estagio = estagioDe(r.estagios, folhas);
         res.nomeEstagio = res.estagio < r.nomes.length && r.nomes[res.estagio] != null ? r.nomes[res.estagio] : "";
@@ -166,6 +183,21 @@ public final class WidgetCalculo {
             }
         }
         res.estadoAula = AULA_NENHUMA;
+    }
+
+    public static int folhasDaFaixa(int feitos, int total) {
+        if (total <= 0 || feitos <= 0) return 0;
+        if (feitos >= total) return 5;
+        if ((long) feitos * 4 >= (long) total * 3) return 4;
+        if ((long) feitos * 2 >= total) return 3;
+        if ((long) feitos * 4 >= total) return 2;
+        return 1;
+    }
+
+    public static int faixaDia(int feitos, int total, boolean encerrado) {
+        if (total <= 0) return 0;
+        if (feitos <= 0) return encerrado ? -PERDA : 0;
+        return folhasDaFaixa(feitos, total);
     }
 
     public static int estagioDe(int[] estagios, int folhas) {
@@ -272,6 +304,7 @@ public final class WidgetCalculo {
         }
         Map<String, Object> arv = mapa(o.get("arvore"));
         r.folhasAteOntem = inteiro(arv.get("folhasAteOntem"));
+        r.tentativasAteOntem = inteiro(arv.get("tentativasAteOntem"));
         List<Object> est = lista(arv.get("estagios"));
         r.estagios = new int[est.size()];
         for (int i = 0; i < est.size(); i++) r.estagios[i] = inteiro(est.get(i));

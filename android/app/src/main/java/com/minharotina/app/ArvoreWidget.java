@@ -27,20 +27,28 @@ public class ArvoreWidget extends AppWidgetProvider {
         v.setOnClickPendingIntent(android.R.id.background, WidgetDados.abrirApp(c, "constancia", CODIGO_ABRIR));
         if (r.desatualizado) {
             v.setViewVisibility(R.id.arvore_imagem, View.GONE);
+            v.setViewVisibility(R.id.arvore_hoje, View.GONE);
             v.setViewVisibility(R.id.arvore_pct, View.GONE);
             v.setViewVisibility(R.id.arvore_sequencia, View.GONE);
             v.setTextViewText(R.id.arvore_nome, c.getString(R.string.widget_desatualizado));
         } else {
             int e = Math.max(0, Math.min(ESTAGIOS.length - 1, r.estagio));
             v.setViewVisibility(R.id.arvore_imagem, View.VISIBLE);
+            v.setViewVisibility(R.id.arvore_hoje, View.VISIBLE);
             v.setViewVisibility(R.id.arvore_pct, View.VISIBLE);
             v.setViewVisibility(R.id.arvore_sequencia, View.VISIBLE);
             v.setImageViewResource(R.id.arvore_imagem, ESTAGIOS[e]);
             v.setContentDescription(R.id.arvore_imagem, c.getString(R.string.widget_arvore_imagem, r.nomeEstagio));
             v.setTextViewText(R.id.arvore_nome, r.nomeEstagio);
+            v.setTextViewText(R.id.arvore_hoje, textoFolhasHoje(c, r.folhasHoje));
             v.setTextViewText(R.id.arvore_pct, c.getString(R.string.widget_pct_hoje, r.pctHoje));
             v.setTextViewText(R.id.arvore_sequencia, c.getString(r.sequencia == 1 ? R.string.widget_sequencia_um : R.string.widget_sequencia_varios, r.sequencia));
         }
         m.updateAppWidget(ids, v);
+    }
+
+    static String textoFolhasHoje(Context c, int n) {
+        if (n <= 0) return c.getString(R.string.widget_folhas_hoje_zero);
+        return n == 1 ? c.getString(R.string.widget_folhas_hoje_um) : c.getString(R.string.widget_folhas_hoje_varios, n);
     }
 }
