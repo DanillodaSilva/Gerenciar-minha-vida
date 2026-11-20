@@ -1,22 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="96dp"
-    android:height="96dp"
-    android:viewportWidth="100"
-    android:viewportHeight="100">
+    android:height="108dp"
+    android:viewportWidth="320"
+    android:viewportHeight="360">
+    <path android:pathData="M20,0h280a20,20 0,0 1,20,20v320a20,20 0,0 1,-20,20h-280a20,20 0,0 1,-20,-20v-320a20,20 0,0 1,20,-20Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endColor="@color/arvore_ceu_base"
+                android:endX="160"
+                android:endY="300"
+                android:startColor="@color/arvore_ceu_topo"
+                android:startX="160"
+                android:startY="0"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
     <path
-        android:fillColor="#B8A88A"
-        android:pathData="M6,90Q50,80 94,90L94,96Q50,98 6,96Z" />
+        android:fillColor="@color/arvore_ceu_nuvem"
+        android:fillAlpha="0.8"
+        android:pathData="M66,70a26,9 0,1 0,52,0a26,9 0,1 0,-52,0ZM70,64a12,9 0,1 0,24,0a12,9 0,1 0,-24,0ZM86,62a14,11 0,1 0,28,0a14,11 0,1 0,-28,0ZM205.2,112a20.8,7.2 0,1 0,41.6,0a20.8,7.2 0,1 0,-41.6,0ZM208.4,107.2a9.6,7.2 0,1 0,19.2,0a9.6,7.2 0,1 0,-19.2,0ZM221.2,105.6a11.2,8.8 0,1 0,22.4,0a11.2,8.8 0,1 0,-22.4,0Z" />
     <path
-        android:pathData="M50,88L50,74"
-        android:strokeColor="#4C9A63"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:strokeWidth="2" />
+        android:fillColor="@color/arvore_colina"
+        android:fillAlpha="0.45"
+        android:pathData="M0,286Q84,252 186,280T320,268V340a20,20 0,0 1,-20,20H20a20,20 0,0 1,-20,-20Z" />
+    <path android:pathData="M0,300Q160,270 320,300V340a20,20 0,0 1,-20,20H20a20,20 0,0 1,-20,-20Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endColor="@color/arvore_colina"
+                android:endX="160"
+                android:endY="330"
+                android:startColor="@color/arvore_colina_luz"
+                android:startX="160"
+                android:startY="272"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
     <path
-        android:fillColor="#6DB07A"
-        android:pathData="M50,76Q47.4,70.5 41.3,71Q43.9,76.5 50,76Z" />
+        android:fillColor="@color/arvore_folha_2"
+        android:pathData="M58.6,301.5Q58.9,296.9 57.4,295.4Q60.5,298.5 61.2,301.5ZM61.6,301.5Q62.9,296.9 62.9,293.9Q63.5,298.5 64.2,301.5ZM64.6,301.5Q66.9,296.9 68.4,295.4Q66.5,298.5 67.2,301.5ZM96.5,291.6Q96.8,285.8 95.3,283.9Q98.4,287.7 99.1,291.6ZM99.5,291.6Q100.8,285.8 100.8,282Q101.4,287.7 102.1,291.6ZM102.5,291.6Q104.8,285.8 106.3,283.9Q104.4,287.7 105.1,291.6Z" />
     <path
-        android:fillColor="#4C9A63"
-        android:pathData="M50,75Q56.1,75.5 58.7,70Q52.6,69.5 50,75Z" />
+        android:fillColor="@color/arvore_folha_3"
+        android:pathData="M29.2,298.1Q29.5,291.4 28,289.2Q31.1,293.7 31.8,298.1ZM32.2,298.1Q33.5,291.4 33.5,287Q34.1,293.7 34.8,298.1ZM35.2,298.1Q37.5,291.4 39,289.2Q37.1,293.7 37.8,298.1ZM138.9,294.8Q139.2,288.6 137.7,286.5Q140.8,290.7 141.5,294.8ZM141.9,294.8Q143.2,288.6 143.2,284.4Q143.8,290.7 144.5,294.8ZM144.9,294.8Q147.2,288.6 148.7,286.5Q146.8,290.7 147.5,294.8ZM181.1,288.3Q181.4,281.4 179.9,279.1Q183,283.7 183.7,288.3ZM184.1,288.3Q185.4,281.4 185.4,276.8Q186,283.7 186.7,288.3ZM187.1,288.3Q189.4,281.4 190.9,279.1Q189,283.7 189.7,288.3ZM240.2,293.8Q240.5,289.5 239,288.1Q242.1,291 242.8,293.8ZM243.2,293.8Q244.5,289.5 244.5,286.7Q245.1,291 245.8,293.8ZM246.2,293.8Q248.5,289.5 250,288.1Q248.1,291 248.8,293.8ZM273.8,295.7Q274.1,290.1 272.6,288.3Q275.7,292 276.4,295.7ZM276.8,295.7Q278.1,290.1 278.1,286.5Q278.7,292 279.4,295.7ZM279.8,295.7Q282.1,290.1 283.6,288.3Q281.7,292 282.4,295.7Z" />
+    <path
+        android:fillColor="@color/arvore_folha_fundo"
+        android:fillAlpha="0.2"
+        android:pathData="M133.6,290a32.4,4.7 0,1 0,64.8,0a32.4,4.7 0,1 0,-64.8,0Z" />
+    <group
+        android:pivotX="160"
+        android:pivotY="287"
+        android:scaleX="2"
+        android:scaleY="2">
+        <path
+            android:fillColor="@color/arvore_terra"
+            android:pathData="M150,290a10,3.4 0,1 0,20,0a10,3.4 0,1 0,-20,0Z" />
+        <path
+            android:fillColor="@color/arvore_tronco"
+            android:pathData="M161.6,289Q166.8,261.7 160.6,241A1,1 0,0 0,158.7,241Q164.2,261.7 158.4,289Z" />
+        <path
+            android:fillColor="@color/arvore_folha_2"
+            android:pathData="M159.6,250c-6,-1 -12,-6 -12,-12c6,0 11,5 12,12z" />
+        <path
+            android:fillColor="@color/arvore_folha_3"
+            android:pathData="M159.6,250c6,-1 12,-6 12,-12c-6,0 -11,5 -12,12z" />
+        <path
+            android:fillColor="@color/arvore_folha_luz"
+            android:fillAlpha="0.9"
+            android:pathData="M157.1,247.5c-2.5,-1 -5,-3.2 -6.2,-6c2,0.9 4.2,3 6.2,6z" />
+    </group>
 </vector>

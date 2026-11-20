@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="arvore_ceu_topo">#1C1830</color>
+    <color name="arvore_ceu_base">#29233F</color>
+    <color name="arvore_ceu_nuvem">#3B3459</color>
+    <color name="arvore_colina">#2F4A35</color>
+    <color name="arvore_colina_luz">#456B4E</color>
+    <color name="arvore_terra">#5E4632</color>
+    <color name="arvore_tronco">#B08A66</color>
+    <color name="arvore_tronco_sombra">#86664A</color>
+    <color name="arvore_tronco_luz">#CDAA86</color>
+    <color name="arvore_folha_fundo">#2C6A47</color>
+    <color name="arvore_folha_1">#3F8A5E</color>
+    <color name="arvore_folha_2">#5DB383</color>
+    <color name="arvore_folha_3">#7FCB9A</color>
+    <color name="arvore_folha_luz">#9BD9AE</color>
+    <color name="arvore_flor">#9C72D6</color>
+    <color name="arvore_flor_miolo">#F2E6FA</color>
+    <color name="arvore_fruto">#F06A24</color>
+    <color name="arvore_brilho">#FFF4E6</color>
+</resources>
