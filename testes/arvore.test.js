@@ -173,9 +173,11 @@ test('desempenho com 3 anos de dados', () => {
   const dados = montarCom(inicio, feitos);
   const hoje = '2026-11-18';
   const memo = {};
-  const t0 = performance.now();
-  const sem = A.calcularArvore(dados, hoje);
-  const t1 = performance.now();
+  const amostras = [];
+  let sem;
+  for (let k = 0; k < 5; k++) { const t = performance.now(); sem = A.calcularArvore(dados, hoje); amostras.push(performance.now() - t); }
+  amostras.sort((a, b) => a - b);
+  const t0 = 0, t1 = amostras[2];
   const com1 = A.calcularArvore(dados, hoje, memo);
   const t2 = performance.now();
   const com2 = A.calcularArvore(dados, hoje, memo);

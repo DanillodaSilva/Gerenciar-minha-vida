@@ -756,6 +756,28 @@
   .arv-borboleta.voando .arv-asa{animation:arv-asa .18s linear infinite alternate}
   @keyframes arv-asa{from{scale:1 1}to{scale:.25 1}}
   html.oculto .vida *{animation-play-state:paused}
+  :root{--p-folhinha-luz:#B9E3A6; --p-folhinha-meio:#4C9A63; --p-folhinha-base:#2E7D4F; --p-folhinha-contorno:#1F5C3A; --p-folhinha-contorno-e:#0E2A1C; --p-folhinha-nervura:#2A6E45;
+    --p-folhinha-sombra:rgb(28 27 25 / .18); --p-folhinha-sombra-e:rgb(0 0 0 / .45); --p-folhinha-bochecha:#F4A6B8; --p-folhinha-pupila:#1C1B19; --p-folhinha-olho:#FFFFFF; --p-folhinha-boca:#5A1E2E; --p-folhinha-lingua:#F08AA0;
+    --folhinha-luz:var(--p-folhinha-luz); --folhinha-meio:var(--p-folhinha-meio); --folhinha-base:var(--p-folhinha-base); --folhinha-contorno:var(--p-folhinha-contorno); --folhinha-nervura:var(--p-folhinha-nervura);
+    --folhinha-sombra:var(--p-folhinha-sombra); --folhinha-bochecha:var(--p-folhinha-bochecha); --folhinha-pupila:var(--p-folhinha-pupila); --folhinha-olho:var(--p-folhinha-olho); --folhinha-boca:var(--p-folhinha-boca); --folhinha-lingua:var(--p-folhinha-lingua);
+    --fo-tam:88px; --fo-alt:calc(var(--fo-tam) * 1.067); --fo-esq:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-2) + env(safe-area-inset-left))}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--folhinha-contorno:var(--p-folhinha-contorno-e); --folhinha-sombra:var(--p-folhinha-sombra-e)} }
+  :root[data-theme="dark"]{--folhinha-contorno:var(--p-folhinha-contorno-e); --folhinha-sombra:var(--p-folhinha-sombra-e)}
+  @media (max-height: 640px){ :root{--fo-tam:72px} }
+  @media (min-width: 768px) and (min-height: 641px){ :root{--fo-tam:96px} }
+  #folhinha{position:fixed;z-index:6;width:var(--fo-tam);height:var(--fo-alt);padding:0;border:0;background:none;border-radius:var(--radius-full);
+    left:var(--fo-esq);bottom:calc(var(--nav-h) + var(--space-1) + env(safe-area-inset-bottom));transition:opacity var(--dur-rapida) var(--ease-saida);-webkit-tap-highlight-color:transparent}
+  .balao-fo{position:fixed;z-index:6;max-width:min(300px, calc(100vw - var(--space-4) * 2));display:flex;flex-direction:column;gap:var(--space-1);
+    left:calc(var(--fo-esq) + var(--space-2));bottom:calc(var(--nav-h) + var(--fo-alt) + var(--space-2) + env(safe-area-inset-bottom));
+    padding:var(--space-3) var(--space-4) var(--space-1);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-sheet);box-shadow:var(--shadow-fab)}
+  .balao-fo::after{content:'';position:absolute;left:var(--space-6);bottom:-13px;width:20px;height:14px;background:var(--surface);clip-path:path('M0 0Q3 9 14 14Q7 7 12 0Z')}
+  .balao-folha{position:absolute;top:-7px;right:-5px;width:20px;height:20px;rotate:12deg;fill:var(--arvore-folha-2);stroke:var(--arvore-folha-1);stroke-width:1.2;stroke-linecap:round}
+  .balao-fo[hidden]{display:none}
+  .balao-texto{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);min-height:var(--lh-body);overflow-wrap:anywhere;cursor:pointer}
+  .balao-acoes{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:var(--space-1)}
+  .balao-acoes .btn{min-height:var(--touch)}
+  html.travado #folhinha,html.travado .balao-fo,html.na-abertura #folhinha,html.na-abertura .balao-fo,html.teclado-aberto #folhinha,html.teclado-aberto .balao-fo,
+  .toast.show ~ #folhinha,.toast.show ~ .balao-fo,.dialogo.show ~ #folhinha,.dialogo.show ~ .balao-fo{opacity:0;pointer-events:none;visibility:hidden}
   .arvore-card{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
   .arvore-palco{height:300px;display:flex;justify-content:center;align-items:flex-end;grid-row:span 1}
   @media (min-width: 768px){ .arvore-palco{height:360px} }
@@ -833,7 +855,7 @@
   .ab-resumo dt{color:var(--text-secondary)}
   .ab-resumo dd{margin:0;text-align:right;font-weight:var(--w-medium);min-width:0;overflow-wrap:anywhere}
   .ab-fala{display:flex;align-items:flex-end;gap:var(--space-2);padding:var(--space-2) 0}
-  .ab .ab-folhinha{position:static;flex:none}
+  .ab .ab-folhinha{position:static;flex:none;width:120px;height:128px}
   .ab-balao{position:relative;flex:1;min-width:0;padding:var(--space-3) var(--space-4);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-card);box-shadow:var(--shadow-fab);cursor:pointer;margin-bottom:var(--space-4)}
   .ab-balao::before{content:'';position:absolute;left:calc(var(--space-2) * -1 + 2px);bottom:var(--space-3);width:var(--space-4);height:var(--space-4);background:var(--surface);transform:rotate(45deg);border-radius:0 0 0 var(--space-1)}
   .ab-balao{text-align:left;font:inherit;max-height:22vh;overflow-y:auto;overscroll-behavior:contain}
@@ -843,7 +865,7 @@
   .ab-rodape{display:flex;flex-direction:column;gap:var(--space-1)}
   .nv{display:flex;flex-direction:column;gap:var(--space-3)}
   .nv-topo{display:flex;align-items:flex-start;gap:var(--space-3)}
-  .nv .nv-folhinha{position:static;flex:none}
+  .nv .nv-folhinha{position:static;flex:none;width:var(--fo-tam);height:var(--fo-alt)}
   .nv-topo h2{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--w-medium);color:var(--text-primary)}
   .nv-arvore{display:flex;flex-direction:column;align-items:center;gap:var(--space-1)}
   .nv-arvore svg.arvore-viva{height:220px;width:auto;max-width:100%}
@@ -852,7 +874,7 @@
   .nv .ab-widget{grid-template-columns:auto minmax(0,1fr) auto}
   .aj-widgets{display:flex;flex-direction:column;gap:var(--space-2)}
   .aj-widgets .hint{margin:0}
-  html.com-folhinha .wrap:not(.com-fab){padding-bottom:calc(var(--touch) + var(--space-2) + var(--space-6))}
+  html.com-folhinha .wrap{padding-bottom:calc(var(--fo-alt) + var(--space-5))}
   #assist-tit:focus{outline:none}
   .assist-acoes{display:flex;gap:var(--space-2);margin-top:var(--space-2)}
   .assist-acoes .btn{flex:1}
@@ -906,6 +928,7 @@
 <script src="festas.js?v=1.6.0"></script>
 <script src="arvore.js?v=1.6.0"></script>
 <script src="arvore-desenho.js?v=1.7.0"></script>
+<script src="folhinha.js?v=1.7.0"></script>
 <script src="widget.js?v=1.6.0"></script>
 <script>
 /* =========================================================
@@ -4014,75 +4037,8 @@ function cenaArvore(folhas, estagio, o = {}){
   return { chave, ...cacheCenas.get(chave) };
 }
 /* ---------- Folhinha ---------- */
-const FOLHINHA_SVG = `<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-  <g class="fo-cabo"><path d="M24 52q-6 6-13 8" fill="none" stroke="var(--arvore-tronco)" stroke-width="2.6" stroke-linecap="round"/><path class="fo-broto" d="M12 60c-5-1-7-5-6-8 4 0 6 4 6 8z" fill="var(--arvore-folha-2)"/></g>
-  <g class="fo-corpo"><path d="M24 53C10 41 12 18 32 5c20 13 22 36 8 48-5 5-11 5-16 0z" fill="var(--arvore-folha-1)"/>
-    <path d="M32 9v44" stroke="var(--arvore-folha-3)" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
-    <g class="fo-olhos"><ellipse cx="26" cy="29" rx="3.6" ry="4.6" fill="var(--p-white)"/><ellipse cx="38" cy="29" rx="3.6" ry="4.6" fill="var(--p-white)"/>
-      <g class="fo-pupilas"><circle cx="26.6" cy="30" r="2" fill="var(--p-ink-900)"/><circle cx="38.6" cy="30" r="2" fill="var(--p-ink-900)"/></g></g>
-    <path class="fo-boca fo-sorriso" d="M27 38q5 4.5 10 0" fill="none" stroke="var(--p-ink-900)" stroke-width="1.8" stroke-linecap="round"/>
-    <ellipse class="fo-boca fo-aberta" cx="32" cy="39.5" rx="3.4" ry="2.6" fill="var(--p-ink-900)"/>
-    <path class="fo-boca fo-tristeza" d="M27.5 41.5q4.5-3.6 9 0" fill="none" stroke="var(--p-ink-900)" stroke-width="1.8" stroke-linecap="round"/></g></svg>`;
-const Folhinha = {
-  el: null, balao: null, timerFala: null, timerFechar: null, timerPiscar: null, aoTocar: null,
-  montar(){
-    if(this.el) return;
-    const b = document.createElement('button');
-    b.id = 'folhinha'; b.className = 'folhinha'; b.dataset.estado = 'parada';
-    b.setAttribute('aria-label', 'Folhinha: toque para ver uma dica');
-    b.innerHTML = FOLHINHA_SVG;
-    b.addEventListener('click', () => { if(this.balao && !this.balao.hidden) return this.fechar(); if(this.aoTocar) this.aoTocar(); });
-    const balao = document.createElement('div');
-    balao.id = 'balao-fo'; balao.className = 'balao-fo'; balao.hidden = true;
-    balao.innerHTML = '<p class="balao-texto" aria-hidden="true"></p><p class="sr" role="status" id="balao-sr"></p><button class="btn text">Entendi</button>';
-    balao.querySelector('.balao-texto').addEventListener('click', () => this.completar());
-    balao.querySelector('button').addEventListener('click', () => this.fechar());
-    document.body.append(b, balao);
-    this.el = b; this.balao = balao;
-    this.piscar();
-  },
-  definir(estado){ if(this.el) this.el.dataset.estado = estado; },
-  piscar(){
-    clearTimeout(this.timerPiscar);
-    this.timerPiscar = setTimeout(() => {
-      if(this.el && !document.hidden){ this.el.classList.add('piscando'); setTimeout(() => this.el && this.el.classList.remove('piscando'), 140); }
-      this.piscar();
-    }, 4000 + Math.random() * 3000);
-  },
-  falar(texto, { estado = 'parada', fixo = false } = {}){
-    this.montar();
-    clearInterval(this.timerFala); clearTimeout(this.timerFechar);
-    const p = this.balao.querySelector('.balao-texto');
-    this.balao.hidden = false; this.texto = texto; this.estadoFinal = estado;
-    $('balao-sr').textContent = ''; setTimeout(() => { $('balao-sr').textContent = texto; }, 30);
-    if(Animacoes.reduzido()){ p.textContent = texto; this.terminar(); }
-    else {
-      this.definir('falando'); p.textContent = '';
-      const letras = Array.from(texto), t0 = performance.now();
-      this.timerFala = setInterval(() => { const k = Math.min(letras.length, Math.ceil((performance.now() - t0) / 600 * letras.length)); p.textContent = letras.slice(0, k).join(''); if(k >= letras.length) this.terminar(); }, 30);
-      if(!Animacoes.reduzido()) this.balao.animate([{ opacity: 0, transform: 'translateY(6px) scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: Animacoes.MOV.base, easing: Animacoes.MOV.saida });
-    }
-    if(!fixo) this.timerFechar = setTimeout(() => this.fechar(), 6000);
-  },
-  completar(){ if(!this.balao || this.balao.hidden) return; this.balao.querySelector('.balao-texto').textContent = this.texto; this.terminar(); },
-  terminar(){
-    clearInterval(this.timerFala);
-    this.definir(this.estadoFinal);
-    if(this.estadoFinal === 'comemorando') this.pular();
-  },
-  pular(){
-    if(Animacoes.reduzido() || !this.el) return;
-    this.el.querySelector('svg').animate([{ transform: 'none' }, { transform: 'translateY(-8px)', offset: 0.35 }, { transform: 'none', offset: 0.7 }, { transform: 'translateY(-4px)', offset: 0.85 }, { transform: 'none' }], { duration: 700, easing: Animacoes.MOV.movimento });
-    this.el.querySelector('.fo-broto').animate([{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }], { duration: 700, easing: Animacoes.MOV.saida });
-  },
-  fechar(){
-    clearInterval(this.timerFala); clearTimeout(this.timerFechar);
-    if(!this.balao || this.balao.hidden) return;
-    this.balao.hidden = true;
-    if(this.el && this.el.dataset.estado !== 'triste') this.definir('parada');
-  },
-  remover(){ if(!this.el) return; clearTimeout(this.timerPiscar); this.fechar(); this.el.remove(); this.balao.remove(); this.el = this.balao = null; },
-};
+Folhinha.hora = () => agoraFesta().getHours();
+FolhinhaDesenho.injetarCss(document);
 document.addEventListener('visibilitychange', () => document.documentElement.classList.toggle('oculto', document.hidden));
 const SIM_ARVORE = (() => {
   if(NATIVO || (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')) return null;
@@ -4331,7 +4287,7 @@ function desenharAbertura(manter = false){
     <div class="ab-topo">${i > 0 ? `<button class="icon-btn" onclick="abVoltar()" aria-label="Voltar">${ic('voltar')}</button>` : '<span class="ab-topo-vazio"></span>'}
       <div class="ab-prog"><div class="bar" aria-hidden="true"><i style="--c:var(--primary);--p:${((i + 1) / total).toFixed(3)}"></i></div><span>Passo ${i + 1} de ${total}</span></div>${ab.rever ? `<button class="icon-btn" onclick="concluirAbertura()" aria-label="Fechar">${ic('fechar')}</button>` : ''}</div>
     <div class="ab-conteudo" id="ab-conteudo"><h2 id="ab-tit">${AB_TITULOS[n]}</h2>${conteudoPasso(n)}<p class="erro" role="alert">${esc(ab.erro)}</p></div>
-    <div class="ab-fala"><div class="folhinha ab-folhinha" id="ab-folhinha" data-estado="parada" aria-hidden="true">${FOLHINHA_SVG}</div>
+    <div class="ab-fala"><div class="folhinha ab-folhinha" id="ab-folhinha" data-estado="parada" aria-hidden="true">${FolhinhaDesenho.svg('ab')}</div>
       <button class="ab-balao" onclick="completarFala()" aria-label="Mostrar a fala inteira"><span id="ab-fala-texto" aria-hidden="true"></span></button><p class="sr" role="status">${esc(AB_FALAS[n])}</p></div>
     <div class="ab-rodape"><button class="btn" onclick="abAvancar()">${principal}</button>${opcionais(n) || n === 5 ? '<button class="btn text" onclick="abPular()">Pular</button>' : ''}</div>
   </div>`;
@@ -4432,7 +4388,7 @@ function mostrarNovidades(){
   const perguntaAniv = !aj.festas.aniversario, perguntaFac = aj.mostrarFaculdade && !fac().semestre;
   const widgets = WidgetPonte.disponivel();
   abrirSheet(`<div class="nv">
-    <div class="nv-topo"><div class="folhinha nv-folhinha" data-estado="comemorando" aria-hidden="true">${FOLHINHA_SVG}</div>
+    <div class="nv-topo"><div class="folhinha nv-folhinha" data-estado="comemorando" aria-hidden="true">${FolhinhaDesenho.svg('nv')}</div>
       <h2 id="nv-tit">Oi! Eu sou a Folhinha, sua nova guia. Agora sua rotina tem uma árvore que cresce a cada item feito.</h2></div>
     <div class="nv-arvore">${cenaArvore(a.folhas, a.estagio, { prefixo: 'nv', rotulo: true }).svg}<p class="hint">${a.nomeEstagio} · ${folhasTxt(a.folhas)}</p></div>
     ${perguntaAniv ? `<span class="rotulo-grupo">Quando é seu aniversário?</span><div class="row">${MESES_OPC(0, 'nv-dia', 'ab-dia', 31, 'Dia')}${MESES_OPC(0, 'nv-mes', 'ab-mes', 12, 'Mês')}</div><p class="erro" role="alert" id="nv-erro"></p>` : ''}
