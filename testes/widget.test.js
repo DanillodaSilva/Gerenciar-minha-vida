@@ -143,3 +143,37 @@ describe('retrato', () => {
     assert.deepEqual(r.aulas, []);
   });
 });
+
+describe('regra nova no retrato (mesmos casos do Java)', () => {
+  const ret = (total, feitos, extra = {}) => ({
+    versao: 2, hoje: '2026-11-10',
+    dias: [{ data: '2026-11-10', itens: Array.from({ length: total }, (_, k) => ({ id: 'i' + k, tipo: 'rotina', titulo: 'I', subtitulo: 'S', feito: k < feitos })) }, { data: '2026-11-11', itens: [] }],
+    arvore: { folhasAteOntem: 10, tentativasAteOntem: 0, estagios: [0, 5, 15, 35, 70, 140, 250, 400, 600, 1000], nomes: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'], ...extra },
+    sequencia: { ateOntem: 0 }, faculdadeVisivel: false, semestreConfigurado: false, aulas: [],
+  });
+  const folhas = (total, feitos, extra) => W.calcularDoRetrato(ret(total, feitos, extra), [], '2026-11-11').folhas;
+  test('faixas de 10 itens num dia encerrado', () => {
+    const esperado = [-2, 1, 1, 2, 2, 3, 3, 4, 4, 5];
+    [0, 1, 2, 3, 4, 5, 7, 8, 9, 10].forEach((k, i) => assert.equal(folhas(10, k), 10 + esperado[i], k + ' de 10'));
+  });
+  test('faixas sem arredondar', () => {
+    assert.equal(folhas(12, 3), 12);
+    assert.equal(folhas(3, 1), 12);
+    assert.equal(folhas(3, 2), 13);
+  });
+  test('7.º dia tentado dá +3 de bônus', () => {
+    assert.equal(folhas(10, 1, { tentativasAteOntem: 6 }), 14);
+    assert.equal(W.calcularDoRetrato(ret(10, 1, { tentativasAteOntem: 6 }), [], '2026-11-11').tentativas, 7);
+  });
+  test('piso 0 com dia em branco', () => {
+    assert.equal(folhas(10, 0, { folhasAteOntem: 1 }), 0);
+  });
+  test('hoje em 0% não perde e com bônus soma na hora', () => {
+    const r = ret(10, 0, { tentativasAteOntem: 6 });
+    assert.equal(W.calcularDoRetrato(r, [], '2026-11-10').folhas, 10);
+    r.dias[0].itens[0].feito = true;
+    const c = W.calcularDoRetrato(r, [], '2026-11-10');
+    assert.equal(c.folhasHoje, 4);
+    assert.equal(c.folhas, 14);
+  });
+});
