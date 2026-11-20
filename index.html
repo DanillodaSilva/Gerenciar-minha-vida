@@ -761,6 +761,9 @@
     --folhinha-luz:var(--p-folhinha-luz); --folhinha-meio:var(--p-folhinha-meio); --folhinha-base:var(--p-folhinha-base); --folhinha-contorno:var(--p-folhinha-contorno); --folhinha-nervura:var(--p-folhinha-nervura);
     --folhinha-sombra:var(--p-folhinha-sombra); --folhinha-bochecha:var(--p-folhinha-bochecha); --folhinha-pupila:var(--p-folhinha-pupila); --folhinha-olho:var(--p-folhinha-olho); --folhinha-boca:var(--p-folhinha-boca); --folhinha-lingua:var(--p-folhinha-lingua);
     --fo-tam:88px; --fo-alt:calc(var(--fo-tam) * 1.067); --fo-esq:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-2) + env(safe-area-inset-left))}
+  :root{--p-arvore-folha-texto:#256B42; --p-arvore-folha-texto-e:#7FCB9A; --arvore-folha-texto:var(--p-arvore-folha-texto)}
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-folha-texto:var(--p-arvore-folha-texto-e)} }
+  :root[data-theme="dark"]{--arvore-folha-texto:var(--p-arvore-folha-texto-e)}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--folhinha-contorno:var(--p-folhinha-contorno-e); --folhinha-sombra:var(--p-folhinha-sombra-e)} }
   :root[data-theme="dark"]{--folhinha-contorno:var(--p-folhinha-contorno-e); --folhinha-sombra:var(--p-folhinha-sombra-e)}
   @media (max-height: 640px){ :root{--fo-tam:72px} }
@@ -812,6 +815,13 @@
   .linha-arvore{display:flex;align-items:center;gap:var(--space-2);width:fit-content;max-width:100%;margin:calc(var(--space-2) * -1) 0 var(--space-1) auto;min-height:var(--touch);padding:0 var(--space-3) 0 var(--space-1);border-radius:var(--radius-full);color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium)}
   .mini-arvore{display:block;width:44px;height:44px;flex:none}
   .linha-arvore svg.arvore-viva{width:44px;height:44px}
+  .linha-txt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+  .chip-folhas{display:inline-block;padding:2px var(--space-2);border-radius:var(--radius-full);background:color-mix(in srgb, var(--arvore-folha-1) 12%, transparent);color:var(--arvore-folha-texto);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  .chip-folhas b{font-weight:var(--w-semibold)}
+  .chip-bonus{margin:0 2px 0 4px;padding:0 6px;border-radius:var(--radius-full);background:var(--arvore-flor-miolo);color:var(--p-ink-900);font-weight:var(--w-semibold)}
+  .folha-voo{position:fixed;left:0;top:0;width:16px;height:16px;z-index:7;pointer-events:none;fill:var(--arvore-folha-2)}
+  .folha-voo svg{display:block;width:100%;height:100%}
+  .ganho-folhas{position:fixed;z-index:7;pointer-events:none;font-weight:var(--w-semibold);font-size:var(--fs-label);color:var(--arvore-folha-texto);background:var(--surface);padding:0 6px;border-radius:var(--radius-full);box-shadow:var(--shadow-fab);font-variant-numeric:tabular-nums}
   .linha-arvore{transition:background-color var(--dur-toque) var(--ease-saida)}
   .linha-arvore:active{background:var(--surface-variant)}
   @media (hover: hover) and (pointer: fine){ .linha-arvore:hover{background:var(--surface-variant)} }
@@ -1272,7 +1282,9 @@ function marcarComToque(e, tipo, id){
   const item = e.currentTarget.closest('.item');
   const vaiMarcar = !estaFeita(tipo, id);
   const pt = ultimoToque && item && item.contains(ultimoToque.alvo) ? ultimoToque : null;
+  const ehHoje = diaSel === hoje(), antesFolhas = ehHoje ? arvoreAtual().folhasHoje : 0, check = item && item.querySelector('.check'), origem = check ? check.getBoundingClientRect() : null;
   concluirEntrada(tipo, id);
+  if(vaiMarcar && ehHoje) voarFolha(origem, Math.max(0, arvoreAtual().folhasHoje - antesFolhas));
   if(vaiMarcar){
     const r = item && item.getBoundingClientRect();
     if(r) onda(item, pt ? pt.x : r.left + r.width / 2, pt ? pt.y : r.top + r.height / 2);
@@ -4138,9 +4150,50 @@ function cartaoArvore(){
     <p class="hint">7 dias seguidos tentando: +3 de bônus. Dia em branco: −2.</p>
   </section>`;
 }
+function textoChipFolhas(a){
+  if(!a.totalHoje) return null;
+  if(!a.folhasHoje) return { curto: 'Faça 1 item para começar', html: 'Faça 1 item para começar' };
+  const resto = a.proximaFaixa ? `faça mais ${a.proximaFaixa.faltamItens} ${a.proximaFaixa.faltamItens === 1 ? 'item' : 'itens'} para +${a.proximaFaixa.folhas}` : 'máximo de hoje';
+  const nome = a.folhasHoje === 1 ? 'folha' : 'folhas', bonus = a.bonusHoje ? ` · +${a.bonusHoje} de bônus` : '';
+  return { curto: `+${a.folhasHoje} ${nome} hoje${bonus} · ${resto}`, html: `+<b data-contar="${a.folhasHoje}">${a.folhasHoje}</b> ${nome} hoje${bonus ? `<span class="chip-bonus">${bonus.slice(3)}</span>` : ''} · ${resto}` };
+}
 function linhaArvore(){
-  const a = arvoreAtual();
-  return `<button class="linha-arvore" data-chave="linha-arvore" onclick="irPara('constancia')" aria-label="Sua árvore: ${a.nomeEstagio}, ${folhasTxt(a.folhas)}. Abrir Progresso">${(c => `<span class="mini-arvore" data-cena="${c.chave}">${c.svg}</span>`)(cenaArvore(a.folhas, a.estagio, { prefixo: 'hoje', mini: true }))}<span>${a.nomeEstagio} · ${folhasTxt(a.folhas)}</span></button>`;
+  const a = arvoreAtual(), chip = textoChipFolhas(a), c = cenaArvore(a.folhas, a.estagio, { prefixo: 'hoje', mini: true });
+  return `<button class="linha-arvore" data-chave="linha-arvore" onclick="irPara('constancia')" aria-label="Sua árvore: ${a.nomeEstagio}, ${folhasTxt(a.folhas)}.${chip ? ' ' + esc(chip.curto) + '.' : ''} Abrir Progresso"><span class="mini-arvore" data-cena="${c.chave}">${c.svg}</span><span class="linha-txt"><span>${a.nomeEstagio} · ${folhasTxt(a.folhas)}</span>${chip ? `<span class="chip-folhas" aria-hidden="true">${chip.html}</span>` : ''}</span></button>`;
+}
+let voosFolha = 0;
+function mostrarGanho(alvo, n){
+  const r = alvo.getBoundingClientRect(), t = document.createElement('span');
+  t.className = 'ganho-folhas'; t.setAttribute('aria-hidden', 'true'); t.textContent = '+' + n;
+  t.style.left = (r.left + r.width / 2) + 'px'; t.style.top = (r.top - 4) + 'px';
+  document.body.appendChild(t);
+  const k = Animacoes.reduzido() ? [{ opacity: 0 }, { opacity: 1, offset: 0.2 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }] : [{ opacity: 0, transform: 'translate(-50%, 4px)' }, { opacity: 1, transform: 'translate(-50%, -8px)', offset: 0.25 }, { opacity: 1, transform: 'translate(-50%, -12px)', offset: 0.8 }, { opacity: 0, transform: 'translate(-50%, -18px)' }];
+  t.animate(k, { duration: 1200, easing: Animacoes.MOV.saida, fill: 'forwards' }).onfinish = () => t.remove();
+}
+function voarFolha(de, ganho){
+  const alvo = document.querySelector('#app .mini-arvore');
+  if(!alvo) return;
+  const ra = alvo.getBoundingClientRect();
+  if(ra.bottom < 0 || ra.top > innerHeight) return;
+  if(Animacoes.reduzido() || voosFolha >= 3 || !de){ if(ganho > 0) mostrarGanho(alvo, ganho); return; }
+  voosFolha++;
+  const el = document.createElement('div');
+  el.className = 'folha-voo'; el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = '<svg viewBox="-8 -14 16 16" focusable="false"><path d="M0 0C-4 -2.6 -4.6 -8.4 0 -13C4.6 -8.4 4 -2.6 0 0Z"/></svg>';
+  document.body.appendChild(el);
+  const x0 = de.left + de.width / 2 - 8, y0 = de.top + de.height / 2 - 8, x1 = ra.left + ra.width / 2 - 8, y1 = ra.top + ra.height * 0.35 - 8;
+  const cx = x0 + (x1 - x0) * 0.25, cy = Math.min(y0, y1) - 70, quadros = [];
+  for(let k = 0; k <= 12; k++){
+    const t = k / 12, u = 1 - t;
+    quadros.push({ transform: `translate(${u * u * x0 + 2 * u * t * cx + t * t * x1}px, ${u * u * y0 + 2 * u * t * cy + t * t * y1}px) rotate(${t * 220 - 20}deg) scale(${1 - t * 0.35})`, opacity: t > 0.92 ? 0.4 : 1 });
+  }
+  el.animate(quadros, { duration: 700, easing: 'cubic-bezier(.45,0,.55,1)', fill: 'forwards' }).onfinish = () => {
+    el.remove(); voosFolha--;
+    const alvoAgora = document.querySelector('#app .mini-arvore');
+    if(!alvoAgora) return;
+    alvoAgora.animate([{ scale: '1' }, { scale: '1.08' }, { scale: '1' }], { duration: 320, easing: Animacoes.MOV.saida });
+    if(ganho > 0) mostrarGanho(alvoAgora, ganho);
+  };
 }
 const arvoresVisiveis = () => [...document.querySelectorAll('#app svg.arvore-viva, .comemoracao svg.arvore-viva')];
 const corToken = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
