@@ -792,6 +792,10 @@
   .arvore-30 .q4{background:color-mix(in srgb, var(--arvore-folha-1) 82%, var(--surface-variant))}
   .arvore-30 .q5{background:var(--arvore-folha-1)}
   .arvore-30 .qm{background:var(--danger)}
+  .faixas-tab{width:100%;border-collapse:collapse;table-layout:fixed;font-size:var(--fs-meta);line-height:var(--lh-meta);font-variant-numeric:tabular-nums;color:var(--text-secondary)}
+  .faixas-tab th{text-align:left;font-weight:var(--w-medium);width:4.5em}
+  .faixas-tab td{text-align:center;padding:var(--space-1) 0}
+  .faixas-tab tr + tr td{color:var(--text-primary);font-weight:var(--w-semibold)}
   .linha-arvore{display:flex;align-items:center;gap:var(--space-2);width:fit-content;max-width:100%;margin:calc(var(--space-2) * -1) 0 var(--space-1) auto;min-height:var(--touch);padding:0 var(--space-3) 0 var(--space-1);border-radius:var(--radius-full);color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium)}
   .linha-arvore svg.arvore{width:32px;height:32px;flex:none}
   .linha-arvore{transition:background-color var(--dur-toque) var(--ease-saida)}
@@ -4083,7 +4087,7 @@ document.addEventListener('visibilitychange', () => document.documentElement.cla
 const SIM_ARVORE = (() => {
   if(NATIVO || (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')) return null;
   const p = new URLSearchParams(location.search), f = p.get('folhas'), e = p.get('evento');
-  const folhas = f !== null && /^\d{1,5}$/.test(f) ? Number(f) : null, evento = ['perdeu', 'ganhou', 'subiu', 'voltou'].includes(e) ? e : null;
+  const folhas = f !== null && /^\d{1,5}$/.test(f) ? Number(f) : null, evento = ['perdeu', 'faixa', 'bonus', 'subiu', 'voltou', 'completo'].includes(e) ? e : null;
   return folhas === null && !evento ? null : { folhas, evento };
 })();
 const memoArvore = {};
@@ -4115,7 +4119,8 @@ function cartaoArvore(){
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
       <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
     <div class="arvore-30" role="list" aria-label="Últimos 30 dias">${a.historico.map(h => { const t = `${Regras.curto(h.data)}: ${textoDiaArvore(h)}`; return `<span role="listitem" class="q ${classeDiaArvore(h)}" title="${t}" aria-label="${t}"></span>`; }).join('')}</div>
-    <p class="hint">Dia completo: +1 folha. Menos da metade: −1 folha.</p>
+    <table class="faixas-tab"><caption class="sr">Folhas por dia, conforme o quanto você fez</caption><tr><th scope="row">Feito</th><td>1–24%</td><td>25%</td><td>50%</td><td>75%</td><td>100%</td></tr><tr><th scope="row">Folhas</th><td>+1</td><td>+2</td><td>+3</td><td>+4</td><td>+5</td></tr></table>
+    <p class="hint">7 dias seguidos tentando: +3 de bônus. Dia em branco: −2.</p>
   </section>`;
 }
 function linhaArvore(){
@@ -4153,24 +4158,38 @@ function cairFolhas(n){
     }
   });
 }
-let ateOntemSessao = null, eventoSimuladoFeito = false;
-function processarEventosArvore(){
-  if(!dados) return [];
-  const a = arvoreAtual(), aj = dados.ajustes.arvore;
-  let ev = SIM_ARVORE && SIM_ARVORE.folhas !== null ? [] : Arvore.eventosDesde(aj, a);
-  const soHoje = ateOntemSessao !== null && ateOntemSessao === a.folhasAteOntem;
-  if(SIM_ARVORE && SIM_ARVORE.evento && !eventoSimuladoFeito){
-    eventoSimuladoFeito = true;
-    ev = { perdeu: [{ tipo: 'perdeu', n: 1 }], ganhou: [{ tipo: 'ganhou', n: 1 }], subiu: [{ tipo: 'ganhou', n: 1 }, { tipo: 'subiuEstagio', nome: a.nomeEstagio }], voltou: [{ tipo: 'perdeu', n: 1 }, { tipo: 'voltouEstagio', nome: a.nomeEstagio }] }[SIM_ARVORE.evento];
-  }
-  ateOntemSessao = a.folhasAteOntem;
-  if(!(SIM_ARVORE && SIM_ARVORE.folhas !== null) && (aj.folhasVistas !== a.folhas || aj.estagioVisto !== a.estagio)){ aj.folhasVistas = a.folhas; aj.estagioVisto = a.estagio; salvar(); }
+let eventoSimuladoFeito = false;
+const EVENTOS_SIM = {
+  perdeu: () => [{ tipo: 'perdeu', n: 2 }],
+  faixa: () => [{ tipo: 'faixaSubiu', faixa: 'Bom dia', folhas: 3, primeira: false }],
+  bonus: () => [{ tipo: 'bonus', dias: 7 }],
+  subiu: a => [{ tipo: 'subiuEstagio', nome: a.nomeEstagio }],
+  voltou: a => [{ tipo: 'perdeu', n: 2 }, { tipo: 'voltouEstagio', nome: a.nomeEstagio }],
+  completo: () => [{ tipo: 'faixaSubiu', faixa: 'Dia completo', folhas: 5, primeira: false }],
+};
+function animarEventosArvore(ev, antes, a){
   const tipos = ev.map(e => e.tipo);
   if(tipos.includes('subiuEstagio')) subirEstagioAnim();
-  else if(tipos.includes('ganhou')) folhaNovaAnim(a.folhas - 1);
+  else if(antes !== null && a.folhas > antes) for(let i = Math.max(antes, a.folhas - 12); i < Math.min(a.folhas, 120); i++) folhaNovaAnim(i);
   const perda = ev.find(e => e.tipo === 'perdeu');
   if(perda) cairFolhas(perda.n);
-  return soHoje ? ev.filter(e => e.tipo !== 'perdeu' && e.tipo !== 'voltouEstagio') : ev;
+}
+function processarEventosArvore(){
+  if(!dados) return [];
+  const a = arvoreAtual(), aj = dados.ajustes.arvore, sim = !!(SIM_ARVORE && SIM_ARVORE.folhas !== null);
+  if(aj.regra !== 2 && !sim){
+    const t = Arvore.transicaoRegra(aj, a);
+    dados.ajustes.arvore = t.arvore; salvar();
+    return t.fala ? [{ tipo: 'regra', texto: t.fala }] : [];
+  }
+  let ev = sim ? [] : Arvore.eventosDesde(aj, a);
+  if(SIM_ARVORE && SIM_ARVORE.evento && !eventoSimuladoFeito){ eventoSimuladoFeito = true; ev = EVENTOS_SIM[SIM_ARVORE.evento](a); }
+  if(!sim){
+    const novo = Arvore.registrarVisto(aj, a);
+    if(JSON.stringify(novo) !== JSON.stringify(aj)){ dados.ajustes.arvore = novo; salvar(); }
+  }
+  animarEventosArvore(ev, sim ? null : aj.folhasVistas, a);
+  return ev;
 }
 /* ---------- abertura ---------- */
 const NOVIDADES = '1.6.0';
@@ -4184,7 +4203,7 @@ const AB_FALAS = {
   7: 'Você faz faculdade? Eu ajudo com faltas e anotações.',
   8: 'Posso enfeitar o app no Natal, no Ano Novo e em outras datas?',
   9: 'Quer ver sua árvore e marcar itens direto da tela inicial?',
-  10: 'Plantei sua semente! Cada dia completo faz sua árvore ganhar uma folha.',
+  10: 'Plantei sua semente! Cada item que você fizer ajuda sua árvore a crescer.',
 };
 const AB_TITULOS = { 1: 'Boas-vindas', 2: 'Seu nome', 3: 'Aniversário', 4: 'Aparência', 5: 'Sua rotina', 6: 'Lembrete', 7: 'Faculdade', 8: 'Datas comemorativas', 9: 'Widgets', 10: 'Pronto' };
 const passosAbertura = () => [1, 2, 3, 4, 5, ...(NATIVO ? [6] : []), 7, 8, ...(WidgetPonte.disponivel() ? [9] : []), 10];
@@ -4366,7 +4385,7 @@ function mostrarNovidades(){
   const widgets = WidgetPonte.disponivel();
   abrirSheet(`<div class="nv">
     <div class="nv-topo"><div class="folhinha nv-folhinha" data-estado="comemorando" aria-hidden="true">${FOLHINHA_SVG}</div>
-      <h2 id="nv-tit">Oi! Eu sou a Folhinha, sua nova guia. Agora sua rotina tem uma árvore que cresce a cada dia completo.</h2></div>
+      <h2 id="nv-tit">Oi! Eu sou a Folhinha, sua nova guia. Agora sua rotina tem uma árvore que cresce a cada item feito.</h2></div>
     <div class="nv-arvore">${desenharArvore(a.folhas, a.estagio)}<p class="hint">${a.nomeEstagio} · ${folhasTxt(a.folhas)}</p></div>
     ${perguntaAniv ? `<span class="rotulo-grupo">Quando é seu aniversário?</span><div class="row">${MESES_OPC(0, 'nv-dia', 'ab-dia', 31, 'Dia')}${MESES_OPC(0, 'nv-mes', 'ab-mes', 12, 'Mês')}</div><p class="erro" role="alert" id="nv-erro"></p>` : ''}
     ${perguntaFac ? `<span class="rotulo-grupo" id="nv-fac">Você faz faculdade?</span><div class="chips" role="group" aria-labelledby="nv-fac"><button class="chip" aria-pressed="false" data-fac="sim" onclick="nvEscolherFac('sim')"><span>Sim</span></button><button class="chip" aria-pressed="false" data-fac="nao" onclick="nvEscolherFac('nao')"><span>Não faço</span></button></div>` : ''}
@@ -4391,14 +4410,14 @@ const DICAS_ABA = {
   rotina: 'Toque num item para marcar. Deslize para o lado para ver mais opções.',
   proximos: 'Aqui ficam as tarefas dos próximos dias.',
   faculdade: 'Marque a presença logo depois da aula. Eu aviso se as faltas apertarem.',
-  constancia: 'Esta é a sua árvore. Cada dia completo vira uma folha nova.',
+  constancia: 'Esta é a sua árvore. Cada item feito ajuda ela a crescer.',
   ajustes: 'Faça um backup de vez em quando. Seus dados ficam só neste celular.',
 };
 const DICAS = [
   ['Itens pequenos são mais fáceis de manter todo dia.'],
   ['Dias com metade da rotina feita já contam para a sequência.'],
-  ['Completar o dia inteiro faz a árvore ganhar uma folha.'],
-  ['Abaixo da metade, a árvore perde uma folha.'],
+  ['Qualquer item feito já vale folha. O importante é não deixar o dia em branco.'],
+  ['A cada 7 dias seguidos tentando, você ganha 3 folhas de bônus.'],
   ['Você pode mudar o tema em Ajustes.'],
   ['No app Android, dá para marcar itens direto pelo widget.', () => NATIVO],
   ['Exporte um backup antes de trocar de celular.'],
@@ -4412,24 +4431,43 @@ function proximaDica(){
     if(!se || se()){ fo.proximaDica = (i + 1) % DICAS.length; salvar(); Folhinha.falar(texto); return; }
   }
 }
+const FALAS_FAIXA = {
+  'Começou': ['Começou! +1 folha. Cada item a mais vale mais folhas.', 'acenando'],
+  'Caminhando': ['Caminhando! +2 folhas hoje.', 'comemorando'],
+  'Bom dia': ['Metade feita: +3 folhas hoje!', 'comemorando'],
+  'Quase lá': ['Quase lá: +4 folhas hoje!', 'comemorando'],
+  'Dia completo': ['Dia completo! +5 folhas na sua árvore.', 'comemorando'],
+};
 function textoEventosArvore(ev){
-  const de = t => ev.find(e => e.tipo === t), linhas = [];
-  const perdeu = de('perdeu'), voltou = de('voltouEstagio'), ganhou = de('ganhou'), subiu = de('subiuEstagio');
-  if(perdeu) linhas.push(`Ontem não deu: sua árvore perdeu ${perdeu.n} ${perdeu.n === 1 ? 'folha' : 'folhas'}. Bora recuperar hoje?`);
-  if(voltou) linhas.push(`Sua árvore voltou a ser ${voltou.nome}. Dá pra crescer de novo!`);
-  if(subiu) linhas.push(`Sua árvore virou ${subiu.nome}!`);
-  else if(ganhou) linhas.push('Dia completo! Sua árvore ganhou uma folha.');
-  return linhas.length ? { texto: linhas.join(' '), estado: subiu || ganhou ? 'comemorando' : 'triste' } : null;
+  const de = t => ev.find(e => e.tipo === t);
+  const regra = de('regra'), perdeu = de('perdeu'), voltou = de('voltouEstagio'), subiu = de('subiuEstagio'), bonus = de('bonus'), faixa = de('faixaSubiu');
+  if(regra) return { texto: regra.texto, estado: 'acenando', conta: true };
+  if(subiu) return { texto: `Sua árvore virou ${subiu.nome}!`, estado: 'comemorando', conta: true, grande: true };
+  if(bonus) return { texto: `${bonus.dias} dias seguidos tentando! +3 folhas de bônus.`, estado: 'comemorando', conta: false };
+  if(perdeu || voltou){
+    const linhas = [];
+    if(perdeu) linhas.push(`Ontem passou em branco: sua árvore perdeu ${folhasTxt(perdeu.n)}. Qualquer item hoje já faz ela crescer de novo.`);
+    if(voltou) linhas.push(`Sua árvore voltou a ser ${voltou.nome}. Um item por dia já ajuda a crescer de novo.`);
+    return { texto: linhas.join(' '), estado: 'triste', conta: true };
+  }
+  if(faixa && FALAS_FAIXA[faixa.faixa]){ const [texto, estado] = FALAS_FAIXA[faixa.faixa]; return { texto, estado, conta: false, grande: faixa.faixa === 'Dia completo' }; }
+  return null;
 }
+let reacaoPendente = null;
+const pesoReacao = r => r.grande ? 3 : r.conta ? 2 : 1;
 function reagirArvore(ev){
   const r = textoEventosArvore(ev);
   if(!r) return;
+  if(reacaoPendente && pesoReacao(reacaoPendente.r) > pesoReacao(r)) return;
+  if(reacaoPendente) clearTimeout(reacaoPendente.timer);
+  reacaoPendente = { r, timer: 0 };
   const tentar = (n = 0) => {
-    if(document.querySelector('.comemoracao') || $('overlay').classList.contains('show') || $('dialogo').classList.contains('show')){ if(n < 20) setTimeout(() => tentar(n + 1), 500); return; }
-    if(folhinhaAtiva()){ Folhinha.falar(r.texto, { estado: r.estado }); dados.ajustes.folhinha.ultimaAparicao = hoje(); salvar(); }
-    else toast(r.texto);
+    if(document.querySelector('.comemoracao') || $('overlay').classList.contains('show') || $('dialogo').classList.contains('show')){ if(n < 20) reacaoPendente.timer = setTimeout(() => tentar(n + 1), 500); else reacaoPendente = null; return; }
+    reacaoPendente = null;
+    if(folhinhaAtiva()){ Folhinha.falar(r.texto, { estado: r.estado }); if(r.conta){ dados.ajustes.folhinha.ultimaAparicao = hoje(); salvar(); } }
+    else if(r.conta || r.grande) toast(r.texto);
   };
-  setTimeout(tentar, Animacoes.MOV.lenta);
+  reacaoPendente.timer = setTimeout(tentar, Animacoes.MOV.lenta);
 }
 let timerDicaAba = null;
 function dicaDeAba(){
