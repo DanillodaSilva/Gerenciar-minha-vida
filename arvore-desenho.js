@@ -146,9 +146,46 @@
     return p.join('');
   }
 
+  function enfeites(festa, tufos, c, noite, zoom) {
+    if (!festa || !tufos.length) return { arvore: '', ceu: '', chao: '' };
+    const xs = tufos.map(t => t.x), ys = tufos.map(t => t.y), esq = Math.min(...xs) - c.raio * 0.6, dir = Math.max(...xs) + c.raio * 0.6, topo = Math.min(...ys) - c.raio * 0.8, baixo = Math.max(...ys) + c.raio * 0.4;
+    const meio = (esq + dir) / 2, f = k => v(`--festa-${k}`), alto = tufos.reduce((a, b) => (b.y < a.y ? b : a)), lado = tufos.reduce((a, b) => (b.x > a.x ? b : a));
+    const r = { arvore: '', ceu: '', chao: '' };
+    if (festa === 'natal') {
+      const qtd = Math.max(8, Math.min(14, 6 + c.tufos)), pts = [];
+      for (let k = 0; k < qtd; k++) { const t = k / (qtd - 1), x = esq + (dir - esq) * t, onda = Math.sin(t * Math.PI * 3) * 8; pts.push([x, baixo - (baixo - topo) * 0.35 + onda + Math.sin(t * Math.PI) * -10]); }
+      const fio = 'M' + pts.map(([x, y]) => `${n(x)} ${n(y)}`).join('L');
+      const grupos = '<g class="arv-luzes">' + [1, 2, 3].map(g => `<g fill="${f(g)}">${pts.filter((_, k) => k % 3 === g - 1).map(([x, y]) => `<circle cx="${n(x)}" cy="${n(y + 3)}" r="3.2"/>`).join('')}</g>`).join('') + '</g>';
+      const sx = alto.x, sy = topo - 4, est = [0, 1, 2, 3, 4].map(k => { const a1 = -Math.PI / 2 + k * Math.PI * 2 / 5, a2 = a1 + Math.PI / 5; return `${n(sx + Math.cos(a1) * 11)} ${n(sy + Math.sin(a1) * 11)} ${n(sx + Math.cos(a2) * 4.6)} ${n(sy + Math.sin(a2) * 4.6)}`; }).join(' ');
+      r.arvore = `<g class="arv-enfeite arv-natal"><path d="${fio}" fill="none" stroke="${v('--arvore-tronco-sombra')}" stroke-width="1.2" opacity=".7"/>${grupos}<polygon points="${est}" fill="${v('--arvore-flor-miolo')}" stroke="${v('--arvore-tronco-sombra')}" stroke-width=".8"/></g>`;
+    } else if (festa === 'ano-novo') {
+      r.ceu = `<g class="arv-enfeite" stroke="${v('--arvore-flor-miolo')}" stroke-width="1.6" stroke-linecap="round">${[[56, 62, 14], [150, 34, 10], [296, 150, 9]].map(([x, y, s]) => Array.from({ length: 8 }, (_, k) => { const a = k * Math.PI / 4; return `<path d="M${n(x + Math.cos(a) * s * 0.4)} ${n(y + Math.sin(a) * s * 0.4)}L${n(x + Math.cos(a) * s)} ${n(y + Math.sin(a) * s)}"/>`; }).join('')).join('')}</g>`;
+    } else if (festa === 'carnaval') {
+      const x = lado.x, y = lado.y + c.raio * 0.5;
+      r.arvore = `<g class="arv-enfeite" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M${n(x)} ${n(y)}c6 10 -6 16 2 26s-8 14 0 24" stroke="${f(1)}"/><path d="M${n(x - 6)} ${n(y + 2)}c-6 9 6 15 -2 24s6 12 -1 20" stroke="${f(2)}"/></g>`;
+    } else if (festa === 'pascoa') {
+      const x = BX + 40, y = BY + 4;
+      r.chao = `<g class="arv-enfeite"><ellipse cx="${n(x)}" cy="${n(y)}" rx="7" ry="9" fill="${f(1)}"/><path d="M${n(x - 7)} ${n(y)}l2.4 -2.4l2.4 2.4l2.4 -2.4l2.4 2.4l2.4 -2.4l2.4 2.4" fill="none" stroke="${f(2)}" stroke-width="1.6"/><circle cx="${n(x - 2)}" cy="${n(y - 4)}" r="1.2" fill="${f(3)}"/><circle cx="${n(x + 2.5)}" cy="${n(y + 4)}" r="1.2" fill="${f(3)}"/></g>`;
+    } else if (festa === 'namorados') {
+      const x = BX + 1, y = BY - Math.max(18, c.h * 0.22);
+      r.arvore = `<path class="arv-enfeite" d="M${n(x)} ${n(y + 5)}C${n(x - 7)} ${n(y)} ${n(x - 4.5)} ${n(y - 6)} ${n(x)} ${n(y - 2.5)}C${n(x + 4.5)} ${n(y - 6)} ${n(x + 7)} ${n(y)} ${n(x)} ${n(y + 5)}Z" fill="${f(1)}" stroke="${v('--arvore-tronco-sombra')}" stroke-width="1.2" opacity=".9"/>`;
+    } else if (festa === 'junina') {
+      const ord = tufos.slice().sort((a, b) => a.x - b.x), t1 = ord[0], t2 = ord[ord.length - 1], y1 = t1.y + c.raio * 0.6, y2 = t2.y + c.raio * 0.6, mx = (t1.x + t2.x) / 2, my = Math.max(y1, y2) + 16;
+      const bandeiras = Array.from({ length: 7 }, (_, k) => { const t = (k + 0.5) / 7, u = 1 - t, x = u * u * t1.x + 2 * u * t * mx + t * t * t2.x, y = u * u * y1 + 2 * u * t * my + t * t * y2; return `<path d="M${n(x - 4)} ${n(y)}h8l-4 8z" fill="${f((k % 3) + 1)}"/>`; }).join('');
+      r.arvore = `<g class="arv-enfeite"><path d="M${n(t1.x)} ${n(y1)}Q${n(mx)} ${n(my)} ${n(t2.x)} ${n(y2)}" fill="none" stroke="${v('--arvore-tronco-sombra')}" stroke-width=".9"/>${bandeiras}</g>`;
+    } else if (festa === 'halloween') {
+      const x = BX - 42, y = BY + 3;
+      r.chao = `<g class="arv-enfeite"><ellipse cx="${n(x)}" cy="${n(y)}" rx="10" ry="7.5" fill="${v('--arvore-fruto')}"/><path d="M${n(x - 4)} ${n(y - 7)}q-2 7 0 14M${n(x + 4)} ${n(y - 7)}q2 7 0 14" fill="none" stroke="${v('--arvore-tronco-sombra')}" stroke-width=".9" opacity=".5"/><path d="M${n(x)} ${n(y - 7)}q1 -4 4 -5" fill="none" stroke="${v('--arvore-folha-1')}" stroke-width="1.8" stroke-linecap="round"/></g>`;
+      if (noite) r.ceu = `<path class="arv-enfeite" d="M200 92q6 -6 12 -2q2 -4 4 0q2 -4 4 0q6 -4 12 2q-6 -1 -9 4q-2 -2 -5 0q-3 -2 -5 0q-3 -5 -9 -4z" fill="${v('--arvore-olho')}"/>`;
+    } else if (festa === 'aniversario') {
+      const x = lado.x - c.raio * 0.2, y = lado.y - c.raio * 0.3;
+      r.arvore = `<g class="arv-enfeite">${[[f(1), -6, -34], [f(2), 8, -42]].map(([cor, dx, dy]) => `<path d="M${n(x)} ${n(y)}Q${n(x + dx * 0.4)} ${n(y + dy * 0.5)} ${n(x + dx)} ${n(y + dy + 9)}" fill="none" stroke="${v('--arvore-tronco-sombra')}" stroke-width=".8"/><ellipse cx="${n(x + dx)}" cy="${n(y + dy)}" rx="6.5" ry="8" fill="${cor}"/><ellipse cx="${n(x + dx - 2)}" cy="${n(y + dy - 3)}" rx="1.6" ry="2.4" fill="${v('--arvore-brilho')}" opacity=".6"/>`).join('')}</g>`;
+    }
+    return r;
+  }
   function gerarArvore(o) {
     const folhas = Math.max(0, Math.floor(o.folhas || 0)), estagio = Math.max(0, Math.min(9, o.estagio || 0));
-    const periodo = CEUS[o.periodo] ? o.periodo : 'manha', escuro = o.tema === 'escuro', mini = o.tamanho === 'mini', pre = o.prefixo || 'av';
+    const festa = typeof o.festa === 'string' ? o.festa : null, periodo = CEUS[o.periodo] ? o.periodo : 'manha', escuro = o.tema === 'escuro', mini = o.tamanho === 'mini', pre = o.prefixo || 'av';
     const rnd = mulberry32(SEMENTE + 7), est = estrutura(estagio), c = est.c;
     est.pre = pre;
     const tufos = escolherTufos(est, estagio), T = tufos.length, cap = Math.ceil(Math.min(MAX_FOLHAS, TETO[estagio] - 1) / T), desenhadas = Math.min(folhas, MAX_FOLHAS);
@@ -192,13 +229,14 @@
     const larguraCopa = estagio === 0 ? 14 : Math.max(18, (Math.max(...tufos.map(t => t.x)) - Math.min(...tufos.map(t => t.x))) / 2 + c.raio);
     const sombra = `<ellipse class="arv-sombra" cx="${BX + 8}" cy="${BY + 3}" rx="${n(larguraCopa * 0.9 * (mini ? 1 : c.zoom))}" ry="${n(4 + estagio * 0.6)}" fill="${v('--arvore-sombra-chao')}" opacity=".18"/>`;
     const sk = mini ? null : ceu(periodo, escuro, pre, rnd);
+    const enf = enfeites(festa, tufos, c, sk ? sk.noite : false, 1);
     const col = colina(estagio, rnd, pre);
     const seres = [];
     if (!mini && sk) {
       if (!sk.noite && estagio >= 3) seres.push(`<g class="arv-borboleta" opacity="0"><g class="arv-asa arv-asa-e"><path d="M0 0C-7 -9 -12 -3 -9 2C-7 5 -2 4 0 0Z" fill="${v('--arvore-borboleta')}"/><path d="M0 0C-5 2 -7 7 -3 7C-1 6 0 3 0 0Z" fill="${v('--arvore-borboleta-2')}"/></g><g class="arv-asa arv-asa-d"><path d="M0 0C7 -9 12 -3 9 2C7 5 2 4 0 0Z" fill="${v('--arvore-borboleta')}"/><path d="M0 0C5 2 7 7 3 7C1 6 0 3 0 0Z" fill="${v('--arvore-borboleta-2')}"/></g><ellipse rx="1" ry="4" cy="1.5" fill="${v('--arvore-tronco-sombra')}"/></g>`);
       if (!sk.noite && estagio >= 5) seres.push(`<g class="arv-passaro" opacity="0"><g class="arv-passaro-corpo"><ellipse cx="0" cy="0" rx="7" ry="5.4" fill="${v('--arvore-passaro')}"/><circle cx="5" cy="-4" r="3.8" fill="${v('--arvore-passaro')}"/><path d="M8.4 -4.4l3.4 1l-3.4 1z" fill="${v('--arvore-flor-miolo')}"/><circle cx="6" cy="-4.8" r=".9" fill="${v('--arvore-olho')}"/><path d="M-6 -1q-5 -1 -8 2q4 1 7 0z" fill="${v('--arvore-passaro-asa')}"/><path d="M-2 -1q3 4 -2 5q-4 -2 2 -5z" fill="${v('--arvore-passaro-asa')}"/></g></g>`);
       if (sk.noite && estagio >= 2) {
-        const qtd = Math.max(4, Math.min(8, 20 - T - 1));
+        const qtd = Math.max(4, Math.min(8, 20 - T - 1 - (festa === 'natal' ? 1 : 0)));
         for (let k = 0; k < qtd; k++) {
           const a = sorte(k, 12) * Math.PI * 2, x = BX + Math.cos(a) * (larguraCopa + 10 + sorte(k, 13) * 18), y = Math.min(270, BY - c.h * 0.6 + Math.sin(a) * c.h * 0.4);
           seres.push(`<g class="arv-vagalume" data-k="${k}" style="--dur:${n(2 + sorte(k, 14) * 2)}s;--atraso:${n(-sorte(k, 15) * 3)}s"><circle cx="${n(x)}" cy="${n(y)}" r="5" fill="${v('--arvore-vagalume')}" opacity=".25"/><circle cx="${n(x)}" cy="${n(y)}" r="1.6" fill="${v('--arvore-vagalume')}"/></g>`);
@@ -206,7 +244,7 @@
       }
     }
     const defs = `<defs>${sk ? `<linearGradient id="${pre}-ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${v(sk.c1)}"/><stop offset="1" style="stop-color:${v(sk.c2)}"/></linearGradient><clipPath id="${pre}-clip"><rect width="${LARG}" height="${ALT}" rx="20"/></clipPath>` : ''}<linearGradient id="${pre}-casca" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:${v('--arvore-tronco-luz')}"/><stop offset=".45" style="stop-color:${v('--arvore-tronco')}"/><stop offset="1" style="stop-color:${v('--arvore-tronco-sombra')}"/></linearGradient><radialGradient id="${pre}-copa" cx=".34" cy=".3" r=".78"><stop offset="0" style="stop-color:${v('--arvore-folha-3')}"/><stop offset=".5" style="stop-color:${v('--arvore-folha-2')}"/><stop offset="1" style="stop-color:${v('--arvore-folha-1')}"/></radialGradient><linearGradient id="${pre}-colina" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${v('--arvore-colina-luz')}"/><stop offset=".35" style="stop-color:${v('--arvore-colina')}"/></linearGradient><g id="${pre}-f"><path d="M0 0C-4 -2.6 -4.6 -8.4 0 -13C4.6 -8.4 4 -2.6 0 0Z"/><path d="M0 -1.6V-10.4" fill="none" stroke="${v('--arvore-nervura')}" stroke-width=".9" stroke-linecap="round"/></g><g id="${pre}-fl"><use href="#${pre}-f"/><path d="M-1.3 -3C-3.1 -5 -3.2 -8.4 -1 -10.8" fill="none" stroke="${v('--arvore-folha-luz')}" stroke-width="1.3" stroke-linecap="round"/></g></defs>`;
-    const zoom = mini ? 1 : c.zoom, arvore = `<g class="arv-tronco-g"${zoom !== 1 ? ` transform="translate(${BX} ${BY}) scale(${zoom}) translate(${-BX} ${-BY})"` : ''}>${fundoCopa}${tras.join('')}${troncoSvg(est, estagio, rnd)}${frente.join('')}<g class="arv-extras">${extras.join('')}</g></g>`;
+    const zoom = mini ? 1 : c.zoom, arvore = `<g class="arv-tronco-g"${zoom !== 1 ? ` transform="translate(${BX} ${BY}) scale(${zoom}) translate(${-BX} ${-BY})"` : ''}>${fundoCopa}${tras.join('')}${troncoSvg(est, estagio, rnd)}${frente.join('')}<g class="arv-extras">${extras.join('')}</g>${enf.arvore}</g>`;
     let vb = `0 0 ${LARG} ${ALT}`;
     if (mini) {
       const topo = estagio === 0 ? BY - 26 : BY - c.h - c.raio * escala - 4, lado = Math.max(BY + 16 - topo, larguraCopa * 2 + 16);
@@ -214,8 +252,8 @@
     }
     const rotulo = o.rotulo ? `role="img" aria-label="${o.rotulo}"` : 'aria-hidden="true"';
     const corpo = mini
-      ? `<ellipse cx="${BX}" cy="${BY + 6}" rx="${n(larguraCopa + 10)}" ry="10" fill="${v('--arvore-colina')}"/>${sombra}${arvore}`
-      : `<g clip-path="url(#${pre}-clip)">${sk.svg}${col.fundo}${sombra}${arvore}${col.frente}${sk.noite && !escuro ? `<rect class="arv-noite" width="${LARG}" height="${ALT}" fill="${v('--ceu-noite-1')}" opacity=".32"/>` : ''}<g class="arv-seres">${seres.join('')}</g></g>`;
+      ? `<ellipse cx="${BX}" cy="${BY + 6}" rx="${n(larguraCopa + 10)}" ry="10" fill="${v('--arvore-colina')}"/>${sombra}${arvore}${enf.chao}`
+      : `<g clip-path="url(#${pre}-clip)">${sk.svg}${enf.ceu}${col.fundo}${sombra}${arvore}${enf.chao}${col.frente}${sk.noite && !escuro ? `<rect class="arv-noite" width="${LARG}" height="${ALT}" fill="${v('--ceu-noite-1')}" opacity=".32"/>` : ''}<g class="arv-seres">${seres.join('')}</g></g>`;
     const svg = `<svg class="arvore-viva${mini ? ' mini' : ''}" viewBox="${vb}" ${rotulo} focusable="false" data-estagio="${estagio}" data-folhas="${desenhadas}">${defs}${corpo}</svg>`;
     const pouso = ft.length ? { x: Math.round(ft[ft.length >> 1].x), y: Math.round(ft[ft.length >> 1].y - c.raio * 0.7) } : null;
     return { svg, grupos, pouso, desenhadas, noite: sk ? sk.noite : false };

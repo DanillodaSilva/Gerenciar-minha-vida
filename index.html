@@ -750,6 +750,8 @@
   @keyframes arv-vento{from{rotate:calc(var(--amp) * -1 * var(--rajada, 1))}to{rotate:calc(var(--amp) * var(--rajada, 1))}}
   .vida .arv-tronco-g{animation:arv-tronco 4.6s cubic-bezier(.45,0,.55,1) infinite alternate}
   @keyframes arv-tronco{from{rotate:-.6deg}to{rotate:.6deg}}
+  .vida .arv-luzes{animation:arv-luzes 2.4s ease-in-out infinite alternate}
+  @keyframes arv-luzes{from{opacity:.5}to{opacity:1}}
   .vida .arv-vagalume{animation:arv-vagalume var(--dur) ease-in-out var(--atraso) infinite alternate}
   @keyframes arv-vagalume{from{opacity:.2;translate:0 0}to{opacity:1;translate:6px -5px}}
   .arv-asa-e{transform-origin:100% 50%!important}.arv-asa-d{transform-origin:0 50%!important}
@@ -4130,8 +4132,9 @@ const Vida = {
 };
 const cacheCenas = new Map();
 function cenaArvore(folhas, estagio, o = {}){
-  const opc = { folhas, estagio, periodo: o.periodo || (SIM_ARVORE && SIM_ARVORE.periodo) || Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', tamanho: o.mini ? 'mini' : 'cena', prefixo: o.prefixo || 'av', rotulo: o.rotulo ? `Sua árvore: ${Arvore.NOMES[estagio]}, ${folhasTxt(folhas)}` : '' };
-  const chave = [opc.prefixo, opc.tamanho, folhas, estagio, opc.periodo, opc.tema, opc.rotulo ? 1 : 0].join('|');
+  const fz = festaAtual(), festa = fz && fz.fase === 'auge' ? fz.id : null;
+  const opc = { folhas, estagio, festa, periodo: o.periodo || (SIM_ARVORE && SIM_ARVORE.periodo) || Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', tamanho: o.mini ? 'mini' : 'cena', prefixo: o.prefixo || 'av', rotulo: o.rotulo ? `Sua árvore: ${Arvore.NOMES[estagio]}, ${folhasTxt(folhas)}` : '' };
+  const chave = [opc.prefixo, opc.tamanho, folhas, estagio, opc.periodo, opc.tema, festa || '', opc.rotulo ? 1 : 0].join('|');
   if(!cacheCenas.has(chave)){ if(cacheCenas.size > 30) cacheCenas.clear(); cacheCenas.set(chave, ArvoreDesenho.gerarArvore(opc)); }
   return { chave, ...cacheCenas.get(chave) };
 }
@@ -4252,7 +4255,7 @@ function svgParaImagem(svg){
 }
 async function imagemArvore(){
   const a = arvoreAtual(), css = getComputedStyle(document.documentElement), cor = n => css.getPropertyValue(n).trim();
-  const r = ArvoreDesenho.gerarArvore({ folhas: a.folhas, estagio: a.estagio, periodo: Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', prefixo: 'png' });
+  const fz = festaAtual(), r = ArvoreDesenho.gerarArvore({ folhas: a.folhas, estagio: a.estagio, festa: fz && fz.fase === 'auge' ? fz.id : null, periodo: Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', prefixo: 'png' });
   const img = await svgParaImagem(r.svg);
   const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
   const ctx = c.getContext('2d'), fonte = getComputedStyle(document.body).fontFamily;
