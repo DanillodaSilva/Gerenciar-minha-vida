@@ -800,6 +800,25 @@
   .arvore-info .arvore-n{margin:0;font-size:var(--fs-label);line-height:var(--lh-label);color:var(--text-secondary);font-variant-numeric:tabular-nums}
   .arvore-info .bar{margin:var(--space-2) 0 var(--space-1)}
   .arvore-info .hint,.arvore-card>.hint{margin:0}
+  .corrente{display:flex;flex-direction:column;gap:var(--space-2)}
+  .corrente-txt{margin:0;font-weight:var(--w-medium);color:var(--text-primary);font-size:var(--fs-label);line-height:var(--lh-label)}
+  .corrente-pontos{display:flex;gap:var(--space-2);align-items:center}
+  .corrente-pontos .ponto{width:20px;height:20px;border-radius:var(--radius-full);background:var(--surface-variant);display:grid;place-items:center;color:var(--text-secondary);flex:none}
+  .corrente-pontos .ponto.cheio{background:var(--arvore-folha-1);color:var(--p-white)}
+  .corrente-pontos .presente{width:28px;height:28px}
+  .corrente-pontos .presente svg{width:16px;height:16px}
+  .arvore-acoes{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+  .arvore-acoes .btn{min-height:var(--touch)}
+  .lt{display:flex;flex-direction:column;gap:var(--space-3);padding-bottom:var(--space-2)}
+  .lt-tit{margin:0;font-size:var(--fs-section);line-height:var(--lh-section)}
+  .lt-cena{height:300px;display:flex;justify-content:center}
+  .lt-cena svg.arvore-viva{height:300px;width:auto;max-width:100%}
+  .lt-info{margin:0;text-align:center;font-variant-numeric:tabular-nums;color:var(--text-primary);font-weight:var(--w-medium)}
+  .lt-rot{font-size:var(--fs-label);color:var(--text-secondary)}
+  .lt-faixa{width:100%;height:var(--touch);accent-color:var(--arvore-folha-1);margin:0;touch-action:pan-y}
+  .lt-acoes{display:flex;gap:var(--space-2);justify-content:flex-end}
+  .lt-acoes .btn{min-height:var(--touch)}
+  @media (max-height: 700px){ .lt-cena,.lt-cena svg.arvore-viva{height:220px} }
   .arvore-30{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:var(--space-1)}
   .arvore-30 .q{aspect-ratio:1;border-radius:var(--radius-check);background:var(--surface-variant)}
   .arvore-30 .q1{background:color-mix(in srgb, var(--arvore-folha-1) 30%, var(--surface-variant))}
@@ -2329,6 +2348,7 @@ function abrirSheet(html, cheia = false){
   else setTimeout(() => { if(!sh.contains(document.activeElement)){ const b = document.querySelector('#sheet button, #sheet input, #sheet textarea'); if(b) b.focus({ preventScroll: true }); } }, 80);
 }
 function fecharSheet(vindoDoVoltar){
+  pararLinhaTempo();
   const ov = $('overlay'), sh = $('sheet');
   if(!ov.classList.contains('show')){ if(!vindoDoVoltar){ ignorarPop = true; history.back(); } return; }
   ov.classList.remove('show');
@@ -4136,6 +4156,47 @@ const folhasTxt = n => numBR(n) + (n === 1 ? ' folha' : ' folhas');
 const sinalFolhas = n => (n > 0 ? '+' : n < 0 ? '−' : '') + folhasTxt(Math.abs(n));
 const textoDiaArvore = h => !h.faixa ? 'sem mudança' : h.faixa + ', ' + sinalFolhas(h.variacao - h.bonus) + (h.bonus ? ' e +' + h.bonus + ' de bônus' : '');
 const classeDiaArvore = h => h.variacao < 0 ? 'qm' : h.faixa ? 'q' + Math.min(5, h.variacao - h.bonus) : 'q0';
+const PRESENTE = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 7h12v2H2zM3 9h10v5H3z" fill="currentColor"/><path d="M8 7v7" stroke="var(--surface)" stroke-width="1.6"/><path d="M8 7C6 3 3 4 4.5 6M8 7c2-4 5-3 3.5-1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+function correnteHtml(a){
+  const d = a.tentativasSeguidas, cheios = d > 0 ? ((d - 1) % 7) + 1 : 0, faltam = 7 - cheios;
+  const txt = d === 0 ? 'Faça 1 item hoje para começar a corrente' : `Tentando há ${numBR(d)} ${d === 1 ? 'dia seguido' : 'dias seguidos'}`;
+  const rot = d === 0 ? txt : `${txt}. ${faltam === 0 ? 'Bônus de hoje: +3 folhas' : `Faltam ${faltam} ${faltam === 1 ? 'dia' : 'dias'} para +3 de bônus`}`;
+  return `<div class="corrente" role="img" aria-label="${rot}"><p class="corrente-txt">${txt}</p><div class="corrente-pontos" aria-hidden="true">${Array.from({ length: 7 }, (_, k) => `<span class="ponto${k < cheios ? ' cheio' : ''}${k === 6 ? ' presente' : ''}">${k === 6 ? PRESENTE : ''}</span>`).join('')}</div></div>`;
+}
+let linhaTempoEstado = null;
+function abrirLinhaTempo(){
+  const inicio = Arvore.primeiroDia(dados) || hoje(), dias = Math.max(0, Regras.diasEntre ? Regras.diasEntre(inicio, hoje()) : Math.round((Regras.parseDia(hoje()) - Regras.parseDia(inicio)) / 864e5));
+  linhaTempoEstado = { inicio, dias, tocando: 0 };
+  abrirSheet(`<div class="lt"><h2 class="lt-tit">Crescimento da árvore</h2><div class="lt-cena" id="lt-cena"></div><p class="lt-info" id="lt-info" aria-live="polite"></p>
+    <label class="lt-rot" for="lt-faixa">Arraste para ver sua árvore no tempo</label>
+    <input class="lt-faixa" id="lt-faixa" type="range" min="0" max="${dias}" step="1" value="${dias}" oninput="pedirQuadroLinha(this.value)"${dias === 0 ? ' disabled' : ''}>
+    <div class="lt-acoes"><button class="btn" type="button" onclick="reproduzirLinhaTempo()"${dias === 0 ? ' disabled' : ''}>Reproduzir</button><button class="btn text" type="button" onclick="fecharSheet()">Fechar</button></div></div>`);
+  quadroLinhaTempo(dias);
+}
+let quadroLinhaPendente = null;
+function pedirQuadroLinha(v){ pararLinhaTempo(); if(quadroLinhaPendente === null) requestAnimationFrame(() => { quadroLinhaTempo(quadroLinhaPendente); quadroLinhaPendente = null; }); quadroLinhaPendente = Number(v); }
+function quadroLinhaTempo(v){
+  const st = linhaTempoEstado, cena = $('lt-cena'); if(!st || !cena) return false;
+  const data = Regras.somaDias(st.inicio, Math.max(0, Math.min(st.dias, Math.round(v))));
+  const a = data === hoje() ? arvoreAtual() : (() => { const x = Arvore.calcularArvore(dados, Regras.somaDias(data, 1)); const e = Arvore.estagioDe(x.folhasAteOntem); return { folhas: x.folhasAteOntem, estagio: e, nomeEstagio: Arvore.NOMES[e] }; })();
+  cena.innerHTML = cenaArvore(a.folhas, a.estagio, { prefixo: 'lt' }).svg;
+  $('lt-info').textContent = `${Regras.parseDia(data).toLocaleDateString('pt-BR')} · ${a.nomeEstagio} · ${folhasTxt(a.folhas)}`;
+  const f = $('lt-faixa'); if(f && Number(f.value) !== Math.round(v)) f.value = Math.round(v);
+  return true;
+}
+function pararLinhaTempo(){ if(linhaTempoEstado){ clearTimeout(linhaTempoEstado.tocando); linhaTempoEstado.tocando = 0; } }
+function reproduzirLinhaTempo(){
+  const st = linhaTempoEstado; if(!st) return;
+  pararLinhaTempo();
+  const quadros = Animacoes.reduzido() ? Math.min(6, st.dias + 1) : Math.min(60, st.dias + 1), passo = 6000 / quadros;
+  let k = 0;
+  const proximo = () => {
+    const v = quadros === 1 ? st.dias : Math.round(k * st.dias / (quadros - 1));
+    if(!quadroLinhaTempo(v)) return;
+    if(++k < quadros) st.tocando = setTimeout(proximo, passo); else st.tocando = 0;
+  };
+  proximo();
+}
 function cartaoArvore(){
   const a = arvoreAtual(), e = a.estagio;
   const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
@@ -4145,6 +4206,8 @@ function cartaoArvore(){
     <div class="arvore-info"><h2>${a.nomeEstagio}</h2><p class="arvore-n">${folhasTxt(a.folhas)}</p>
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
       <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
+    ${correnteHtml(a)}
+    <div class="arvore-acoes"><button class="btn ghost" type="button" onclick="abrirLinhaTempo()">Ver crescimento</button></div>
     <div class="arvore-30" role="list" aria-label="Últimos 30 dias">${a.historico.map(h => { const t = `${Regras.curto(h.data)}: ${textoDiaArvore(h)}`; return `<span role="listitem" class="q ${classeDiaArvore(h)}" title="${t}" aria-label="${t}"></span>`; }).join('')}</div>
     <table class="faixas-tab"><caption class="sr">Folhas por dia, conforme o quanto você fez</caption><tr><th scope="row">Feito</th><td>1–24%</td><td>25%</td><td>50%</td><td>75%</td><td>100%</td></tr><tr><th scope="row">Folhas</th><td>+1</td><td>+2</td><td>+3</td><td>+4</td><td>+5</td></tr></table>
     <p class="hint">7 dias seguidos tentando: +3 de bônus. Dia em branco: −2.</p>
