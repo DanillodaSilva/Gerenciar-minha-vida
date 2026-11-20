@@ -786,7 +786,11 @@
   .arvore-info .hint,.arvore-card>.hint{margin:0}
   .arvore-30{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:var(--space-1)}
   .arvore-30 .q{aspect-ratio:1;border-radius:var(--radius-check);background:var(--surface-variant)}
-  .arvore-30 .q1{background:var(--arvore-folha-1)}
+  .arvore-30 .q1{background:color-mix(in srgb, var(--arvore-folha-1) 30%, var(--surface-variant))}
+  .arvore-30 .q2{background:color-mix(in srgb, var(--arvore-folha-1) 48%, var(--surface-variant))}
+  .arvore-30 .q3{background:color-mix(in srgb, var(--arvore-folha-1) 65%, var(--surface-variant))}
+  .arvore-30 .q4{background:color-mix(in srgb, var(--arvore-folha-1) 82%, var(--surface-variant))}
+  .arvore-30 .q5{background:var(--arvore-folha-1)}
   .arvore-30 .qm{background:var(--danger)}
   .linha-arvore{display:flex;align-items:center;gap:var(--space-2);width:fit-content;max-width:100%;margin:calc(var(--space-2) * -1) 0 var(--space-1) auto;min-height:var(--touch);padding:0 var(--space-3) 0 var(--space-1);border-radius:var(--radius-full);color:var(--text-secondary);font-size:var(--fs-meta);line-height:var(--lh-meta);font-weight:var(--w-medium)}
   .linha-arvore svg.arvore{width:32px;height:32px;flex:none}
@@ -4098,7 +4102,9 @@ function arvoreAtual(){
 }
 const numBR = n => n.toLocaleString('pt-BR');
 const folhasTxt = n => numBR(n) + (n === 1 ? ' folha' : ' folhas');
-const VAR_TXT = { 1: 'ganhou 1 folha', 0: 'sem mudança', '-1': 'perdeu 1 folha' };
+const sinalFolhas = n => (n > 0 ? '+' : n < 0 ? '−' : '') + folhasTxt(Math.abs(n));
+const textoDiaArvore = h => !h.faixa ? 'sem mudança' : h.faixa + ', ' + sinalFolhas(h.variacao - h.bonus) + (h.bonus ? ' e +' + h.bonus + ' de bônus' : '');
+const classeDiaArvore = h => h.variacao < 0 ? 'qm' : h.faixa ? 'q' + Math.min(5, h.variacao - h.bonus) : 'q0';
 function cartaoArvore(){
   const a = arvoreAtual(), e = a.estagio;
   const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
@@ -4108,7 +4114,7 @@ function cartaoArvore(){
     <div class="arvore-info"><h2>${a.nomeEstagio}</h2><p class="arvore-n">${folhasTxt(a.folhas)}</p>
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
       <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
-    <div class="arvore-30" role="list" aria-label="Últimos 30 dias">${a.historico.map(h => { const t = `${Regras.curto(h.data)}: ${VAR_TXT[h.variacao]}`; return `<span role="listitem" class="q q${h.variacao < 0 ? 'm' : h.variacao}" title="${t}" aria-label="${t}"></span>`; }).join('')}</div>
+    <div class="arvore-30" role="list" aria-label="Últimos 30 dias">${a.historico.map(h => { const t = `${Regras.curto(h.data)}: ${textoDiaArvore(h)}`; return `<span role="listitem" class="q ${classeDiaArvore(h)}" title="${t}" aria-label="${t}"></span>`; }).join('')}</div>
     <p class="hint">Dia completo: +1 folha. Menos da metade: −1 folha.</p>
   </section>`;
 }

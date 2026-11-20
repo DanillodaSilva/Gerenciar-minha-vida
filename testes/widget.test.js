@@ -119,7 +119,7 @@ describe('retrato', () => {
   test('sequência até ontem e folhas até ontem', () => {
     const r = W.montarRetrato(d, '2026-11-18');
     assert.equal(r.sequencia.ateOntem, 2);
-    assert.equal(r.arvore.folhasAteOntem, 2);
+    assert.equal(r.arvore.folhasAteOntem, 10);
   });
   test('Faculdade escondida não publica aulas', () => {
     const r = W.montarRetrato({ ...d, ajustes: { mostrarFaculdade: false } }, '2026-11-18');

@@ -104,8 +104,9 @@
     }
     const h = resumo(hoje) || { total: 0, feitos: 0, pct: 0 };
     if (h.total && h.feitos >= h.total) folhas++;
-    const estagio = A.estagioDe(folhas);
-    return { desatualizado: false, folhas, sequencia: seq, estagio, nomeEstagio: A.NOMES[estagio], itensHoje: h.total, feitosHoje: h.feitos, pctHoje: h.pct, resumo };
+    const lim = retrato.arvore.estagios || A.LIMITES, nomes = retrato.arvore.nomes || A.NOMES;
+    let estagio = 0; lim.forEach((l, i) => { if (folhas >= l) estagio = i; });
+    return { desatualizado: false, folhas, sequencia: seq, estagio, nomeEstagio: nomes[estagio] || '', itensHoje: h.total, feitosHoje: h.feitos, pctHoje: h.pct, resumo };
   }
 
   const Widget = { montarRetrato, aplicarPendencias, calcularDoRetrato, sequenciaAteOntem, cortar };

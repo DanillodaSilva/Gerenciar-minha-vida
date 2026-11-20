@@ -255,7 +255,7 @@
   }
   function normalizarArvore(a) {
     const x = ehObjeto(a) ? a : {};
-    return { ...x, folhasVistas: Number.isInteger(x.folhasVistas) && x.folhasVistas >= 0 ? x.folhasVistas : null, estagioVisto: Number.isInteger(x.estagioVisto) && x.estagioVisto >= 0 && x.estagioVisto <= 9 ? x.estagioVisto : null };
+    return { ...x, folhasVistas: Number.isInteger(x.folhasVistas) && x.folhasVistas >= 0 ? x.folhasVistas : null, estagioVisto: Number.isInteger(x.estagioVisto) && x.estagioVisto >= 0 && x.estagioVisto <= 9 ? x.estagioVisto : null, regra: x.regra === 2 ? 2 : 1, diaFaixa: ehData(x.diaFaixa) ? x.diaFaixa : null, faixaVista: Number.isInteger(x.faixaVista) && x.faixaVista >= 0 && x.faixaVista <= 5 ? x.faixaVista : 0, bonusDia: ehData(x.bonusDia) ? x.bonusDia : null };
   }
   const IDS_FESTAS = ['natal', 'ano-novo', 'carnaval', 'pascoa', 'namorados', 'junina', 'halloween', 'aniversario'];
   function aniversarioValido(s) {

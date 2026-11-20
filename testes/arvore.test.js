@@ -27,36 +27,37 @@ const folhasDe = percs => {
   return A.calcularArvore(dados, hoje);
 };
 
-test('100,100,100 gera 3 folhas e Muda', () => {
+test('100,100,100 gera 15 folhas e Muda', () => {
   const r = folhasDe([100, 100, 100]);
-  assert.equal(r.folhas, 3);
+  assert.equal(r.folhas, 15);
   assert.equal(r.nomeEstagio, 'Muda');
 });
 
-test('100,40,100 gera 1 folha e Broto', () => {
+test('100,40,100 gera 12 folhas e Broto', () => {
   const r = folhasDe([100, 40, 100]);
-  assert.equal(r.folhas, 1);
+  assert.equal(r.folhas, 12);
   assert.equal(r.nomeEstagio, 'Broto');
 });
 
-test('40,40,100 gera 1 folha por causa do piso', () => {
-  assert.equal(folhasDe([40, 40, 100]).folhas, 1);
+test('0,0,100 gera 5 folhas por causa do piso', () => {
+  assert.equal(folhasDe([0, 0, 100]).folhas, 5);
 });
 
-test('60% nao muda as folhas', () => {
-  assert.equal(folhasDe([100, 100, 60]).folhas, 2);
+test('60% vale 3 folhas', () => {
+  assert.equal(folhasDe([100, 100, 60]).folhas, 13);
 });
 
-test('7 dias a 100% e mais um de 30%', () => {
+test('7 dias a 100% e mais um em branco', () => {
   const sete = folhasDe(Array(7).fill(100));
-  assert.equal(sete.folhas, 7);
+  assert.equal(sete.folhas, 38);
   assert.equal(sete.nomeEstagio, 'Arvoreta');
-  const depois = folhasDe([...Array(7).fill(100), 30]);
-  assert.equal(depois.folhas, 6);
+  const depois = folhasDe([...Array(6).fill(100), 20, 0]);
+  assert.equal(depois.folhas, 32);
   assert.equal(depois.nomeEstagio, 'Muda');
+  const ontem = R.somaDias(depois.hoje, -1);
   assert.deepEqual(
-    A.eventosDesde({ folhasVistas: 7, estagioVisto: 3 }, depois),
-    [{ tipo: 'perdeu', n: 1 }, { tipo: 'voltouEstagio', nome: 'Muda' }]
+    A.eventosDesde({ folhasVistas: 35, estagioVisto: 3, diaFaixa: ontem }, depois),
+    [{ tipo: 'perdeu', n: 2 }, { tipo: 'voltouEstagio', nome: 'Muda' }]
   );
 });
 
@@ -67,39 +68,37 @@ test('dia sem itens previstos nao muda', () => {
   assert.equal(r.folhas, 0);
 });
 
-test('hoje completo soma 1', () => {
+test('hoje completo soma 5', () => {
   const { dados, hoje } = montar([100, 100]);
   dados.feitos[hoje] = ids.slice();
   const r = A.calcularArvore(dados, hoje);
-  assert.equal(r.folhas, 3);
-  assert.equal(r.folhasAteOntem, 2);
+  assert.equal(r.folhas, 15);
+  assert.equal(r.folhasAteOntem, 10);
 });
 
-test('hoje a 30% nao tira', () => {
+test('hoje a 30% soma 2', () => {
   const { dados, hoje } = montar([100, 100]);
   dados.feitos[hoje] = ids.slice(0, 3);
-  assert.equal(A.calcularArvore(dados, hoje).folhas, 2);
+  assert.equal(A.calcularArvore(dados, hoje).folhas, 12);
 });
 
-test('desmarcar hoje de 100% para 90% tira o +1', () => {
+test('desmarcar hoje de 100% para 90% troca +5 por +4', () => {
   const { dados, hoje } = montar([100, 100]);
   dados.feitos[hoje] = ids.slice();
-  assert.equal(A.calcularArvore(dados, hoje).folhas, 3);
+  assert.equal(A.calcularArvore(dados, hoje).folhas, 15);
   dados.feitos[hoje] = ids.slice(0, 9);
-  assert.equal(A.calcularArvore(dados, hoje).folhas, 2);
+  assert.equal(A.calcularArvore(dados, hoje).folhas, 14);
 });
 
 test('limites dos estagios', () => {
-  assert.equal(A.NOMES[A.estagioDe(13)], 'Arvoreta');
-  assert.equal(A.NOMES[A.estagioDe(14)], 'Árvore jovem');
-  assert.equal(A.NOMES[A.estagioDe(364)], 'Árvore com frutos');
-  assert.equal(A.NOMES[A.estagioDe(365)], 'Árvore anciã');
-  assert.deepEqual(A.LIMITES, [0, 1, 3, 7, 14, 30, 60, 100, 180, 365]);
+  assert.equal(A.NOMES[A.estagioDe(69)], 'Arvoreta');
+  assert.equal(A.NOMES[A.estagioDe(70)], 'Árvore jovem');
+  assert.deepEqual(A.LIMITES, [0, 5, 15, 35, 70, 140, 250, 400, 600, 1000]);
 });
 
 test('proximo e faltam', () => {
-  assert.deepEqual(folhasDe([100, 100, 100]).proximo, { nome: 'Arvoreta', faltam: 4 });
-  const { dados, hoje } = montar(Array(365).fill(100));
+  assert.deepEqual(folhasDe([100, 100, 100]).proximo, { nome: 'Arvoreta', faltam: 20 });
+  const { dados, hoje } = montar(Array(200).fill(100));
   const r = A.calcularArvore(dados, hoje);
   assert.equal(r.estagio, 9);
   assert.equal(r.proximo, null);
@@ -111,7 +110,7 @@ test('dias antes do primeiro dia com dados nao contam', () => {
   const dados = montarCom('2026-03-10', feitos);
   assert.equal(A.primeiroDia(dados), '2026-03-10');
   const r = A.calcularArvore(dados, '2026-03-15');
-  assert.equal(r.folhas, 5);
+  assert.equal(r.folhas, 25);
   assert.equal(r.historico.find(h => h.data === '2026-03-09').variacao, 0);
 });
 
@@ -123,10 +122,11 @@ test('historico tem 30 entradas, termina em hoje e e crescente', () => {
   for (let k = 1; k < h.length; k++) assert.ok(h[k].data > h[k - 1].data);
 });
 
-test('eventos ao ganhar e subir de estagio', () => {
+test('eventos ao subir de faixa e de estagio', () => {
+  const atual = { hoje: '2026-03-10', folhas: 35, estagio: 3, feitasHoje: 10, totalHoje: 10, bonusHoje: 0, historico: [] };
   assert.deepEqual(
-    A.eventosDesde({ folhasVistas: 6, estagioVisto: 2 }, { folhas: 7, estagio: 3 }),
-    [{ tipo: 'ganhou', n: 1 }, { tipo: 'subiuEstagio', nome: 'Arvoreta' }]
+    A.eventosDesde({ folhasVistas: 34, estagioVisto: 2, diaFaixa: '2026-03-10', faixaVista: 4 }, atual),
+    [{ tipo: 'faixaSubiu', faixa: 'Dia completo', folhas: 5, primeira: false }, { tipo: 'subiuEstagio', nome: 'Arvoreta' }]
   );
 });
 
@@ -135,19 +135,19 @@ test('eventos com folhasVistas nulo devolvem lista vazia', () => {
 });
 
 test('ganhas e perdidas respeitam o piso', () => {
-  const r = folhasDe([100, 100, 40, 40, 40]);
-  assert.equal(r.ganhas, 2);
-  assert.equal(r.perdidas, 2);
+  const r = folhasDe([10, 0, 0]);
+  assert.equal(r.ganhas, 1);
+  assert.equal(r.perdidas, 1);
   assert.equal(r.folhas, 0);
 });
 
-test('memo: marcar hoje completo soma 1 e iguala o resultado sem memo', () => {
+test('memo: marcar hoje completo soma 5 e iguala o resultado sem memo', () => {
   const { dados, hoje } = montar([100, 100, 100]);
   const memo = {};
   const antes = A.calcularArvore(dados, hoje, memo);
   dados.feitos[hoje] = ids.slice();
   const depois = A.calcularArvore(dados, hoje, memo);
-  assert.equal(depois.folhas, antes.folhas + 1);
+  assert.equal(depois.folhas, antes.folhas + 5);
   assert.deepEqual(depois, A.calcularArvore(dados, hoje));
 });
 
@@ -158,7 +158,7 @@ test('memo: mudar um dia passado iguala o resultado sem memo', () => {
   dados.feitos['2026-03-02'] = ids.slice(0, 2);
   const com = A.calcularArvore(dados, hoje, memo);
   assert.deepEqual(com, A.calcularArvore(dados, hoje));
-  assert.equal(com.folhas, 2);
+  assert.equal(com.folhas, 16);
 });
 
 test('desempenho com 3 anos de dados', () => {
