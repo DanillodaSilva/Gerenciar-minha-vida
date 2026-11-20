@@ -177,12 +177,12 @@ test('desempenho com 3 anos de dados', () => {
   let sem;
   for (let k = 0; k < 5; k++) { const t = performance.now(); sem = A.calcularArvore(dados, hoje); amostras.push(performance.now() - t); }
   amostras.sort((a, b) => a - b);
-  const t0 = 0, t1 = amostras[2];
+  const t0 = 0, t1 = amostras[2], t1b = performance.now();
   const com1 = A.calcularArvore(dados, hoje, memo);
   const t2 = performance.now();
   const com2 = A.calcularArvore(dados, hoje, memo);
   const t3 = performance.now();
-  console.log(`tempos: sem memo ${(t1 - t0).toFixed(2)} ms, memo frio ${(t2 - t1).toFixed(2)} ms, memo quente ${(t3 - t2).toFixed(2)} ms`);
+  console.log(`tempos: sem memo ${(t1 - t0).toFixed(2)} ms, memo frio ${(t2 - t1b).toFixed(2)} ms, memo quente ${(t3 - t2).toFixed(2)} ms`);
   assert.deepEqual(com1, sem);
   assert.deepEqual(com2, sem);
   assert.ok(t1 - t0 < 60);

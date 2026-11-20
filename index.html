@@ -815,6 +815,8 @@
   .corrente-pontos .presente{width:28px;height:28px}
   .corrente-pontos .presente svg{width:16px;height:16px}
   .arvore-acoes{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+  #palco-arvore{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+  .brilho-toque{position:fixed;z-index:7;width:10px;height:10px;pointer-events:none;background:var(--arvore-flor-miolo);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
   .arvore-acoes .btn{min-height:var(--touch)}
   .lt{display:flex;flex-direction:column;gap:var(--space-3);padding-bottom:var(--space-2)}
   .lt-tit{margin:0;font-size:var(--fs-section);line-height:var(--lh-section)}
@@ -4204,6 +4206,85 @@ function reproduzirLinhaTempo(){
   };
   proximo();
 }
+const FRASES_CARINHO = ['Ela gostou!', 'Sua árvore agradece o carinho.', 'Bora cuidar dela todo dia?'];
+let carinhoToque = null;
+function rajadaLocal(palco){
+  if(Animacoes.reduzido()) return;
+  palco.querySelectorAll('.arv-tufo').forEach(g => {
+    if(palco.classList.contains('vida')){ g.style.setProperty('--rajada', '2.4'); setTimeout(() => g.style.removeProperty('--rajada'), 600); }
+    else g.animate([{ rotate: '0deg' }, { rotate: '-3deg' }, { rotate: '2deg' }, { rotate: '0deg' }], { duration: 600, easing: Animacoes.MOV.movimento });
+  });
+}
+function brilhosToque(x, y){
+  if(Animacoes.reduzido()) return;
+  [[-14, -18], [10, -24], [18, -6]].forEach(([dx, dy], k) => {
+    const b = document.createElement('span');
+    b.className = 'brilho-toque'; b.setAttribute('aria-hidden', 'true');
+    b.style.left = x + 'px'; b.style.top = y + 'px';
+    document.body.appendChild(b);
+    b.animate([{ transform: 'translate(-50%, -50%) scale(.4)', opacity: 0 }, { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1)`, opacity: 1, offset: 0.4 }, { transform: `translate(calc(-50% + ${dx * 1.4}px), calc(-50% + ${dy * 1.4}px)) scale(.6)`, opacity: 0 }], { duration: 700, delay: k * 60, easing: Animacoes.MOV.saida, fill: 'backwards' }).onfinish = () => b.remove();
+  });
+}
+document.addEventListener('pointerdown', e => {
+  const palco = e.target.closest && e.target.closest('#palco-arvore');
+  if(!palco || e.button > 0) return;
+  const t = { x: e.clientX, y: e.clientY, longo: false, palco };
+  t.timer = setTimeout(() => {
+    t.longo = true; vibrar(20);
+    rajadaLocal(palco);
+    if(folhinhaAtiva()){ Folhinha.falar(FRASES_CARINHO[Math.floor(Math.random() * FRASES_CARINHO.length)], { estado: 'carinho' }); }
+  }, 800);
+  carinhoToque = t;
+});
+const fimCarinho = e => {
+  const t = carinhoToque; if(!t) return;
+  carinhoToque = null; clearTimeout(t.timer);
+  if(e.type === 'pointerup' && !t.longo && Math.hypot(e.clientX - t.x, e.clientY - t.y) < 10){ vibrar(10); rajadaLocal(t.palco); brilhosToque(t.x, t.y); }
+};
+document.addEventListener('pointerup', fimCarinho);
+document.addEventListener('pointercancel', fimCarinho);
+document.addEventListener('pointermove', e => { if(carinhoToque && Math.hypot(e.clientX - carinhoToque.x, e.clientY - carinhoToque.y) > 10){ clearTimeout(carinhoToque.timer); carinhoToque = null; } });
+function svgParaImagem(svg){
+  const css = getComputedStyle(document.documentElement);
+  let txt = svg.replace(/var\((--[a-z0-9-]+)\)/g, (m, n) => css.getPropertyValue(n).trim() || '#000');
+  txt = txt.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1080" ');
+  return new Promise((ok, erro) => { const img = new Image(); img.onload = () => ok(img); img.onerror = erro; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(txt); });
+}
+async function imagemArvore(){
+  const a = arvoreAtual(), css = getComputedStyle(document.documentElement), cor = n => css.getPropertyValue(n).trim();
+  const r = ArvoreDesenho.gerarArvore({ folhas: a.folhas, estagio: a.estagio, periodo: Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', prefixo: 'png' });
+  const img = await svgParaImagem(r.svg);
+  const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
+  const ctx = c.getContext('2d'), fonte = getComputedStyle(document.body).fontFamily;
+  ctx.fillStyle = cor('--background') || '#F7F6F3'; ctx.fillRect(0, 0, 1080, 1350);
+  ctx.drawImage(img, 120, 70, 840, 945);
+  ctx.textAlign = 'center'; ctx.fillStyle = cor('--text-primary') || '#1C1B19';
+  ctx.font = `600 60px ${fonte}`; ctx.fillText(`${a.nomeEstagio} · ${folhasTxt(a.folhas)}`, 540, 1105, 980);
+  ctx.fillStyle = cor('--text-secondary') || '#5F5B53';
+  ctx.font = `400 40px ${fonte}`;
+  const d = a.tentativasSeguidas;
+  ctx.fillText(d ? `Tentando há ${numBR(d)} ${d === 1 ? 'dia seguido' : 'dias seguidos'}` : 'Começando a cuidar da árvore', 540, 1175, 980);
+  ctx.fillStyle = cor('--primary') || '#6B3FA0'; ctx.font = `600 38px ${fonte}`;
+  ctx.fillText('Minha Rotina', 540, 1275, 980);
+  return new Promise(ok => c.toBlob(ok, 'image/png'));
+}
+async function compartilharArvore(){
+  try{
+    const blob = await imagemArvore(), nome = 'minha-arvore-' + hoje() + '.png', arq = new File([blob], nome, { type: 'image/png' });
+    if(NATIVO){
+      const w = await plugin('Filesystem').writeFile({ path: nome, data: await Fotos.paraBase64(arq), directory: 'CACHE' });
+      await plugin('Share').share({ title: 'Minha árvore', dialogTitle: 'Compartilhar minha árvore', files: [w.uri] });
+      return;
+    }
+    if(navigator.canShare && navigator.canShare({ files: [arq] })){ await navigator.share({ files: [arq], title: 'Minha árvore' }); return; }
+    const url = URL.createObjectURL(blob), link = document.createElement('a');
+    link.href = url; link.download = nome; document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Imagem da árvore baixada');
+  }catch(e){
+    if(!/cancel|abort/i.test(String(e && (e.message || e.name || e)))) toast('Não foi possível compartilhar a árvore');
+  }
+}
 function cartaoArvore(){
   const a = arvoreAtual(), e = a.estagio;
   const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
@@ -4214,7 +4295,7 @@ function cartaoArvore(){
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
       <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
     ${correnteHtml(a)}
-    <div class="arvore-acoes"><button class="btn ghost" type="button" onclick="abrirLinhaTempo()">Ver crescimento</button></div>
+    <div class="arvore-acoes"><button class="btn ghost" type="button" onclick="abrirLinhaTempo()">Ver crescimento</button><button class="btn ghost" type="button" onclick="compartilharArvore()">Compartilhar</button></div>
     <div class="arvore-30" role="list" aria-label="Últimos 30 dias">${a.historico.map(h => { const t = `${Regras.curto(h.data)}: ${textoDiaArvore(h)}`; return `<span role="listitem" class="q ${classeDiaArvore(h)}" title="${t}" aria-label="${t}"></span>`; }).join('')}</div>
     <table class="faixas-tab"><caption class="sr">Folhas por dia, conforme o quanto você fez</caption><tr><th scope="row">Feito</th><td>1–24%</td><td>25%</td><td>50%</td><td>75%</td><td>100%</td></tr><tr><th scope="row">Folhas</th><td>+1</td><td>+2</td><td>+3</td><td>+4</td><td>+5</td></tr></table>
     <p class="hint">7 dias seguidos tentando: +3 de bônus. Dia em branco: −2.</p>
