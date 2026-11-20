@@ -162,7 +162,7 @@
       const amp = 1.5 + sorte(t, 5) * 1.5, dur = 3.2 + sorte(t, 6) * 2.3, atraso = -sorte(t, 7) * dur;
       grupos.push({ t, x: Math.round(ox), y: Math.round(oy), amp: Math.round(amp * 10) / 10, dur: Math.round(dur * 10) / 10 });
       const esc = escala !== 1 ? ` transform="translate(${n(tf.x)} ${n(tf.y)}) scale(${n(escala * 100) / 100}) translate(${n(-tf.x)} ${n(-tf.y)})"` : '';
-      const g = `<g class="arv-tufo" data-t="${t}" style="transform-origin:${n(ox)}px ${n(oy)}px;--amp:${n(amp)}deg;--dur:${n(dur)}s;--atraso:${n(atraso)}s"><g class="arv-rajada"><g${esc}><g class="arv-massa">${massa(tf, c, porTufo[t].length, cap, fundoDe(t), pre, t)}</g><g class="arv-folhas-t">${porTufo[t].join('')}</g></g></g></g>`;
+      const g = `<g class="arv-tufo" data-t="${t}" style="--amp:${n(amp)}deg;--dur:${n(dur)}s;--atraso:${n(atraso)}s"><g class="arv-rajada"><g${esc}><g class="arv-massa">${massa(tf, c, porTufo[t].length, cap, fundoDe(t), pre, t)}</g><g class="arv-folhas-t">${porTufo[t].join('')}</g></g></g></g>`;
       (fundoDe(t) ? tras : frente).push(g);
     });
     let fundoCopa = '';

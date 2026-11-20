@@ -741,6 +741,17 @@
   :root[data-theme="dark"]{--arvore-tronco-sombra:var(--p-arvore-tronco-sombra-e); --arvore-tronco:var(--p-arvore-tronco-e); --arvore-tronco-luz:var(--p-arvore-tronco-luz-e); --arvore-folha-fundo:var(--p-arvore-folha-fundo-e); --arvore-folha-1:var(--p-arvore-folha-1-e); --arvore-folha-2:var(--p-arvore-folha-2-e); --arvore-folha-3:var(--p-arvore-folha-3-e); --arvore-folha-luz:var(--p-arvore-folha-luz-e); --arvore-flor-miolo:var(--p-arvore-flor-miolo-e); --arvore-fruto:var(--p-arvore-fruto-e); --arvore-colina:var(--p-arvore-colina-e); --arvore-colina-luz:var(--p-arvore-colina-luz-e); --arvore-terra:var(--p-arvore-terra-e); --arvore-nervura:var(--p-arvore-nervura-e); --arvore-flor-chao:var(--p-arvore-flor-chao-e); --arvore-pedra:var(--p-arvore-pedra-e); --arvore-pedra-luz:var(--p-arvore-pedra-luz-e); --arvore-sombra-chao:var(--p-arvore-sombra-chao-e);}
   svg.arvore-viva{display:block;width:auto;height:100%;max-width:100%;overflow:visible}
   svg.arvore-viva .arv-folha,svg.arvore-viva .arv-caindo{transform-box:fill-box;transform-origin:50% 100%}
+  svg.arvore-viva :is(.arv-tufo,.arv-tronco-g,.arv-borboleta,.arv-passaro,.arv-vagalume,.arv-asa){transform-box:fill-box;transform-origin:50% 100%}
+  .vida .arv-tufo{animation:arv-vento var(--dur) cubic-bezier(.45,0,.55,1) var(--atraso) infinite alternate}
+  @keyframes arv-vento{from{rotate:calc(var(--amp) * -1 * var(--rajada, 1))}to{rotate:calc(var(--amp) * var(--rajada, 1))}}
+  .vida .arv-tronco-g{animation:arv-tronco 4.6s cubic-bezier(.45,0,.55,1) infinite alternate}
+  @keyframes arv-tronco{from{rotate:-.6deg}to{rotate:.6deg}}
+  .vida .arv-vagalume{animation:arv-vagalume var(--dur) ease-in-out var(--atraso) infinite alternate}
+  @keyframes arv-vagalume{from{opacity:.2;translate:0 0}to{opacity:1;translate:6px -5px}}
+  .arv-asa-e{transform-origin:100% 50%!important}.arv-asa-d{transform-origin:0 50%!important}
+  .arv-borboleta.voando .arv-asa{animation:arv-asa .18s linear infinite alternate}
+  @keyframes arv-asa{from{scale:1 1}to{scale:.25 1}}
+  html.oculto .vida *{animation-play-state:paused}
   .arvore-card{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
   .arvore-palco{height:300px;display:flex;justify-content:center;align-items:flex-end;grid-row:span 1}
   @media (min-width: 768px){ .arvore-palco{height:360px} }
@@ -1638,6 +1649,7 @@ function render(refazer = false, semFlip = false){
   document.querySelectorAll('#app [data-contar]').forEach(el => Animacoes.contar(el));
   animarProgresso();
   animarRetro();
+  Vida.sincronizar();
   const evArvore = processarEventosArvore();
   if(evArvore.length) reagirArvore(evArvore);
   dicaDeAba();
@@ -3942,9 +3954,57 @@ function sairPrevia(){
   render(true);
 }
 /* ---------- árvore ---------- */
+const Vida = {
+  obs: null, alvos: new Map(),
+  ligar(el){
+    if(!el || this.alvos.has(el) || typeof IntersectionObserver === 'undefined') return;
+    this.alvos.set(el, { visivel: false, timers: [] });
+    if(!this.obs) this.obs = new IntersectionObserver(es => es.forEach(e => this.mudar(e.target, e.isIntersecting)), { threshold: 0.15 });
+    this.obs.observe(el);
+  },
+  mudar(el, visivel){
+    const t = this.alvos.get(el); if(!t) return;
+    t.visivel = visivel; t.timers.forEach(clearTimeout); t.timers = [];
+    const ativa = visivel && !Animacoes.reduzido();
+    el.classList.toggle('vida', ativa);
+    if(ativa) this.agendar(el, t);
+  },
+  sincronizar(){
+    this.alvos.forEach((t, el) => { if(!el.isConnected){ t.timers.forEach(clearTimeout); this.obs.unobserve(el); this.alvos.delete(el); } else if(t.visivel && !Animacoes.reduzido()) el.classList.add('vida'); });
+    ['#palco-arvore', '.comemoracao .cena-viva'].forEach(sel => this.ligar(document.querySelector(sel)));
+  },
+  depois(t, min, max, fn){ t.timers.push(setTimeout(fn, min + Math.random() * (max - min))); },
+  agendar(el, t){
+    const vez = (min, max, acao) => { const loop = () => this.depois(t, min, max, () => { if(!document.hidden && el.isConnected) acao(); loop(); }); loop(); };
+    vez(12000, 20000, () => this.rajada(el));
+    if(el.querySelector('.arv-borboleta')) vez(25000, 40000, () => this.borboleta(el));
+    if(el.querySelector('.arv-passaro')) vez(45000, 70000, () => this.passaro(el));
+  },
+  rajada(el){
+    [...el.querySelectorAll('.arv-tufo')].map(g => ({ g, x: g.getBBox().x })).sort((a, b) => a.x - b.x).forEach(({ g }, k) => {
+      setTimeout(() => { g.style.setProperty('--rajada', '2'); setTimeout(() => g.style.removeProperty('--rajada'), 1200); }, k * 60);
+    });
+  },
+  borboleta(el){
+    const b = el.querySelector('.arv-borboleta'); if(!b) return;
+    const y = 120 + Math.random() * 90, dir = Math.random() < 0.5 ? 1 : -1, x0 = dir > 0 ? -20 : 340, x1 = dir > 0 ? 340 : -20;
+    const pts = [0, 0.25, 0.5, 0.75, 1].map((f, k) => ({ transform: `translate(${x0 + (x1 - x0) * f}px, ${y + Math.sin(f * Math.PI * 3) * 24 - k * 6}px)`, opacity: f === 0 || f === 1 ? 0 : 1 }));
+    b.classList.add('voando');
+    b.animate(pts, { duration: 6000, easing: 'ease-in-out' }).onfinish = () => b.classList.remove('voando');
+  },
+  passaro(el){
+    const p = el.querySelector('.arv-passaro'), [ax, ay] = (el.dataset.pouso || '').split(',').map(Number), alvo = el.dataset.pouso ? { x: ax, y: ay } : null; if(!p || !alvo) return;
+    const at = (x, y) => `translate(${x}px, ${y}px)`, px = alvo.x, py = alvo.y - 5;
+    p.animate([
+      { transform: at(350, py - 50), opacity: 0 }, { transform: at(px, py), opacity: 1, offset: 0.16, easing: 'cubic-bezier(.22,1,.36,1)' },
+      { transform: at(px, py), offset: 0.45 }, { transform: at(px, py - 5), offset: 0.5 }, { transform: at(px, py), offset: 0.55 },
+      { transform: at(px, py), opacity: 1, offset: 0.84 }, { transform: at(-30, py - 70), opacity: 0 },
+    ], { duration: 5800 });
+  },
+};
 const cacheCenas = new Map();
 function cenaArvore(folhas, estagio, o = {}){
-  const opc = { folhas, estagio, periodo: o.periodo || Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', tamanho: o.mini ? 'mini' : 'cena', prefixo: o.prefixo || 'av', rotulo: o.rotulo ? `Sua árvore: ${Arvore.NOMES[estagio]}, ${folhasTxt(folhas)}` : '' };
+  const opc = { folhas, estagio, periodo: o.periodo || (SIM_ARVORE && SIM_ARVORE.periodo) || Regras.periodo(horaAgora()), tema: temaEscuro() ? 'escuro' : 'claro', tamanho: o.mini ? 'mini' : 'cena', prefixo: o.prefixo || 'av', rotulo: o.rotulo ? `Sua árvore: ${Arvore.NOMES[estagio]}, ${folhasTxt(folhas)}` : '' };
   const chave = [opc.prefixo, opc.tamanho, folhas, estagio, opc.periodo, opc.tema, opc.rotulo ? 1 : 0].join('|');
   if(!cacheCenas.has(chave)){ if(cacheCenas.size > 30) cacheCenas.clear(); cacheCenas.set(chave, ArvoreDesenho.gerarArvore(opc)); }
   return { chave, ...cacheCenas.get(chave) };
@@ -4022,9 +4082,10 @@ const Folhinha = {
 document.addEventListener('visibilitychange', () => document.documentElement.classList.toggle('oculto', document.hidden));
 const SIM_ARVORE = (() => {
   if(NATIVO || (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')) return null;
-  const p = new URLSearchParams(location.search), f = p.get('folhas'), e = p.get('evento');
+  const p = new URLSearchParams(location.search), f = p.get('folhas'), e = p.get('evento'), per = p.get('periodo'), fo = p.get('folhinha');
   const folhas = f !== null && /^\d{1,5}$/.test(f) ? Number(f) : null, evento = ['perdeu', 'faixa', 'bonus', 'subiu', 'voltou', 'completo'].includes(e) ? e : null;
-  return folhas === null && !evento ? null : { folhas, evento };
+  const periodo = ['manha', 'tarde', 'noite'].includes(per) ? per : null, folhinha = fo && /^[a-z]{4,12}$/.test(fo) ? fo : null;
+  return folhas === null && !evento && !periodo && !folhinha ? null : { folhas, evento, periodo, folhinha };
 })();
 const memoArvore = {};
 let cacheArvore = { chave: '', valor: null };
@@ -4050,7 +4111,7 @@ function cartaoArvore(){
   const prog = e < 9 ? (a.folhas - Arvore.LIMITES[e]) / (Arvore.LIMITES[e + 1] - Arvore.LIMITES[e]) : 1;
   const falta = a.proximo ? (a.proximo.faltam === 1 ? `Falta 1 folha para ${a.proximo.nome}` : `Faltam ${numBR(a.proximo.faltam)} folhas para ${a.proximo.nome}`) : 'Estágio máximo';
   return `<section class="card arvore-card" data-chave="arvore-card">
-    ${(c => `<div class="arvore-palco" id="palco-arvore" data-cena="${c.chave}">${c.svg}</div>`)(cenaArvore(a.folhas, e, { prefixo: 'prog', rotulo: true }))}
+    ${(c => `<div class="arvore-palco" id="palco-arvore" data-cena="${c.chave}"${c.pouso ? ` data-pouso="${c.pouso.x},${c.pouso.y}"` : ''}>${c.svg}</div>`)(cenaArvore(a.folhas, e, { prefixo: 'prog', rotulo: true }))}
     <div class="arvore-info"><h2>${a.nomeEstagio}</h2><p class="arvore-n">${folhasTxt(a.folhas)}</p>
       <div class="bar" aria-hidden="true"><i style="--c:var(--arvore-folha-1);--p:${prog.toFixed(3)}"></i></div>
       <p class="hint">${falta}</p><p class="hint"><span class="sem-quebra">Ganhas: ${numBR(a.ganhas)}</span> · <span class="sem-quebra">Perdidas: ${numBR(a.perdidas)}</span></p></div>
