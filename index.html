@@ -760,7 +760,7 @@
     --p-folhinha-sombra:rgb(28 27 25 / .18); --p-folhinha-sombra-e:rgb(0 0 0 / .45); --p-folhinha-bochecha:#F4A6B8; --p-folhinha-pupila:#1C1B19; --p-folhinha-olho:#FFFFFF; --p-folhinha-boca:#5A1E2E; --p-folhinha-lingua:#F08AA0;
     --folhinha-luz:var(--p-folhinha-luz); --folhinha-meio:var(--p-folhinha-meio); --folhinha-base:var(--p-folhinha-base); --folhinha-contorno:var(--p-folhinha-contorno); --folhinha-nervura:var(--p-folhinha-nervura);
     --folhinha-sombra:var(--p-folhinha-sombra); --folhinha-bochecha:var(--p-folhinha-bochecha); --folhinha-pupila:var(--p-folhinha-pupila); --folhinha-olho:var(--p-folhinha-olho); --folhinha-boca:var(--p-folhinha-boca); --folhinha-lingua:var(--p-folhinha-lingua);
-    --fo-tam:88px; --fo-alt:calc(var(--fo-tam) * 1.067); --fo-esq:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-2) + env(safe-area-inset-left))}
+    --fo-tam:88px; --fo-alt:calc(var(--fo-tam) * 1.067); --fo-esq:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-2) + env(safe-area-inset-left)); --fo-dir:calc(max(0px, (100vw - var(--content-max)) / 2) + var(--space-2) + env(safe-area-inset-right))}
   :root{--p-arvore-folha-texto:#256B42; --p-arvore-folha-texto-e:#7FCB9A; --arvore-folha-texto:var(--p-arvore-folha-texto)}
   @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){--arvore-folha-texto:var(--p-arvore-folha-texto-e)} }
   :root[data-theme="dark"]{--arvore-folha-texto:var(--p-arvore-folha-texto-e)}
@@ -770,6 +770,13 @@
   @media (min-width: 768px) and (min-height: 641px){ :root{--fo-tam:96px} }
   #folhinha{position:fixed;z-index:6;width:var(--fo-tam);height:var(--fo-alt);padding:0;border:0;background:none;border-radius:var(--radius-full);
     left:var(--fo-esq);bottom:calc(var(--nav-h) + var(--space-1) + env(safe-area-inset-bottom));transition:opacity var(--dur-rapida) var(--ease-saida);-webkit-tap-highlight-color:transparent}
+  #folhinha{touch-action:none}
+  #folhinha.arrastando{transition:none;cursor:grabbing}
+  #folhinha.pos-direita{left:auto;right:var(--fo-dir);bottom:calc(var(--nav-h) + var(--space-1) + 72px + env(safe-area-inset-bottom))}
+  #folhinha.espiando{left:calc(var(--fo-tam) * -1 + 36px)}
+  #folhinha.espiando.pos-direita{left:auto;right:calc(var(--fo-tam) * -1 + 36px)}
+  .balao-fo.dir{left:auto;right:calc(var(--fo-dir) + var(--space-2));bottom:calc(var(--nav-h) + var(--fo-alt) + var(--space-2) + 72px + env(safe-area-inset-bottom))}
+  .balao-fo.dir::after{left:auto;right:var(--space-6);transform:scaleX(-1)}
   .balao-fo{position:fixed;z-index:6;max-width:min(300px, calc(100vw - var(--space-4) * 2));display:flex;flex-direction:column;gap:var(--space-1);
     left:calc(var(--fo-esq) + var(--space-2));bottom:calc(var(--nav-h) + var(--fo-alt) + var(--space-2) + env(safe-area-inset-bottom));
     padding:var(--space-3) var(--space-4) var(--space-1);background:var(--surface);color:var(--text-primary);border-radius:var(--radius-sheet);box-shadow:var(--shadow-fab)}
@@ -4664,8 +4671,9 @@ function dicaDeAba(){
 }
 function sincronizarFolhinha(){
   if(folhinhaAtiva()){
-    Folhinha.montar(); Folhinha.aoTocar = proximaDica; document.documentElement.classList.add('com-folhinha');
     const fo = dados.ajustes.folhinha;
+    Folhinha.posicao = fo.posicao; Folhinha.montar(); Folhinha.posicionar(fo.posicao); Folhinha.aoTocar = proximaDica; document.documentElement.classList.add('com-folhinha');
+    Folhinha.aoMover = pos => { dados.ajustes.folhinha.posicao = pos; salvar(); };
     if(SIM_ARVORE && SIM_ARVORE.folhinha && FolhinhaDesenho.ESTADOS.includes(SIM_ARVORE.folhinha)) Folhinha.definir(SIM_ARVORE.folhinha);
     else if(Folhinha.hora() < 11 && Folhinha.hora() >= 5 && fo.espreguicou !== hoje()){ fo.espreguicou = hoje(); salvar(); setTimeout(() => Folhinha.espreguicar(), 600); }
   }

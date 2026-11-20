@@ -48,7 +48,7 @@
 .folhinha[data-estado="comemorando"] .fo-braco-d{transform:rotate(-58deg)}
 .folhinha[data-estado="comemorando"] .fo-ser{animation:fo-pulo .7s cubic-bezier(.22,1,.36,1) 2}
 @keyframes fo-pulo{0%,100%{transform:translateY(0)}35%{transform:translateY(-14px) scale(1.03)}70%{transform:translateY(0) scale(1.04,.96)}}
-.folhinha[data-estado="comemorando"] .fo-faisca{animation:fo-faisca .9s cubic-bezier(.22,1,.36,1) calc(var(--k) * 60ms) 2 both;transform-origin:center}
+.folhinha:not(.sem-faisca)[data-estado="comemorando"] .fo-faisca{animation:fo-faisca .9s cubic-bezier(.22,1,.36,1) calc(var(--k) * 60ms) 2 both;transform-origin:center}
 @keyframes fo-faisca{0%{opacity:0;transform:scale(.4)}40%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(.6) rotate(45deg)}}
 .folhinha[data-estado="triste"] .fo-ser{animation:none;transform:scale(.96)}
 .folhinha[data-estado="triste"] .fo-pupilas{transform:translate(0,2.4px)}
@@ -94,17 +94,83 @@ html.oculto .fo-ser,html.oculto .fo-sombra,html.oculto .fo-z{animation-play-stat
       b.id = 'folhinha'; b.type = 'button'; b.className = 'folhinha'; b.dataset.estado = 'parada';
       b.setAttribute('aria-label', 'Folhinha: toque para ver uma dica');
       b.innerHTML = svg('fo');
-      b.addEventListener('click', () => { if (this.arrastou) return; if (this.balao && !this.balao.hidden) return this.fechar(); if (this.aoTocar) this.aoTocar(); });
+      b.addEventListener('click', () => { if (this.arrastou) return; this.clicar(); });
+      b.addEventListener('pointerdown', e => this.arrastar(e));
       const balao = document.createElement('div');
       balao.id = 'balao-fo'; balao.className = 'balao-fo'; balao.hidden = true;
       balao.innerHTML = '<svg class="balao-folha" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2 14C2 6 7 2 14 2C14 9 9 14 2 14Z"/><path d="M3 13L11 5" fill="none"/></svg><p class="balao-texto" aria-hidden="true"></p><p class="sr" role="status" id="balao-sr"></p><div class="balao-acoes"></div>';
       balao.querySelector('.balao-texto').addEventListener('click', () => this.completar());
       document.body.append(b, balao);
       this.el = b; this.balao = balao;
+      this.posicionar(this.posicao);
       this.aoToque = e => this.toque(e);
       document.addEventListener('pointerdown', this.aoToque, true);
       this.piscar();
       this.t.sono = setInterval(() => this.vigiarSono(), 5000);
+    },
+    posicao: 'esquerda', aoMover: null, ultimoClique: 0,
+    posicionar(pos) {
+      this.posicao = pos;
+      if (!this.el) return;
+      const dir = pos.endsWith('direita');
+      this.el.classList.toggle('pos-direita', dir);
+      this.el.classList.toggle('espiando', pos.startsWith('espiando'));
+      this.balao.classList.toggle('dir', dir);
+    },
+    clicar() {
+      const agora = Date.now(), duplo = agora - this.ultimoClique < 320;
+      this.ultimoClique = agora;
+      if (duplo) { this.fechar(); this.dancar(); return; }
+      if (this.posicao.startsWith('espiando')) { this.mover(this.posicao.endsWith('direita') ? 'direita' : 'esquerda'); return; }
+      if (this.balao && !this.balao.hidden) return this.fechar();
+      if (this.aoTocar) this.aoTocar();
+    },
+    dancar() {
+      if (!this.el) return;
+      this.el.classList.add('sem-faisca');
+      this.reagir('comemorando', 1000);
+      setTimeout(() => this.el && this.el.classList.remove('sem-faisca'), 1000);
+    },
+    mover(pos, de) {
+      const el = this.el; if (!el) return;
+      const antes = de || el.getBoundingClientRect();
+      el.getAnimations().filter(a => a.id === 'fo-mover').forEach(a => a.cancel());
+      el.style.transform = '';
+      this.posicionar(pos);
+      if (this.aoMover) this.aoMover(pos);
+      if (reduzido()) return;
+      const depois = el.getBoundingClientRect(), dx = antes.left - depois.left, dy = antes.top - depois.top;
+      if (!dx && !dy) return;
+      const curva = raiz.Animacoes ? raiz.Animacoes.curvaMola() : 'cubic-bezier(.22,1,.36,1)';
+      const a = el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 480, easing: curva });
+      a.id = 'fo-mover';
+    },
+    arrastar(e) {
+      const el = this.el;
+      if (!el || e.button > 0) return;
+      const anim = el.getAnimations().find(a => a.id === 'fo-mover');
+      const r0 = el.getBoundingClientRect();
+      if (anim) { anim.cancel(); el.style.transform = ''; const base = el.getBoundingClientRect(); el.style.transform = `translate(${r0.left - base.left}px, ${r0.top - base.top}px)`; }
+      const base = el.getBoundingClientRect(), off = { x: r0.left - base.left, y: r0.top - base.top };
+      const x0 = e.clientX, y0 = e.clientY;
+      let ativo = false;
+      el.setPointerCapture(e.pointerId);
+      const mover = ev => {
+        const dx = ev.clientX - x0, dy = ev.clientY - y0;
+        if (!ativo && Math.hypot(dx, dy) < 6) return;
+        if (!ativo) { ativo = true; this.arrastou = true; this.fechar(); el.classList.add('arrastando'); }
+        el.style.transform = `translate(${off.x + dx}px, ${off.y + dy}px)`;
+      };
+      const soltar = ev => {
+        el.removeEventListener('pointermove', mover); el.removeEventListener('pointerup', soltar); el.removeEventListener('pointercancel', soltar);
+        el.classList.remove('arrastando');
+        if (!ativo) { if (anim) this.mover(this.posicao, r0); return; }
+        const r = el.getBoundingClientRect(), centro = r.left + r.width / 2, dir = centro > innerWidth / 2;
+        const borda = dir ? innerWidth - r.right : r.left;
+        this.mover((borda < 24 ? 'espiando-' : '') + (dir ? 'direita' : 'esquerda'), r);
+        setTimeout(() => { this.arrastou = false; }, 0);
+      };
+      el.addEventListener('pointermove', mover); el.addEventListener('pointerup', soltar); el.addEventListener('pointercancel', soltar);
     },
     estado() { return this.el ? this.el.dataset.estado : null; },
     definir(estado) { if (this.el) this.el.dataset.estado = estado; },
