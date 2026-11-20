@@ -742,6 +742,10 @@
   svg.arvore-viva{display:block;width:auto;height:100%;max-width:100%;overflow:visible}
   svg.arvore-viva .arv-folha,svg.arvore-viva .arv-caindo{transform-box:fill-box;transform-origin:50% 100%}
   svg.arvore-viva :is(.arv-tufo,.arv-tronco-g,.arv-borboleta,.arv-passaro,.arv-vagalume,.arv-asa){transform-box:fill-box;transform-origin:50% 100%}
+  :root{--p-arvore-folha-seca:#C9A227; --arvore-folha-seca:var(--p-arvore-folha-seca)}
+  .arvore-palco,.cena-viva{position:relative}
+  .cena-velha{position:absolute;inset:0;display:flex;justify-content:center;align-items:flex-end;pointer-events:none}
+  .trocando .arv-tufo{animation-play-state:paused}
   .vida .arv-tufo{animation:arv-vento var(--dur) cubic-bezier(.45,0,.55,1) var(--atraso) infinite alternate}
   @keyframes arv-vento{from{rotate:calc(var(--amp) * -1 * var(--rajada, 1))}to{rotate:calc(var(--amp) * var(--rajada, 1))}}
   .vida .arv-tronco-g{animation:arv-tronco 4.6s cubic-bezier(.45,0,.55,1) infinite alternate}
@@ -1168,7 +1172,7 @@ function comemorarDiaCompleto(total, depois){
   const arv = arvoreAtual();
   mostrarCartao('Dia completo', Regras.textoComemoracao(total, Regras.sequencia(visao(), hoje())), cenaArvore(arv.folhas, arv.estagio, { prefixo: 'com' }).svg, depois);
   const noCartao = document.querySelector('.comemoracao svg.arvore-viva');
-  if(noCartao) setTimeout(() => folhaNovaAnim(arv.folhas - 1, noCartao), Animacoes.MOV.base);
+  if(noCartao) setTimeout(() => folhaNovaAnim(Math.max(0, arv.folhas - arv.folhasHoje), arv.folhas, noCartao), Animacoes.MOV.base);
 }
 let ultimoToque = null;
 document.addEventListener('pointerdown', e => { ultimoToque = { x: e.clientX, y: e.clientY, alvo: e.target }; if(dados && dados.ajustes.sons) Animacoes.prepararAudio(); }, true);
@@ -4125,36 +4129,78 @@ function linhaArvore(){
   return `<button class="linha-arvore" data-chave="linha-arvore" onclick="irPara('constancia')" aria-label="Sua árvore: ${a.nomeEstagio}, ${folhasTxt(a.folhas)}. Abrir Progresso">${(c => `<span class="mini-arvore" data-cena="${c.chave}">${c.svg}</span>`)(cenaArvore(a.folhas, a.estagio, { prefixo: 'hoje', mini: true }))}<span>${a.nomeEstagio} · ${folhasTxt(a.folhas)}</span></button>`;
 }
 const arvoresVisiveis = () => [...document.querySelectorAll('#app svg.arvore-viva, .comemoracao svg.arvore-viva')];
-function folhaNovaAnim(i, raiz){
-  (raiz ? [raiz] : arvoresVisiveis()).forEach(svg => svg.querySelectorAll(`.arv-folha[data-i="${i}"]`).forEach(el => {
-    if(Animacoes.reduzido()) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.reduzida });
-    else el.animate([{ scale: '0' }, { scale: '1' }], { duration: Animacoes.MOV.lenta, easing: Animacoes.curvaMola() });
-  }));
-}
-function subirEstagioAnim(){
-  arvoresVisiveis().forEach(svg => {
-    const folhas = [...svg.querySelectorAll('.arv-folha')], passo = Math.min(20, 600 / Math.max(1, folhas.length));
-    if(Animacoes.reduzido()){ svg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.reduzida }); return; }
-    folhas.forEach((el, k) => el.animate([{ scale: '0' }, { scale: '1' }], { duration: Animacoes.MOV.lenta, delay: k * passo, easing: Animacoes.curvaMola(), fill: 'backwards' }));
+const corToken = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const posFolha = el => { const m = /translate\(([-\d.]+) ([-\d.]+)\)/.exec(el.getAttribute('transform') || ''); return m ? { x: +m[1], y: +m[2] } : { x: 0, y: 0 }; };
+function brilhoFolha(el){
+  const p = posFolha(el), pai = el.parentNode, ns = 'http://www.w3.org/2000/svg';
+  [[1, -1], [1, 1], [-1, 1], [-1, -1]].forEach(([dx, dy]) => {
+    const c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', p.x); c.setAttribute('cy', p.y - 6); c.setAttribute('r', '1.3'); c.setAttribute('fill', 'var(--arvore-flor-miolo)');
+    pai.appendChild(c);
+    c.animate([{ translate: '0 0', opacity: 1 }, { translate: `${dx * 7}px ${dy * 7}px`, opacity: 0 }], { duration: 520, easing: Animacoes.MOV.saida }).onfinish = () => c.remove();
   });
 }
-function cairFolhas(n){
-  const a = arvoreAtual();
+function folhaNovaAnim(de, ate, raiz){
+  const fim = Math.min(ate, ArvoreDesenho.MAX_FOLHAS), n = fim - de;
+  if(n <= 0) return;
+  const passo = Math.min(40, 1200 / n);
+  (raiz ? [raiz] : arvoresVisiveis()).forEach(svg => {
+    for(let i = de, k = 0; i < fim; i++, k++){
+      const el = svg.querySelector(`.arv-folha[data-i="${i}"]`); if(!el) continue;
+      if(Animacoes.reduzido()){ el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.reduzida, fill: 'backwards' }); continue; }
+      el.animate([{ scale: '0', rotate: '-20deg' }, { scale: '1', rotate: '0deg' }], { duration: 520, delay: k * passo, easing: Animacoes.curvaMola(), fill: 'backwards' });
+      if(k < 6 && !svg.classList.contains('mini')) setTimeout(() => el.isConnected && brilhoFolha(el), k * passo + 280);
+    }
+  });
+}
+function trocarCena(cont, svgAntigo, subir){
+  const novo = cont && cont.querySelector('svg.arvore-viva');
+  if(!novo) return;
+  if(Animacoes.reduzido()){ novo.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Animacoes.MOV.reduzida }); return; }
+  const velho = document.createElement('div');
+  velho.className = 'cena-velha'; velho.setAttribute('aria-hidden', 'true'); velho.innerHTML = svgAntigo;
+  cont.classList.add('trocando'); cont.append(velho);
+  const acabar = () => { velho.remove(); cont.classList.remove('trocando'); };
+  if(!subir){
+    velho.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, easing: Animacoes.MOV.movimento, fill: 'forwards' }).onfinish = acabar;
+    novo.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, easing: Animacoes.MOV.movimento });
+    return;
+  }
+  cont.animate([{ scale: '1' }, { scale: '1.04', offset: 0.25 }, { scale: '1.04', offset: 0.75 }, { scale: '1' }], { duration: 2000, easing: Animacoes.MOV.movimento });
+  velho.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 900, easing: Animacoes.MOV.saida, fill: 'forwards' }).onfinish = acabar;
+  const arv = novo.querySelector('.arv-tronco-g');
+  if(arv) arv.animate([{ clipPath: 'inset(100% -30% -10% -30%)' }, { clipPath: 'inset(0% -30% -10% -30%)' }], { duration: 900, easing: Animacoes.MOV.saida });
+  novo.querySelectorAll('.arv-tufo').forEach((g, k) => g.animate([{ opacity: 0, scale: '.6' }, { opacity: 1, scale: '1' }], { duration: 420, delay: 450 + k * 50, easing: Animacoes.curvaMola(), fill: 'backwards' }));
+  setTimeout(() => {
+    const r = novo.getBoundingClientRect();
+    if(r.bottom > 0 && r.top < innerHeight) Animacoes.faiscas(r.left + r.width / 2, r.top + r.height * 0.35, ['--arvore-flor', '--arvore-flor-miolo', '--arvore-folha-3'].map(corToken), 24);
+  }, 1100);
+}
+function cairFolhas(n, de){
   arvoresVisiveis().forEach(svg => {
-    const g = svg.querySelector('.arv-extras');
-    for(let k = 0; k < n; k++){
-      const i = a.folhas + k;
-      const t = document.createElement('template'), pre = (svg.querySelector('use') || { getAttribute: () => '#av-f' }).getAttribute('href').slice(1).replace(/-fl?$/, '');
-      t.innerHTML = ArvoreDesenho.gerarArvore({ folhas: i + 1, estagio: a.estagio, prefixo: pre, tamanho: 'mini' }).svg;
-      const molde = t.content.querySelector(`.arv-folha[data-i="${i}"]`);
-      if(!g || !molde) continue;
-      g.insertAdjacentHTML('beforeend', `<g class="arv-caindo">${molde.outerHTML}</g>`);
-      const el = g.lastElementChild;
-      const lado = k % 2 ? 1 : -1;
-      const anim = Animacoes.reduzido()
-        ? el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.reduzida, fill: 'forwards' })
-        : el.animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${lado * 8}px, 40px) rotate(${lado * 70}deg)`, offset: 0.35 }, { transform: `translate(${lado * -6}px, 90px) rotate(${lado * 150}deg)`, offset: 0.7, opacity: 0.8 }, { transform: `translate(0, 150px) rotate(${lado * 230}deg)`, opacity: 0 }], { duration: 1200, delay: k * 120, easing: Animacoes.MOV.movimento, fill: 'forwards' });
-      anim.onfinish = () => el.remove();
+    const g = svg.querySelector('.arv-extras'), use = svg.querySelector('use');
+    if(!g || !use) return;
+    const pre = use.getAttribute('href').slice(1).replace(/-fl?$/, ''), estagio = Number(svg.dataset.estagio);
+    const t = document.createElement('template');
+    const M = ArvoreDesenho.MAX_FOLHAS, idx = k => (de + k < M ? de + k : M - 1 - k);
+    t.innerHTML = ArvoreDesenho.gerarArvore({ folhas: Math.min(de + n, M), estagio, prefixo: pre, tamanho: 'mini' }).svg;
+    for(let k = 0; k < Math.min(n, 12); k++){
+      const molde = t.content.querySelector(`.arv-folha[data-i="${idx(k)}"]`);
+      if(!molde) continue;
+      g.insertAdjacentHTML('beforeend', molde.outerHTML);
+      const el = g.lastElementChild, lado = k % 2 ? 1 : -1, queda = Math.max(40, 292 - posFolha(el).y);
+      el.classList.add('arv-caindo');
+      if(Animacoes.reduzido()){ el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Animacoes.MOV.reduzida, fill: 'forwards' }).onfinish = () => el.remove(); continue; }
+      const seca = el.animate([{ fill: el.getAttribute('fill') }, { fill: 'var(--arvore-folha-seca)' }], { duration: 300, delay: k * 140, fill: 'forwards' });
+      seca.onfinish = () => {
+        el.setAttribute('fill', 'var(--arvore-folha-seca)');
+        el.animate([
+          { translate: '0 0', rotate: '0deg', opacity: 1 },
+          { translate: `${lado * 12}px ${queda * 0.3}px`, rotate: `${lado * 80}deg`, offset: 0.3 },
+          { translate: `${lado * -10}px ${queda * 0.62}px`, rotate: `${lado * 190}deg`, offset: 0.62 },
+          { translate: `${lado * 5}px ${queda}px`, rotate: `${lado * 300}deg`, opacity: 0 },
+        ], { duration: 1400, easing: 'cubic-bezier(.45,0,.55,1)', fill: 'forwards' }).onfinish = () => el.remove();
+      };
     }
   });
 }
@@ -4168,11 +4214,13 @@ const EVENTOS_SIM = {
   completo: () => [{ tipo: 'faixaSubiu', faixa: 'Dia completo', folhas: 5, primeira: false }],
 };
 function animarEventosArvore(ev, antes, a){
-  const tipos = ev.map(e => e.tipo);
-  if(tipos.includes('subiuEstagio')) subirEstagioAnim();
-  else if(antes !== null && a.folhas > antes) for(let i = Math.max(antes, a.folhas - 12); i < Math.min(a.folhas, 120); i++) folhaNovaAnim(i);
+  const palco = $('palco-arvore');
+  const visivel = el => { if(!el) return false; const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+  if(antes && antes.folhasVistas !== null && antes.estagioVisto !== null && antes.estagioVisto !== a.estagio && visivel(palco)){
+    trocarCena(palco, cenaArvore(antes.folhasVistas, antes.estagioVisto, { prefixo: 'prog', rotulo: true }).svg, a.estagio > antes.estagioVisto);
+  } else if(antes && antes.folhasVistas !== null && a.folhas > antes.folhasVistas) folhaNovaAnim(antes.folhasVistas, a.folhas);
   const perda = ev.find(e => e.tipo === 'perdeu');
-  if(perda) cairFolhas(perda.n);
+  if(perda) cairFolhas(perda.n, a.folhas);
 }
 function processarEventosArvore(){
   if(!dados) return [];
@@ -4188,7 +4236,7 @@ function processarEventosArvore(){
     const novo = Arvore.registrarVisto(aj, a);
     if(JSON.stringify(novo) !== JSON.stringify(aj)){ dados.ajustes.arvore = novo; salvar(); }
   }
-  animarEventosArvore(ev, sim ? null : aj.folhasVistas, a);
+  animarEventosArvore(ev, sim ? null : aj, a);
   return ev;
 }
 /* ---------- abertura ---------- */

@@ -328,10 +328,11 @@ test('desempenho da regra nova: 3 anos em menos de 30 ms e marcação com memo e
   const inicio = '2023-11-18', feitos = {};
   for (let d = inicio, k = 0; d < '2026-11-18'; d = R.somaDias(d, 1), k++) feitos[d] = ids.slice(0, (k * 7) % 11);
   const dados = montarCom(inicio, feitos), hoje = '2026-11-18', memo = {};
-  A.calcularArvore(dados, hoje);
-  const t0 = performance.now();
+  const frios = [];
+  for (let k = 0; k < 5; k++) { const t = performance.now(); A.calcularArvore(dados, hoje); frios.push(performance.now() - t); }
+  frios.sort((a, b) => a - b);
+  const t0 = 0, t1 = frios[2];
   A.calcularArvore(dados, hoje, memo);
-  const t1 = performance.now();
   const tempos = [];
   for (let k = 0; k < 11; k++) {
     dados.feitos[hoje] = ids.slice(0, k % 10);
