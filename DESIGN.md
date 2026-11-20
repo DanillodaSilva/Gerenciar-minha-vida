@@ -5,15 +5,15 @@ Fonte única de verdade do visual. Todo valor de cor, tamanho, espaçamento, can
 - Produto: app de rotina e tarefas do dia, offline, instalado pelo Chrome (PWA).
 - Público: quem anota o dia no celular e quer ver rápido o que falta.
 - Ação principal: **Nova tarefa** (botão flutuante). Secundária: concluir tarefa.
-- Base: Material 3 com cores próprias. Cor semente `#2F6B4F`. **Sem roxo ou lavanda em nenhum lugar.**
+- Base: Material 3 com cores próprias. Cor semente `#6B3FA0`. Identidade roxa desde a versão 1.5.0 (decisão do dono do app, 18/11/2026). Categorias de seção continuam com as 8 cores, sem roxo.
 - Idioma: pt-BR.
 
 ## Arquitetura dos tokens
 
 ```
-Primitivo  (valor bruto, nunca usado direto em componente)   --p-green-600: #2F6B4F
+Primitivo  (valor bruto, nunca usado direto em componente)   --p-purple-600: #6B3FA0
    ↓
-Semântico  (função, muda entre claro e escuro)               --primary: var(--p-green-600)
+Semântico  (função, muda entre claro e escuro)               --primary: var(--p-purple-600)
    ↓
 Componente (peça específica)                                 --fab-bg: var(--primary)
 ```
@@ -36,10 +36,10 @@ Componente (peça específica)                                 --fab-bg: var(--p
 | `--border-strong` | `#92876D` | `#767168` | borda de campo, caixa de conclusão, chip (controles, 3:1) |
 | `--text-primary` | `#1C1B19` | `#F2F0EB` | texto principal |
 | `--text-secondary` | `#5F5B53` | `#B3AEA4` | linha secundária, cabeçalhos de seção |
-| `--primary` | `#2F6B4F` | `#6FBF95` | ação principal, seleção, anel, barra de hoje |
-| `--on-primary` | `#FFFFFF` | `#0E2A1C` | texto e ícone sobre `--primary` |
+| `--primary` | `#6B3FA0` | `#C3A6F0` | ação principal, seleção, anel, barra de hoje |
+| `--on-primary` | `#FFFFFF` | `#24123D` | texto e ícone sobre `--primary` |
 | `--danger` | `#B91C1C` | `#F87171` | excluir, erro, horário passado |
-| `--on-danger` | `#FFFFFF` | `#141413` | ícone e texto sobre `danger` sólido (fundo do gesto de excluir): 6,47:1 claro, 6,66:1 escuro; `onPrimary` sobre `primary` sólido (gesto de marcar): 6,29:1 e 7,00:1 |
+| `--on-danger` | `#FFFFFF` | `#141413` | ícone e texto sobre `danger` sólido (fundo do gesto de excluir): 6,47:1 claro, 6,66:1 escuro; `onPrimary` sobre `primary` sólido (gesto de marcar): 7,38:1 e 8,16:1 |
 | `--priority-high` | `#C0400C` | `#FB8B5B` | prioridade alta |
 | `--priority-medium` | `#9A5E07` | `#E6B84A` | prioridade média |
 | `--priority-low` | `#4B6B8A` | `#8FB3D9` | prioridade baixa |
@@ -64,7 +64,7 @@ O pastel vai nas superfícies, nunca no texto: texto em pastel não passa de 4,5
 
 | Token | Claro | Escuro | Uso |
 |---|---|---|---|
-| `--primary-container` | `#C2EBD8` | `#2E5644` | botão flutuante, chip selecionado, indicador da aba, trilho do anel, cartão "Tudo feito" |
+| `--primary-container` | `#E6DAF7` | `#4A3270` | botão flutuante, chip selecionado, indicador da aba, trilho do anel, cartão "Tudo feito" |
 | `--cat-green-container` | `#DFF1E9` | `#1E362B` | cartão da seção |
 | `--cat-blue-container` | `#DBE3F5` | `#1E2636` | cartão da seção |
 | `--cat-teal-container` | `#DBF5F3` | `#1E3634` | cartão da seção |
@@ -110,7 +110,7 @@ Mínimo exigido: 4,5:1 para texto, 3:1 para ícones, bordas de campo e controles
 |---|---|---|
 | `textPrimary` | 15.92 / 17.21 / 14.71 | 16.19 / 14.79 / 12.77 |
 | `textSecondary` | 6.25 / 6.76 / 5.78 | 8.35 / 7.63 / 6.59 |
-| `primary` | 5.82 / 6.29 / 5.38 | 8.39 / 7.67 / 6.62 |
+| `primary` | 6.83 / 7.38 / 6.31 | 8.81 / 8.05 / 6.95 |
 | `danger` | 5.99 / 6.47 / 5.53 | 6.66 / 6.09 / 5.26 |
 | `priorityHigh` | 4.88 / 5.28 / 4.51 | 7.85 / 7.18 / 6.20 |
 | `priorityMedium` | 4.88 / 5.28 / 4.51 | 9.94 / 9.08 / 7.84 |
@@ -123,14 +123,47 @@ Mínimo exigido: 4,5:1 para texto, 3:1 para ícones, bordas de campo e controles
 | cat `yellow` | 4.88 / 5.28 / 4.51 | 9.94 / 9.08 / 7.84 |
 | cat `brown` | 5.75 / 6.21 / 5.31 | 7.86 / 7.18 / 6.20 |
 | cat `gray` | 7.06 / 7.63 / 6.52 | 7.31 / 6.68 / 5.77 |
-| `onPrimary` sobre `primary` | 6.29 | 7.00 |
+| `onPrimary` sobre `primary` | 7.38 | 8.16 |
 | `borderStrong` sobre background / surface / surfaceVariant | 3.29 / 3.55 / 3.04 | 3.80 / 3.47 / 3.00 |
+
+### 1.4.1 Identidade roxa (versão 1.5.0)
+
+Primitivas novas: `--p-purple-50` `#F1EAFB`, `--p-purple-100` `#E6DAF7`, `--p-purple-300` `#C3A6F0`, `--p-purple-600` `#6B3FA0`, `--p-purple-700` `#5A3388`, `--p-purple-800` `#4A3270`, `--p-purple-950` `#24123D`. As `--p-green-*` continuam, usadas pela categoria verde.
+
+| Token | Claro (antes → agora) | Escuro (antes → agora) |
+|---|---|---|
+| `--primary` | `--p-green-600` → `--p-purple-600` | `--p-green-300` → `--p-purple-300` |
+| `--on-primary` | `--p-white` (igual) | `--p-green-950` → `--p-purple-950` |
+| `--primary-container` | `--p-green-100` → `--p-purple-100` | `--p-green-800` → `--p-purple-800` |
+| `--snack-action` | `--p-green-300` → `--p-purple-300` | `--p-green-600` → `--p-purple-600` |
+
+Não mudam: fundos e neutros, `--danger`, prioridades, as 8 categorias, o `theme-color` (areia `#F7F6F3` / `#141413`) e a conversão de `#7c5cff` para `blue` na importação.
+
+Contraste WCAG 2.x medido (mínimo 4,5:1 para texto e 3:1 para borda, ícone e foco):
+
+| Tema | Par | Cores | Contraste | Mínimo | Situação |
+|---|---|---|---|---|---|
+| claro | --primary sobre --background | `#6B3FA0` / `#F7F6F3` | 6,83:1 | 4,5:1 | ok |
+| claro | --primary sobre --surface | `#6B3FA0` / `#FFFFFF` | 7,38:1 | 4,5:1 | ok |
+| claro | --primary sobre --surface-variant | `#6B3FA0` / `#EFEDE8` | 6,31:1 | 4,5:1 | ok |
+| claro | --on-primary sobre --primary | `#FFFFFF` / `#6B3FA0` | 7,38:1 | 4,5:1 | ok |
+| claro | --text-primary sobre --primary-container | `#1C1B19` / `#E6DAF7` | 12,90:1 | 4,5:1 | ok |
+| claro | --primary sobre --primary-container | `#6B3FA0` / `#E6DAF7` | 5,53:1 | 3:1 | ok |
+| claro | --snack-action sobre o snackbar | `#C3A6F0` / `#1C1B19` | 8,22:1 | 4,5:1 | ok |
+| escuro | --primary sobre --background | `#C3A6F0` / `#141413` | 8,81:1 | 4,5:1 | ok |
+| escuro | --primary sobre --surface | `#C3A6F0` / `#1E1D1B` | 8,05:1 | 4,5:1 | ok |
+| escuro | --primary sobre --surface-variant | `#C3A6F0` / `#2A2926` | 6,95:1 | 4,5:1 | ok |
+| escuro | --on-primary sobre --primary | `#24123D` / `#C3A6F0` | 8,16:1 | 4,5:1 | ok |
+| escuro | --text-primary sobre --primary-container | `#F2F0EB` / `#4A3270` | 9,31:1 | 4,5:1 | ok |
+| escuro | --primary sobre --primary-container | `#C3A6F0` / `#4A3270` | 5,06:1 | 3:1 | ok |
+| escuro | --snack-action sobre o snackbar | `#6B3FA0` / `#F2F0EB` | 6,48:1 | 4,5:1 | ok |
 
 ### 1.5 Regras
 
 - Prioridade e situação nunca só pela cor: sempre há texto ou ícone junto.
 - Texto colorido (`danger`, prioridades, categorias) só sobre `background`, `surface` ou `surfaceVariant`.
-- Proibido roxo ou lavanda, inclusive tons padrão do Material.
+- Identidade roxa desde a versão 1.5.0 (decisão do dono do app, 18/11/2026). Categorias de seção continuam com as 8 cores, sem roxo.
+- A cor festiva (`--festa-*`) só pinta decoração e partícula, nunca texto, botão, chave, aba ou foco, que continuam em `--primary`.
 
 ## 2. Tipografia
 
@@ -286,3 +319,171 @@ Mesma arquitetura: os componentes abaixo só usam tokens que já existem. Nenhum
 | Visualizador de foto | tela cheia, fundo `p-night-950`, texto e ícones `p-white`, botões de 48 dp, áreas seguras respeitadas | abre/fecha por opacidade (`--dur-base`/`--dur-rapida`); pinça até 4x e arrastar quando ampliada; deslizar para os lados troca (limite 25% ou `GESTO.velocidade`), para baixo fecha; volta com `--ease-mola`; com movimento reduzido, só opacidade |
 | Cartão de alerta de faltas | `card` com fundo `--nv` a 10% sobre `surface`, borda `--nv` a 45%, ícone de alerta em `--nv`, linhas de 48 dp em `textPrimary` | aparece na tela Hoje enquanto alguma matéria estiver em perigo ou acima |
 | Diálogo de alerta | diálogo existente com ícone de alerta em `--nv` (`icon-lg`) acima do título | "Entendi" e "Ver matéria"; vários alertas entram em fila, do mais grave para o menos grave |
+
+### 6.2 Datas comemorativas (versão 1.5.0)
+
+**Arquitetura:** primitivas `--p-<festa>-1..4` (claro) e `--p-<festa>-1e..4e` (escuro) → semânticos `--festa-1..4`, trocados por `:root[data-festa="<id>"]` e repetidos nos dois seletores de modo escuro. Sem festa, `--festa-*` aponta para `--primary`. As cores festivas só pintam decoração e partícula; texto, botão, chave, aba e foco continuam em `--primary`.
+
+**No auge:** `--background` recebe 4% de `--festa-1` sobre `--p-sand-50` (claro) ou 6% sobre `--p-night-950` (escuro). O `theme-color` não muda (usa as primitivas de fundo).
+
+| Festa | `--festa-1` | `--festa-2` | `--festa-3` | `--festa-4` |
+|---|---|---|---|---|
+| Natal | `#C62828` / `#F28B82` | `#2E7D4F` / `#7FCB9A` | `#B8860B` / `#E8C468` | `#929292`* / `#F2F0EB` |
+| Ano Novo | `#B8860B` / `#E8C468` | `#8A8F98` / `#C9CDD3` | `#6B3FA0` / `#C3A6F0` | `#1C1B19` / `#F2F0EB` |
+| Carnaval | `#D6336C` / `#F48FB1` | `#1E88E5` / `#82B7F5` | `#BA8B00`* / `#F7D560` | `#27A569`* / `#7FD8A8` |
+| Páscoa | `#CD8317`* / `#F3C77A` | `#559AC7`* / `#A9CCE6` | `#D175A4`* / `#ECB3CF` | `#6B4226` / `#C49A7A` |
+| Namorados | `#D6336C` / `#F48FB1` | `#F06092`* / `#F7A8C4` | `#C2255C` / `#E6779F` | `#929292`* / `#F2F0EB` |
+| Junina | `#E03131` / `#FF8787` | `#CA8300`* / `#FFC94D` | `#1C7ED6` / `#74B6F2` | `#2F9E44` / `#7BD389` |
+| Halloween | `#E8590C` / `#FF922B` | `#1C1B19` / `#6C6961`* | `#6B3FA0` / `#C3A6F0` | `#CA8300`* / `#FFC94D` |
+| Aniversário | `#6B3FA0` / `#C3A6F0` | `#CA8300`* / `#FFC94D` | `#1C7ED6` / `#74B6F2` | `#E64980` / `#F783AC` |
+
+\* Ajuste de luminosidade (mesma matiz e saturação) para chegar a 3:1 contra o fundo onde a decoração aparece (`surface` `#FFFFFF` no claro, `#1E1D1B` no escuro). Valores originais e resultado: Natal-4 e Namorados-4 `#FFFFFF` → `#929292` (3,11:1); Carnaval-3 `#E0A800` → `#BA8B00` (3,10:1); Carnaval-4 `#2BB673` → `#27A569` (3,15:1); Páscoa-1 `#E9A23B` → `#CD8317` (3,06:1); Páscoa-2 `#7FB3D5` → `#559AC7` (3,07:1); Páscoa-3 `#D98CB3` → `#D175A4` (3,09:1); Namorados-2 `#F06595` → `#F06092` (3,09:1); Junina-2, Halloween-4 e Aniversário-2 `#F59F00` → `#CA8300` (3,11:1); Halloween-2 escuro `#2A2926` → `#6C6961` (3,07:1). As outras 52 cores já passavam de 3:1.
+
+| Componente | Tokens | Estados |
+|---|---|---|
+| Chip de contagem (fase chegando) | pílula `surface`, borda `border`, `radius-full`, `type-label` peso médio em `textPrimary`, ícone de 24 dp da festa à esquerda | texto exato da especificação ("Faltam 15 dias para o Natal", "Falta 1 dia…"); a contagem está no texto, o ícone tem `aria-hidden` |
+| Decoração do cabeçalho (auge) | SVG inline original, até 3 KB por festa, `aria-hidden`, `z-index` abaixo do texto; varal de luzes/bandeirinhas no topo (cabeçalho ganha `space-5` a mais em cima), enfeite de canto embaixo à direita, estrelas, confete e corações só na faixa de cima e no canto inferior direito | pisca-pisca só de opacidade (1 → 0,6) em 2,4 s, `--ease-movimento`, alternado e defasado (nunca mais que 3 vezes por segundo); parado com movimento reduzido |
+| Saudação festiva | `h1` com a frase da festa; a saudação por horário desce para uma linha `type-label` `textSecondary` | o cabeçalho guarda em `data-desenho` período + saudação + dia + festa + fase e só redesenha quando isso muda |
+| Cartão festivo | `card` com o desenho da festa (48 dp), título `type-section` `textPrimary`, botão de texto "Fechar" de 48 dp, `role="region"` "Data comemorativa" | em 31/12 mostra a contagem da virada (atualiza por minuto, sem `aria-live`); fechado, só volta no dia seguinte (`ajustes.festas.cartaoFechadoEm`) |
+| Cartão de retrospectiva | `card` com título "Seu {ano} na rotina" e grade 2 × 2 de blocos `surfaceVariant`, número `type-title` com algarismos tabulares e rótulo `type-label` `textSecondary`, `role="region"` "Retrospectiva do ano" | números com a contagem animada existente (parada com movimento reduzido); "Fechar" grava `retrospectivaVista` |
+| Folha "Escolher datas" | folha inferior com uma chave por festa (padrão do interruptor existente) e "Fechar" | Aniversário desativado (opacidade 0,55) com a dica "Informe seu aniversário para ativar" até existir data |
+| Banner de prévia | fixo no topo, fundo `snackBg`, texto `snackFg`, botão "Sair da prévia" em `snackAction` com 48 dp, `role="status"`; o conteúdo desce enquanto ele aparece | some ao tocar em "Sair da prévia" ou depois de 30 s; não grava nada |
+| Partículas | canvas existente (`Animacoes.confete`) com forma por festa (floco, faísca, ovo, coração, bandeirinha, morcego; confete retangular no Carnaval e no aniversário) e cores `--festa-1..4`; fogos com `Animacoes.faiscas` (até 60 por explosão, 1,4 s) | efeito ambiente (neve, confete, corações) com até 24 partículas por 8 s, uma vez por abertura, só `transform` e `opacity`, para quando a aba fica oculta; nada disso com movimento reduzido |
+
+### 6.3 Árvore, Folhinha, abertura e widgets (versão 1.6.0; árvore, Folhinha e regra substituídas pela 6.4)
+
+**Árvore — tokens.** Primitivas `--p-arvore-*` (claro) e `--p-arvore-*-e` (escuro) → semânticos `--arvore-tronco`, `--arvore-folha-1..3`, `--arvore-flor`, `--arvore-fruto`, `--arvore-terra`, repetidos nos dois seletores de modo escuro. A flor usa `--primary` no claro (a identidade roxa continua) e `#7A45C8` no escuro: o `--primary` escuro (`#C3A6F0`) ficava com 1,29:1 sobre as folhas claras; `#7A45C8` dá 3,68:1. O verde é só da árvore: não pinta texto, botão nem foco.
+
+| Token | Claro | Escuro | Uso e contraste |
+|---|---|---|---|
+| `--arvore-tronco` | `#7C5A3A` | `#C9A27E` | tronco e galhos; 6,21:1 / 7,18:1 contra `surface` |
+| `--arvore-folha-1` | `#2E7D4F` | `#7FCB9A` | folhas e quadrado "ganhou" dos 30 dias; 5,05:1 / 8,75:1 contra `surface` |
+| `--arvore-folha-2` | `#4C9A63` | `#9BD9AE` | folhas |
+| `--arvore-folha-3` | `#6DB07A` | `#B6E5C2` | folhas |
+| `--arvore-fruto` | `#E8590C` | `#FF922B` | frutos (estágio 8 em diante) |
+| `--arvore-terra` | `#B8A88A` | `#5A5146` | elipse do chão |
+
+**Árvore — desenho.** SVG inline original (`viewBox 0 0 200 220`), 10 esqueletos e uma copa por estágio. As folhas ficam numa espiral de Vogel com capacidade por estágio (no máximo 120 desenhadas); flores (12, estágio 7+) e frutos (9, estágio 8+) têm espiral própria. `role="img"` com `aria-label` "Sua árvore: {estágio}, {n} folhas". Luzinhas só no auge do Natal.
+
+| Componente | Tokens | Estados |
+|---|---|---|
+| Cartão da árvore (Progresso) | `card`, palco de 240 px, nome do estágio `type-title`, "{n} folhas" `type-label` `textSecondary` com algarismos tabulares, `bar` em `--arvore-folha-1`, dicas `hint` | "Faltam {k} folhas para {próximo}" ou "Estágio máximo"; 30 quadrados em 15 colunas (`--arvore-folha-1` ganhou, `surfaceVariant` sem mudança, `danger` perdeu), cada um com `title` e `aria-label` |
+| Linha da árvore (Hoje) | botão pílula alinhado à direita sob o cabeçalho, árvore de 32 px, `type-meta` `textSecondary`, alvo de 48 dp | abre Progresso |
+| Folha nova | `scale` 0 → 1 com `--ease-mola` em `--dur-lenta` | movimento reduzido: só opacidade em `--dur-reduzida` |
+| Subir de estágio | esqueleto em crossfade de 400 ms; folhas em cascata de no máximo 20 ms cada, 600 ms no total | movimento reduzido: só opacidade |
+| Folha caindo | cópia da folha cai 150 px com giro e balanço em 1,2 s, `fill: forwards`, removida no fim; uma vez por evento | movimento reduzido: some com opacidade |
+
+**Folhinha.** Personagem original em SVG (`viewBox 0 0 64 64`): folha com rosto, cabinho e broto. Fica fixa embaixo à esquerda, alinhada à coluna de 480 px, acima da navegação; tamanho `touch + space-2` (56 dp), `z-index` 6, sombra `drop-shadow` com `--sombra-cor`.
+
+| Estado | Visual |
+|---|---|
+| `parada` | balanço do cabinho ±4° em 3 s, alternado, `--ease-movimento`; pisca a cada 4–7 s (140 ms) |
+| `falando` | boca alterna aberta/fechada a cada 0,26 s enquanto o texto aparece (600 ms) |
+| `triste` | boca para baixo, pupilas e corpo descem 2 px |
+| `comemorando` | olhos fechados de alegria, pulinho de 8 px e broto girando 360° |
+
+- **Balão:** `surface`, `radius-card`, `shadow-fab`, até 280 px, seta para a Folhinha, texto `type-body`, "Entendi" de 48 dp. Fecha sozinho em 6 s, salvo quando fixo. O leitor de tela recebe o texto inteiro por `role="status"`; o texto digitado fica com `aria-hidden`.
+- **Some** com folha ou diálogo abertos, snackbar visível, teclado aberto e durante a abertura. Com movimento reduzido não balança, não fala animado e não pula. Pausa quando a aba fica oculta.
+- **Conteúdo:** dica na primeira visita de cada aba e no máximo uma aparição espontânea por dia (`ajustes.folhinha.ultimaAparicao`). As dicas ao tocar seguem em sequência (`proximaDica`) e pulam as que não valem (widget só no APK; anotação só com a Faculdade visível). As reações da árvore juntam vários dias de perda numa linha; quando ganha e sobe juntos, mostra só que subiu. Com "Mostrar a Folhinha" desligado, as reações viram snackbar.
+
+**Abertura.** Tela cheia sobre o app (`z-index` 8: as folhas do assistente e de "Escolher datas" ficam por cima), coluna de 480 px em 4 faixas:
+1. topo com "Voltar" e a barra "Passo X de 10" (8 no PWA, sem os passos 6 e 9);
+2. conteúdo rolável com título `type-title`;
+3. Folhinha com balão;
+4. rodapé com botão principal e "Pular".
+
+O rodapé sobe com `--teclado`, e a fala some com o teclado aberto. Avanço com deslize horizontal (25% da largura ou velocidade de gesto). Conteúdo entra deslizando 24 px na direção do passo, em `--dur-base`. Cada avanço grava `ajustes.abertura.passo`, então a abertura retoma de onde parou. Os cartões de modelo usam a cor da seção (`--c` / `--cc`), com itens e dias em chips. Ao rever pelos Ajustes, aparece um botão "Fechar".
+
+**Novidades (quem já usa).** Folha inferior com a Folhinha comemorando, a árvore atual e só o que falta (aniversário, "Você faz faculdade?", widgets no APK). Grava `novidadesVistas = "1.6.0"` ao abrir, para não insistir.
+
+**Widgets (APK).** Fundo `#FFFFFF` / `#1E1D1B` com cantos `system_app_widget_background_radius` no Android 12+ e 16 dp antes. Texto `#1C1B19` (17,21:1) e `#5F5B53` (6,76:1) no claro; `#F2F0EB` (14,79:1) e `#B3AEA4` (7,63:1) no escuro. Check `#6B3FA0` / `#C3A6F0`.
+
+| Nível de faltas | Claro | Escuro |
+|---|---|---|
+| `ok` | `#6B3FA0` (7,38:1) | `#C3A6F0` (8,05:1) |
+| `atencao` | `#9A5E07` (5,28:1) | `#E6B84A` (9,08:1) |
+| `perigo` | `#C0400C` (5,28:1) | `#FB8B5B` (7,18:1) |
+| `ultima_chance` / `ultrapassado` | `#B91C1C` (6,47:1) | `#F87171` (6,09:1) |
+
+| Widget | Tamanho | Conteúdo |
+|---|---|---|
+| Árvore | 2×2 até 4×3 | vetor `arvore_estagio_{n}`, estágio, "{pct}% hoje", "Sequência: {d} dias"; toque abre Progresso |
+| Hoje | 4×2 até 4×5 | "Hoje · {feitos} de {total}" e lista de até 30 itens com check de 48 dp; tocar marca sem abrir o app |
+| Próxima aula | 4×1 até 4×2 | "{dia}, {tempos} · {matéria} · {sala}" e "Faltas: {pct}" na cor do nível |
+
+Os três mostram "Abra o app para atualizar" quando o retrato tem mais de 7 dias. Nada sai do aparelho: o app publica um retrato local (`SharedPreferences rotina_widget`) e lê as marcações do widget como pendências, aplicadas pelo `em` e de forma idempotente.
+
+### 6.4 Árvore viva, Folhinha nova e constância (versão 1.7.0)
+
+**Regra (resumo visual).** Cada dia vale de −2 a +5 folhas pela faixa do percentual (até 24% +1, 25% +2, 50% +3, 75% +4, 100% +5; dia em branco encerrado −2; hoje nunca perde), mais +3 a cada 7 dias tentados seguidos. Estágios em 0, 5, 15, 35, 70, 140, 250, 400, 600 e 1000 folhas. O cartão de Progresso mostra a tabela das faixas (`type-meta`, algarismos tabulares) e os 30 dias em 5 tons de `--arvore-folha-1` (mistura de 30%, 48%, 65%, 82% e 100% com `surface-variant`) mais `--danger` no dia em branco.
+
+**Tokens (primitiva → semântico, com escuro nos dois seletores).**
+
+| Token | Claro | Escuro | Uso |
+|---|---|---|---|
+| `--arvore-tronco-sombra` / `--arvore-tronco` / `--arvore-tronco-luz` | `#5A3F27` / `#7C5A3A` / `#A57E57` | `#8C6A4C` / `#B08A66` / `#D6B48F` | gradiente horizontal da casca (luz à esquerda), marcas da casca |
+| `--arvore-folha-fundo` | `#1F5C3A` | `#3F8A5E` | fundo da copa e tufos de trás |
+| `--arvore-folha-1..3` | `#2E7D4F` `#4C9A63` `#6DB07A` | `#5DB383` `#7FCB9A` `#9BD9AE` | folhas e gradiente radial dos tufos |
+| `--arvore-folha-luz` | `#A8D8A0` | `#C8EBC6` | brilho nas folhas do lado da luz |
+| `--arvore-flor` / `--arvore-flor-miolo` | `var(--primary)` / `#F5C542` | `var(--primary)` / `#F7D56B` | flores (7+), faíscas, estrela de Natal |
+| `--arvore-fruto` | `#E8590C` | `#FF922B` | frutos (8+), abóbora |
+| `--arvore-colina` / `--arvore-colina-luz` | `#9CC58A` / `#C4E0B4` | `#2F4A35` / `#456B4E` | colinas e borda de luz |
+| `--arvore-nervura` | `rgba(0,0,0,.16)` | `rgba(0,0,0,.22)` | nervura central das folhas |
+| `--arvore-sombra-chao` | `#1C1B19` | `#000000` | elipse de sombra (opacidade 0,18, sem desfoque) |
+| `--arvore-folha-seca` | `#C9A227` | `#C9A227` | folha amarelando antes de cair |
+| `--arvore-folha-texto` | `#256B42` | `#7FCB9A` | texto do chip ao vivo: 6,44:1 / 8,75:1 contra `surface`, 5,49:1 / 7,19:1 sobre o fundo do chip |
+| `--arvore-sobre-folha` | `#FFFFFF` | `#1C1B19` | ícone sobre ponto cheio da corrente: 5,05:1 / 7,4:1 |
+| `--arvore-borboleta(-2)`, `--arvore-passaro(-asa)`, `--arvore-vagalume`, `--arvore-pedra(-luz)`, `--arvore-flor-chao` | `#C3A6F0`/`#9C7BD6`, `#6E8CAF`/`#4E6B8C`, `#F7E27A`, `#B7B2A8`/`#D6D2CA`, `#F3EFFA` | pedra `#5E5A55`/`#7A766F`, flor do chão `#E7DDF7` | seres e chão |
+| `--ceu-manha-1/2`, `--ceu-tarde-1/2`, `--ceu-noite-1/2` | `#DCEBFA`→`#F7F6F3`, `#FCE3C8`→`#F7F6F3`, `#1C1830`→`#141413` | o tema escuro usa sempre o céu da noite | céu da cena |
+| `--ceu-estrela`, `--ceu-lua`, `--ceu-sol`, `--ceu-nuvem` | `#FFF7E0`, `#F6E7B8`, `#FFE9A8`, `#FFFFFF` | iguais | 12 estrelas, lua crescente, sol e 2 nuvens |
+
+**Árvore viva (`arvore-desenho.js`).** Cena `viewBox 0 0 320 360` gerada como texto, sem DOM, determinística (`mulberry32(20261120)`). Camadas: céu num cartão com cantos de 20, colina de fundo, colina com grama, sombra, fundo escuro da copa, tufos de trás, tronco e galhos preenchidos que afinam (pontas com 15%), tufos da frente, flores, frutos, enfeites e seres. Os estágios 0 a 4 aparecem ampliados (2,6× a 1,05×) para não sumir na cena. Cada tufo enche ao longo da própria faixa de folhas; a folha `i` tem lugar, tamanho, giro e cor fixos dentro do estágio. Até 160 folhas desenhadas; acima disso, os tufos crescem até 1,25×. Miniatura (`mini`) sem céu, com a colina numa elipse. À noite no tema claro, um véu `--ceu-noite-1` a 0,32 escurece a paisagem.
+
+| Tamanho | Onde | Vida |
+|---|---|---|
+| 300 px (360 px a partir de 768 px) | cartão de Progresso | vento, rajadas, borboleta, passarinho, vagalumes |
+| 240 px | momento grande | igual ao Progresso |
+| 220 px | abertura (passo 10) e Novidades | parada; semente vira broto na abertura |
+| 44 px | linha de Hoje | parada |
+| 36 px | prévia do widget em Ajustes | parada |
+
+**Vida.** Só `transform`/`opacity` (propriedades individuais `rotate`, `scale` e `translate`, para compor com o `transform` do SVG). Tufos balançam ±1,5° a ±3° em 3,2 a 5,5 s; tronco ±0,6°; rajada a cada 12–20 s dobra a amplitude por 1,2 s, da esquerda para a direita (60 ms entre tufos) mudando `--rajada`. Borboleta (estágio 3+, de dia) a cada 25–40 s por 6 s; passarinho (5+, de dia) a cada 45–70 s, fica 4 s com um pulinho; vagalumes (2+, à noite ou no tema escuro) piscam de 0,2 a 1 em 2–4 s. No máximo 20 elementos animados; tudo para fora da tela (`IntersectionObserver`) e com a aba oculta. Movimento reduzido: cena parada, vagalumes acesos.
+
+**Mudanças.** Folha nova: `scale` 0→1 e `rotate` −20°→0 com `--ease-mola` em 520 ms, cascata de 40 ms (até 1,2 s), 4 pontinhos de brilho. Subir de estágio: câmera 1→1,04→1 em 2 s, árvore antiga some em 900 ms enquanto a nova cresce da base com `clip-path`, tufos em cascata de 50 ms, faíscas em 1,1 s. Voltar de estágio: troca de 600 ms. Perder: as folhas ficam `--arvore-folha-seca` em 300 ms e caem girando com balanço em 1,4 s. Movimento reduzido: troca por opacidade em `--dur-reduzida`.
+
+**Festas (só no auge).** Natal: fio de 8–14 luzinhas `--festa-1..3` piscando juntas (opacidade 0,5↔1 em 2,4 s, bem abaixo de 3 vezes por segundo) e estrela no topo. Ano Novo: 3 faíscas douradas no céu. Carnaval: serpentina. Páscoa: ovo ao pé da árvore. Namorados: coração talhado no tronco. Junina: bandeirinhas entre dois galhos. Halloween: abóbora e morcego à noite. Aniversário: 2 balões.
+
+**Folhinha (`folhinha.js`).** Personagem original, `viewBox 0 0 120 128`, 5,9 KB.
+
+- **Anatomia:** gota inclinada 8° com gradiente radial `--folhinha-luz` `#B9E3A6` → `--folhinha-meio` `#4C9A63` → `--folhinha-base` `#2E7D4F`; nervura central e 3 laterais `--folhinha-nervura` `#2A6E45` a 0,35; brilho em meia-lua branco a 0,45; contorno `--folhinha-contorno` `#1F5C3A` (escuro `#0E2A1C`); cachinho no topo; dois bracinhos à frente do corpo; olhos com esclera, pupila `#1C1B19`, dois brilhos e pálpebra; bochechas `#F4A6B8` a 0,55 sobre base branca a 0,55; 6 bocas (sorriso, aberta, "o", risada, triste, linha); sombra elíptica `--folhinha-sombra` (0,18 / 0,45 no escuro).
+- **Tamanhos (`--fo-tam`):** 88 px; 72 px com altura menor que 640 px; 96 px a partir de 768 px; 120 px na abertura; 160 px no momento grande. Canto inferior esquerdo acima da navegação; o conteúdo ganha `padding-bottom` da altura dela + `space-5`.
+- **Posições:** esquerda, direita (72 px acima, longe da FAB), espiando (só 36 px à mostra). Arrastar segue o dedo 1:1 (`touch-action: none` só nela) e solta no canto mais próximo com `--ease-mola` em 480 ms, interrompível; soltar a menos de 24 px da borda deixa espiando; toque duplo dança 1 s. Grava `ajustes.folhinha.posicao`.
+
+| Estado | Olhos | Boca | Corpo |
+|---|---|---|---|
+| `parada` | abertos, piscam a cada 3–7 s | sorriso | flutua 3 px e respira 1→1,02 em 3,2 s |
+| `falando` | olham para o balão | aberta / "o" / sorriso a cada 110 ms | inclina 4° |
+| `acenando` | felizes (arco) | aberta | braço direito acena 3 vezes |
+| `comemorando` | felizes | risada | pulo de 14 px, braços erguidos, 6 faíscas |
+| `triste` | pupilas para baixo, pálpebra a meio | triste | encolhe 4%, braços caídos |
+| `pensando` | pupilas para cima à direita | linha | bracinho no queixo |
+| `surpresa` | arregalados | "o" | salto pequeno para trás |
+| `dormindo` | fechados | linha | "Z" subindo, respiração de 4 s (22h–6h após 20 s parada) |
+| `carinho` | felizes | sorriso | balança e mostra 2 corações `--primary` |
+
+Olhar vivo: as pupilas seguem o último toque por 1,2 s (até 2 px). Primeira abertura do dia antes das 11h: espreguiça 800 ms e acena. Movimento reduzido: só o rosto muda, texto aparece inteiro.
+
+- **Balão:** `surface`, `radius-sheet`, `shadow-fab`, biquinho curvo e folhinha no canto, até 300 px, `type-body`, letra por letra (20 ms por letra, até 900 ms), até 2 botões de texto de 48 dp ("Ver árvore", "Entendi"), fecha em 7 s, `role="status"`.
+
+**Componentes novos.**
+
+| Componente | Tokens | Comportamento |
+|---|---|---|
+| Chip ao vivo (Hoje) | pílula `radius-full`, fundo `--arvore-folha-1` a 12%, texto `--arvore-folha-texto`, `type-meta` tabular; "+3 de bônus" em `--arvore-flor-miolo` com texto `#1C1B19` (10,61:1) | "+{n} folhas hoje · faça mais {k} itens para +{m}", "máximo de hoje" ou "Faça 1 item para começar"; número com `Animacoes.contar` |
+| Voo da folha | folha de 16 px `--arvore-folha-2` | curva de Bézier em 700 ms do check até a miniatura, que pulsa 1,08; "+{n}" por 1,2 s; até 3 voos; movimento reduzido só mostra o "+{n}" |
+| Corrente de tentativas | 7 pontos de 20 px (`surface-variant` / `--arvore-folha-1`), o 7.º de 28 px com presente | "Tentando há {d} dias seguidos" |
+| Linha do tempo | folha (sheet) com cena de 300 px, controle deslizante de 48 dp em `--arvore-folha-1`, data e "{estágio} · {n} folhas" | arrastar recalcula a árvore na data (até 30 ms por quadro); "Reproduzir" em 6 s com até 60 quadros (6 com movimento reduzido) |
+| Momento grande | véu `--scrim` a 0,25, Folhinha de 160 px, balão, cena de 240 px, linha da sequência, "Continuar" | dia completo e subida de estágio; Folhinha voa do canto ao centro e volta; fecha sozinho em 4 s sem toque; `role="dialog"`; Esc fecha |
+| Carinho | brilhos de 10 px `--arvore-flor-miolo` | toque: rajada local de 600 ms e 3 brilhos; segurar 800 ms: Folhinha `carinho` e uma frase; não dá folha |
+| Compartilhar | PNG 1080 × 1350 em `canvas`, fundo `--background` | cena, "{estágio} · {n} folhas", corrente e "Minha Rotina"; sem nome, itens nem Faculdade; APK com `@capacitor/share`, navegador com Web Share ou download |
+| Widget Árvore (APK) | vetores `arvore_estagio_0..9` no estilo novo (até 60 caminhos, céu por `values`/`values-night`) | linha "+{n} folhas hoje" em `widget_check`, negrito |

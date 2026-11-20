@@ -5,7 +5,7 @@
     entrada: 'cubic-bezier(0.4, 0, 1, 1)',
     movimento: 'cubic-bezier(0.65, 0, 0.35, 1)',
     mola: 'linear(0, 0.051 4.2%, 0.166 8.3%, 0.309 12.5%, 0.456 16.7%, 0.591 20.8%, 0.708 25%, 0.803 29.2%, 0.877 33.3%, 0.932 37.5%, 0.970 41.7%, 0.996 45.8%, 1.011 50%, 1.019 54.2%, 1.022 58.3%, 1.022 62.5%, 1.020 66.7%, 1.017 70.8%, 1.013 75%, 1.010 79.2%, 1.008 83.3%, 1.005 87.5%, 1.003 91.7%, 1.002 95.8%, 1)',
-    reduzida: 120, esperaConcluidas: 350, dicaAtraso: 800, dicaDuracao: 700, dicaDistancia: 28, brilho: 500, cartao: 2500, confetes: 80, cascata: 30, cascataMax: 8, desfazer: 5000, aviso: 2000, cascataBarras: 40, balao: 2000, contagemLonga: 600,
+    reduzida: 120, esperaConcluidas: 350, dicaAtraso: 800, dicaDuracao: 700, dicaDistancia: 28, brilho: 500, cartao: 2500, confetes: 80, faiscas: 60, faiscasDuracao: 1400, ambiente: 24, ambienteDuracao: 8000, cascata: 30, cascataMax: 8, desfazer: 5000, aviso: 2000, cascataBarras: 40, balao: 2000, contagemLonga: 600,
   };
 
   const GESTO = { trava: 8, limite: 0.4, minimoVeloz: 0.15, velocidade: 0.5, elastico: 0.6, resistencia: 0.3 };
@@ -60,6 +60,8 @@
     while (pai.childNodes.length > novos.length) pai.removeChild(pai.lastChild);
   }
   function mesclar(antigo, novo) {
+    const cena = novo.getAttribute('data-cena');
+    if (cena && antigo.getAttribute('data-cena') === cena) return;
     sincronizarAtributos(antigo, novo);
     if (antigo === document.activeElement && (antigo.tagName === 'INPUT' || antigo.tagName === 'TEXTAREA')) return;
     mesclarFilhos(antigo, novo);
@@ -115,7 +117,15 @@
     el._quadro = requestAnimationFrame(passo);
   }
 
-  function confete(x, y, cores) {
+  const FORMAS = {
+    floco: (c, s) => { c.lineWidth = 1.6; c.lineCap = 'round'; c.beginPath(); for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3; c.moveTo(-Math.cos(a) * s, -Math.sin(a) * s); c.lineTo(Math.cos(a) * s, Math.sin(a) * s); } c.stroke(); },
+    faisca: (c, s) => { c.beginPath(); c.moveTo(0, -s); c.quadraticCurveTo(0, 0, s, 0); c.quadraticCurveTo(0, 0, 0, s); c.quadraticCurveTo(0, 0, -s, 0); c.quadraticCurveTo(0, 0, 0, -s); c.fill(); },
+    ovo: (c, s) => { c.beginPath(); c.ellipse(0, 0, s * 0.62, s * 0.85, 0, 0, Math.PI * 2); c.fill(); },
+    coracao: (c, s) => { c.beginPath(); c.moveTo(0, s * 0.8); c.bezierCurveTo(-s * 1.2, 0, -s * 0.6, -s, 0, -s * 0.35); c.bezierCurveTo(s * 0.6, -s, s * 1.2, 0, 0, s * 0.8); c.fill(); },
+    bandeira: (c, s) => { c.beginPath(); c.moveTo(-s * 0.7, -s); c.lineTo(s * 0.7, -s); c.lineTo(0, s); c.closePath(); c.fill(); },
+    morcego: (c, s) => { c.beginPath(); c.moveTo(0, -s * 0.2); c.quadraticCurveTo(-s * 0.5, -s * 0.8, -s * 1.3, -s * 0.3); c.quadraticCurveTo(-s * 0.9, 0, -s * 0.9, s * 0.4); c.quadraticCurveTo(-s * 0.4, 0, 0, s * 0.5); c.quadraticCurveTo(s * 0.4, 0, s * 0.9, s * 0.4); c.quadraticCurveTo(s * 0.9, 0, s * 1.3, -s * 0.3); c.quadraticCurveTo(s * 0.5, -s * 0.8, 0, -s * 0.2); c.fill(); },
+  };
+  function confete(x, y, cores, forma) {
     if (reduzido()) return;
     const c = document.createElement('canvas');
     c.className = 'confete';
@@ -140,14 +150,47 @@
       ctx.globalAlpha = p > 0.75 ? Math.max(0, (1 - p) / 0.25) : 1;
       for (const q of ps) {
         q.vy += g * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.r += q.vr * dt;
-        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r); ctx.fillStyle = q.cor; ctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h); ctx.restore();
+        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r); ctx.fillStyle = q.cor; ctx.strokeStyle = q.cor;
+        if (FORMAS[forma]) FORMAS[forma](ctx, q.h / 2); else ctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h);
+        ctx.restore();
       }
       if (p < 1) requestAnimationFrame(passo); else c.remove();
     };
     requestAnimationFrame(passo);
   }
 
-  const SONS = { volume: 0.08, tique: { freq: [880], dur: 40 }, comemoracao: { freq: [523, 659, 784], dur: 120 } };
+  function faiscas(x, y, cores, n = MOV.faiscas) {
+    if (reduzido()) return;
+    const c = document.createElement('canvas');
+    c.className = 'confete';
+    c.setAttribute('aria-hidden', 'true');
+    c.width = innerWidth; c.height = innerHeight;
+    document.body.appendChild(c);
+    const ctx = c.getContext('2d');
+    const ps = Array.from({ length: Math.min(n, MOV.faiscas) }, (_, i) => {
+      const ang = (i / n) * Math.PI * 2 + Math.random() * 0.2, vel = 0.12 + Math.random() * 0.22;
+      return { x, y, vx: Math.cos(ang) * vel, vy: Math.sin(ang) * vel, cor: cores[i % cores.length] };
+    });
+    const t0 = performance.now();
+    let antes = t0;
+    const passo = agora => {
+      const dt = Math.min(32, agora - antes); antes = agora;
+      const p = (agora - t0) / MOV.faiscasDuracao;
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      ctx.globalAlpha = Math.max(0, 1 - p * p);
+      for (const q of ps) {
+        q.vx *= 0.985; q.vy = q.vy * 0.985 + 0.00025 * dt;
+        const px = q.x, py = q.y;
+        q.x += q.vx * dt; q.y += q.vy * dt;
+        ctx.strokeStyle = q.cor; ctx.lineWidth = 2; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(px - q.vx * 6, py - q.vy * 6); ctx.lineTo(q.x, q.y); ctx.stroke();
+      }
+      if (p < 1) requestAnimationFrame(passo); else c.remove();
+    };
+    requestAnimationFrame(passo);
+  }
+
+  const SONS = { volume: 0.08, tique: { freq: [880], dur: 40 }, comemoracao: { freq: [523, 659, 784], dur: 120 }, estouro: { freq: [196, 98], dur: 70, tipo: 'triangle' }, sino: { freq: [1568, 2349, 3136], dur: 600, juntos: true } };
   let audio = null;
   function prepararAudio() {
     if (audio || typeof window === 'undefined') return audio;
@@ -161,10 +204,10 @@
     if (!ctx || !s) return;
     if (ctx.state === 'suspended') ctx.resume();
     s.freq.forEach((freq, i) => {
-      const ini = ctx.currentTime + i * s.dur / 1000;
+      const ini = ctx.currentTime + (s.juntos ? 0 : i * s.dur / 1000);
       const osc = ctx.createOscillator(), ganho = ctx.createGain();
-      osc.type = 'sine'; osc.frequency.value = freq;
-      ganho.gain.setValueAtTime(SONS.volume, ini);
+      osc.type = s.tipo || 'sine'; osc.frequency.value = freq;
+      ganho.gain.setValueAtTime(SONS.volume / (s.juntos ? i + 1 : 1), ini);
       ganho.gain.exponentialRampToValueAtTime(0.0001, ini + s.dur / 1000);
       osc.connect(ganho).connect(ctx.destination);
       osc.start(ini); osc.stop(ini + s.dur / 1000 + 0.01);
@@ -178,7 +221,7 @@
     a.oncancel = depois;
   }
 
-  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar, confete, prepararAudio, tocar, SONS };
+  const Animacoes = { MOV, GESTO, decidirGesto, elastico, reduzido, curvaMola, mesclar, mesclarHtml, flip, sair, contar, confete, FORMAS, faiscas, prepararAudio, tocar, SONS };
   if (typeof module !== 'undefined' && module.exports) module.exports = Animacoes;
   else raiz.Animacoes = Animacoes;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

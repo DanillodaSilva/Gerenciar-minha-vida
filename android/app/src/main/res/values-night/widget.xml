@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="widget_superficie">#1E1D1B</color>
+    <color name="widget_texto">#F2F0EB</color>
+    <color name="widget_texto_suave">#B3AEA4</color>
+    <color name="widget_check">#C3A6F0</color>
+    <color name="widget_nivel_ok">#C3A6F0</color>
+    <color name="widget_nivel_atencao">#E6B84A</color>
+    <color name="widget_nivel_perigo">#FB8B5B</color>
+    <color name="widget_nivel_critico">#F87171</color>
+</resources>

@@ -1,10 +1,10 @@
 // Service worker: guarda os arquivos do app no celular pra ele abrir mesmo sem internet.
 // Quando mudar algum arquivo do app, aumente a versão abaixo (v2, v3...) pra forçar a atualização.
-const CACHE = 'rotina-v5';
-const ARQUIVOS = ['./', './index.html', './regras.js?v=1.4.0', './animacoes.js?v=1.4.0', './faculdade.js?v=1.4.0', './fotos.js?v=1.4.0', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+const CACHE = 'rotina-v8';
+const ARQUIVOS = ['./', './index.html', './regras.js?v=1.7.0', './animacoes.js?v=1.7.0', './faculdade.js?v=1.7.0', './fotos.js?v=1.7.0', './festas.js?v=1.7.0', './arvore.js?v=1.7.0', './arvore-desenho.js?v=1.7.0', './folhinha.js?v=1.7.0', './widget.js?v=1.7.0', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS)));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ARQUIVOS.map(u => new Request(u, { cache: 'reload' })))));
   self.skipWaiting();
 });
 
@@ -18,7 +18,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request.mode === 'navigate' ? new Request(e.request.url, { cache: 'no-cache', credentials: 'same-origin' }) : e.request)
       .then(resp => {
         const copia = resp.clone();
         caches.open(CACHE).then(c => c.put(e.request, copia));

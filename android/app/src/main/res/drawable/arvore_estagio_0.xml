@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="96dp"
+    android:height="108dp"
+    android:viewportWidth="320"
+    android:viewportHeight="360">
+    <path android:pathData="M20,0h280a20,20 0,0 1,20,20v320a20,20 0,0 1,-20,20h-280a20,20 0,0 1,-20,-20v-320a20,20 0,0 1,20,-20Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endColor="@color/arvore_ceu_base"
+                android:endX="160"
+                android:endY="300"
+                android:startColor="@color/arvore_ceu_topo"
+                android:startX="160"
+                android:startY="0"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="@color/arvore_ceu_nuvem"
+        android:fillAlpha="0.8"
+        android:pathData="M66,70a26,9 0,1 0,52,0a26,9 0,1 0,-52,0ZM70,64a12,9 0,1 0,24,0a12,9 0,1 0,-24,0ZM86,62a14,11 0,1 0,28,0a14,11 0,1 0,-28,0ZM205.2,112a20.8,7.2 0,1 0,41.6,0a20.8,7.2 0,1 0,-41.6,0ZM208.4,107.2a9.6,7.2 0,1 0,19.2,0a9.6,7.2 0,1 0,-19.2,0ZM221.2,105.6a11.2,8.8 0,1 0,22.4,0a11.2,8.8 0,1 0,-22.4,0Z" />
+    <path
+        android:fillColor="@color/arvore_colina"
+        android:fillAlpha="0.45"
+        android:pathData="M0,286Q84,252 186,280T320,268V340a20,20 0,0 1,-20,20H20a20,20 0,0 1,-20,-20Z" />
+    <path android:pathData="M0,300Q160,270 320,300V340a20,20 0,0 1,-20,20H20a20,20 0,0 1,-20,-20Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endColor="@color/arvore_colina"
+                android:endX="160"
+                android:endY="330"
+                android:startColor="@color/arvore_colina_luz"
+                android:startX="160"
+                android:startY="272"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="@color/arvore_folha_2"
+        android:pathData="M66.4,300.7Q66.7,296.1 65.2,294.5Q68.3,297.6 69,300.7ZM69.4,300.7Q70.7,296.1 70.7,293Q71.3,297.6 72,300.7ZM72.4,300.7Q74.7,296.1 76.2,294.5Q74.3,297.6 75,300.7ZM110.6,290.7Q110.9,284.9 109.4,283Q112.5,286.9 113.2,290.7ZM113.6,290.7Q114.9,284.9 114.9,281.1Q115.5,286.9 116.2,290.7ZM116.6,290.7Q118.9,284.9 120.4,283Q118.5,286.9 119.2,290.7Z" />
+    <path
+        android:fillColor="@color/arvore_folha_3"
+        android:pathData="M32.1,297.7Q32.4,291 30.9,288.8Q34,293.2 34.7,297.7ZM35.1,297.7Q36.4,291 36.4,286.6Q37,293.2 37.7,297.7ZM38.1,297.7Q40.4,291 41.9,288.8Q40,293.2 40.7,297.7ZM209.3,289.6Q209.6,282.7 208.1,280.4Q211.2,285 211.9,289.6ZM212.3,289.6Q213.6,282.7 213.6,278.2Q214.2,285 214.9,289.6ZM215.3,289.6Q217.6,282.7 219.1,280.4Q217.2,285 217.9,289.6ZM278.3,298.5Q278.6,294.2 277.1,292.7Q280.2,295.6 280.9,298.5ZM281.3,298.5Q282.6,294.2 282.6,291.3Q283.2,295.6 283.9,298.5ZM284.3,298.5Q286.6,294.2 288.1,292.7Q286.2,295.6 286.9,298.5Z" />
+    <path
+        android:fillColor="@color/arvore_folha_fundo"
+        android:fillAlpha="0.2"
+        android:pathData="M133.2,290a32.8,4 0,1 0,65.5,0a32.8,4 0,1 0,-65.5,0Z" />
+    <group
+        android:pivotX="160"
+        android:pivotY="287"
+        android:scaleX="2.6"
+        android:scaleY="2.6">
+        <path
+            android:fillColor="@color/arvore_terra"
+            android:pathData="M145,290a15,5 0,1 0,30,0a15,5 0,1 0,-30,0Z" />
+        <path
+            android:fillColor="@color/arvore_tronco"
+            android:pathData="M151.4,291.8A9,6.5 -18,1 0,168.6,286.2A9,6.5 -18,1 0,151.4,291.8Z" />
+        <path
+            android:fillColor="@color/arvore_tronco_sombra"
+            android:pathData="M154,293Q161,297.5 168.5,290.5Q163,294.5 154,293Z" />
+        <path
+            android:fillColor="@color/arvore_tronco_luz"
+            android:pathData="M154,288Q159,282.5 165,284Q160,285 154,288Z" />
+        <path
+            android:fillColor="@color/arvore_folha_3"
+            android:pathData="M161,284Q161.5,279 164.5,277Q163,281 162.3,284Z" />
+    </group>
+</vector>
